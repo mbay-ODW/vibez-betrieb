@@ -1,0 +1,83 @@
+# VIBEZ Nachweise – Echtbetrieb auf dem VPS (Docker Compose)
+#
+# Weg einer Anfrage:  Browser -> Cloudflare (WAF, TLS) -> Tunnel -> cloudflared -> traefik -> app -> MongoDB Atlas (Frankfurt)
+# Der Server hat KEINE offenen Ports: cloudflared baut die Verbindung zu Cloudflare von innen nach außen auf.
+#
+# Netze:
+#   edge   – cloudflared <-> traefik (ausgehend ins Internet, nur für den Tunnel)
+#   web    – traefik <-> app          (intern, kein Internet)
+#   atlas  – app -> MongoDB Atlas     (ausgehend; Atlas lässt nur die IP dieses Servers zu)
+#
+# Alle Werte kommen aus .env (Vorlage: .env.example, Datei nur auf dem Server, chmod 600).
+# Versionen sind fest gepinnt; Aktualisieren nur über deploy.sh (siehe docs/betriebshandbuch.md).
+
+name: vibez
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION}
+    container_name: vibez-cloudflared
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
+    networks: [edge]
+    depends_on:
+      traefik:
+        condition: service_healthy
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+  traefik:
+    image: traefik:${TRAEFIK_VERSION}
+    container_name: vibez-traefik
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    environment:
+      VN_HOST: ${VN_HOST}
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./logs/traefik:/var/log/traefik
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--configFile=/etc/traefik/traefik.yml"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      edge:
+        ipv4_address: 172.30.0.10
+      web: {}
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+  app:
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_VERSION}
+    container_name: vibez-app
+    restart: unless-stopped
+    environment:
+      # mongodb+srv://<app-benutzer>:<passwort>@<cluster>.mongodb.net/vibez?retryWrites=true&w=majority&appName=vibez-nachweise
+      MONGODB_URI: ${MONGODB_URI}
+      VN_SECRET_KEY: ${VN_SECRET_KEY}
+      VN_ADMIN_PASSWORD: ${VN_ADMIN_PASSWORD}
+      VN_DEMO: "0"
+      VN_SECURE_COOKIE: "1"
+      TZ: Europe/Berlin
+    networks: [web, atlas]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  web:
+    internal: true
+  atlas: {}

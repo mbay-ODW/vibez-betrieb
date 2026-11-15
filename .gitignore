@@ -1,0 +1,8 @@
+# Geheimnisse und Laufzeitdaten – nie committen
+stack/.env
+stack/cloudflared/credentials.json
+stack/cloudflared/*.json
+stack/cloudflared/cert.pem
+stack/logs/
+*.archive.gz
+*.key

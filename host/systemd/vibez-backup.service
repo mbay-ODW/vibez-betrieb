@@ -1,0 +1,9 @@
+[Unit]
+Description=VIBEZ Nachweise – Backup (mongodump -> restic -> Storage Box)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vibez/host/backup.sh
+Nice=10

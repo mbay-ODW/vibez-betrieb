@@ -1,0 +1,52 @@
+# Traefik – statische Konfiguration (Echtbetrieb VIBEZ Nachweise)
+# Traefik nimmt nur Verbindungen von cloudflared an (Netz „edge“, kein veröffentlichter Port am Host).
+# TLS endet bei Cloudflare; zwischen Cloudflare-Edge und cloudflared verschlüsselt der Tunnel.
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: ":80"
+    forwardedHeaders:
+      # nur cloudflared (feste IP im Netz „edge“) darf X-Forwarded-* setzen
+      trustedIPs: ["172.30.0.0/24"]
+    transport:
+      respondingTimeouts:
+        readTimeout: 60s
+        writeTimeout: 120s   # Druckstapel/ZIP können etwas dauern
+        idleTimeout: 180s
+  # nur für den Healthcheck im Container (kein Router, für cloudflared nicht erreichbar)
+  ping:
+    address: ":8082"
+
+providers:
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+api:
+  dashboard: false
+
+ping:
+  entryPoint: ping
+
+log:
+  level: WARN
+
+# Zugriffsprotokoll: nur Metadaten (keine Formularinhalte), 14 Tage aufbewahren (Rotation: host/logrotate-vibez)
+accessLog:
+  filePath: /var/log/traefik/access.json
+  format: json
+  bufferingSize: 50
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: drop
+      names:
+        Cf-Connecting-Ip: keep
+        Cf-Ipcountry: keep
+        User-Agent: keep

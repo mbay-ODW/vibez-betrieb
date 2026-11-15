@@ -1,0 +1,9 @@
+[Unit]
+Description=VIBEZ Nachweise – Wiederherstellungstest am 1. jedes Monats
+
+[Timer]
+OnCalendar=*-*-01 05:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,48 @@
+# Traefik – dynamische Konfiguration: Router, Dienst, Middlewares
+http:
+  routers:
+    vibez:
+      entryPoints: [web]
+      rule: 'Host(`{{ env "VN_HOST" }}`)'
+      service: vibez-app
+      middlewares: [sicherheit, bremse, groesse]
+
+    # alle anderen Hostnamen (z. B. direkter Aufruf der Hilfs-Adresse) bekommen Traefiks 404
+
+  services:
+    vibez-app:
+      loadBalancer:
+        servers:
+          - url: "http://vibez-app:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+          timeout: 5s
+
+  middlewares:
+    sicherheit:
+      headers:
+        # CSP, X-Frame-Options, Referrer-Policy u. a. setzt die App selbst
+        stsSeconds: 31536000
+        forceSTSHeader: true   # Traefik sieht hinter dem Tunnel nur HTTP
+        stsIncludeSubdomains: false
+        contentTypeNosniff: true
+        browserXssFilter: false
+        customResponseHeaders:
+          Server: ""
+          X-Powered-By: ""
+          X-Robots-Tag: "noindex, nofollow"
+
+    # Ratenbegrenzung je echter Besucher-IP (von Cloudflare im Header Cf-Connecting-Ip übergeben)
+    bremse:
+      rateLimit:
+        average: 20
+        period: 1s
+        burst: 60
+        sourceCriterion:
+          requestHeaderName: Cf-Connecting-Ip
+
+    # Formulare sind klein; Unterschriften als PNG max. ~0,5 MB
+    groesse:
+      buffering:
+        maxRequestBodyBytes: 2000000

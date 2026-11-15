@@ -1,0 +1,8 @@
+[Unit]
+Description=VIBEZ Nachweise – monatlicher Wiederherstellungstest
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vibez/host/restore.sh latest --test
