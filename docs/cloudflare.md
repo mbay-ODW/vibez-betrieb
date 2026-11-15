@@ -121,6 +121,19 @@ Wartungsprotokoll vermerken. Uptime Kuma prüft von Murats Server in Deutschland
 Dazu kommen die Bremse in der App (8 Fehlversuche je Benutzer/IP in 10 Minuten) und die Ratenbegrenzung in Traefik
 (20/s je IP, Burst 60).
 
+## Absicherung von Konto und Domain
+
+- **Benachrichtigungen** (Cloudflare → Notifications): Tunnel-Status („Tunnel Health Alert“) und Änderungen am SSL/TLS
+  bzw. an Custom Hostnames. Ein unerwarteter **zweiter Connector** am Tunnel deutet auf gestohlene Zugangsdaten hin:
+  dann sofort Tunnel neu erzeugen.
+- **Hilfsdomain** `vibez-edge.de`: automatische Verlängerung und Domain-Sperre beim Registrar (All-Inkl). Läuft sie aus,
+  könnte jemand anderes sie registrieren und `nachweise.vibez-jugendhilfe.de` übernehmen (siehe Sicherheitsanalyse C6).
+- **CAA** bei All-Inkl für `vibez-jugendhilfe.de`: nur die Zertifizierungsstellen erlauben, die Cloudflare für Custom
+  Hostnames nutzt, plus die der bestehenden Website. Die aktuelle Liste steht in der Cloudflare-Doku („CAA records“ für
+  SSL for SaaS) und muss vor dem Setzen geprüft werden, sonst schlägt die Zertifikatsausstellung fehl.
+- **Zertifikatstransparenz**: kostenlose Überwachung (z. B. Cert Spotter) für `vibez-jugendhilfe.de` mit Mail an Murat.
+  So fällt ein fremd ausgestelltes Zertifikat für die App-Adresse auf.
+
 ## Was Cloudflare sieht und speichert
 
 - Cloudflare entschlüsselt den Datenverkehr am Rand seines Netzes. Damit liegen **Inhalte** (z. B. Termintexte,

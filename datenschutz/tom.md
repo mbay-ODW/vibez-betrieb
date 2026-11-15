@@ -10,10 +10,11 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 | **Zugang Server:** keine offenen Ports; SSH nur über Tailscale, nur mit Schlüssel, kein root-Login; Notzugang über die Hetzner-Konsole mit Passwort im Passwortmanager von VIBEZ | ✅ |
 | **Zugang App:** persönliche Konten, scrypt-Hashes, Anmeldebremse (App, Cloudflare, Traefik), Geo-Block EU/CH, Sitzung max. 12 h, sofortige Sperre beim Deaktivieren | ✅ |
 | Zwei-Faktor-Anmeldung (Verwaltung Pflicht) | ⏳ M1 |
-| Passwortregeln 12 Zeichen + Sperrliste, Startpasswort ändern | ⏳ M2 |
-| Abmeldung bei Inaktivität (2 h) | ⏳ M3 |
+| Passwortregeln 12 Zeichen + Sperrliste + nicht der eigene Name | ✅ |
+| Wechsel des Startpassworts erzwingen | ⏳ M2 |
+| Abmeldung bei Inaktivität (2 h); Passwortwechsel beendet alle Sitzungen; „überall abmelden“ | ✅ |
 | **Zugriff:** Rollen Pädagog:in / Verwaltung; Pädagog:innen standardmäßig nur eigene Klient:innen; serverseitige Prüfung in jeder Route | ✅ |
-| Protokollierung der Vertretungsansicht | ⏳ M4 |
+| Protokollierung der Vertretungsansicht und fehlgeschlagener Anmeldungen | ✅ |
 | **Datenbank:** Atlas mit IP-Zugriffsliste (nur Server-IP), TLS, Benutzer je Zweck (App: readWrite `vibez`; Backup: `backup`); Admin-Rechte nur befristet | ✅ |
 | **Verschlüsselung:** TLS 1.2+ zwischen Browser und Cloudflare; Tunnel zwischen Cloudflare und Server; TLS zur Datenbank; Verschlüsselung ruhender Daten in Atlas; Backups mit restic (AES-256) verschlüsselt, bevor sie den Server verlassen | ✅ |
 | Eigener Schlüssel für Atlas (Customer Key Management) | ➕ |
@@ -28,7 +29,9 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 | Maßnahme | Status |
 |---|---|
 | Änderungsprotokoll aller fachlichen Änderungen mit alten/neuen Werten, Person, Zeit | ✅ |
-| CSRF-Schutz, Maskierung aller Ausgaben, parametrisierte Datenbankabfragen, keine Uploads | ✅ |
+| CSRF-Schutz, Maskierung aller Ausgaben, parametrisierte Datenbankabfragen, keine Uploads; CSV-Exporte gegen Formel-Injektion; Größenlimit 2 MB; nur bekannte Hostnamen | ✅ |
+| Abhängigkeiten ohne bekannte Lücken (`pip-audit` in der CI, Dependabot); veröffentlichte Versionen unveränderlich, Echtbetrieb mit Digest | ✅ |
+| Kopierte Unterschriftsbilder werden abgelehnt | ✅ |
 | Rechnungen als unveränderlicher Schnappschuss; Storno statt Löschen; fortlaufende Nummern | ✅ |
 | Plausibilitätsprüfungen vor dem Abschicken (Unterschrift, Bewilligung, Stundengrenzen); Vier-Augen-Prüfung durch die Verwaltung | ✅ |
 | Unterschriften werden beim Speichern dekodiert, geprüft und neu kodiert | ✅ |

@@ -66,6 +66,8 @@ services:
       VN_ADMIN_PASSWORD: ${VN_ADMIN_PASSWORD}
       VN_DEMO: "0"
       VN_SECURE_COOKIE: "1"
+      VN_HOSTS: ${VN_HOST}          # nur dieser Hostname wird angenommen
+      VN_IDLE_MINUTES: "120"        # Abmeldung nach 2 Stunden Inaktivität
       TZ: Europe/Berlin
     networks: [web, atlas]
     read_only: true

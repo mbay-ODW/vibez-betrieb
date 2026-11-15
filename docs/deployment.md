@@ -25,6 +25,10 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 | Cloudflare | VIBEZ | DPA aus den Self-Serve-Bedingungen dokumentieren | Mitglied „Administrator“, 2FA |
 | All-Inkl (Domain, DNS) | VIBEZ (bestehend) | – (keine Klientendaten) | nur DNS-Einträge, auf Zuruf |
 | Tailscale | Murat | – (nur Verwaltungszugang, keine Inhalte) | – |
+
+**Für alle Konten gilt: 2FA mit Passkey oder Hardwareschlüssel** (keine SMS), eigene Logins je Person, Wiederherstellungscodes
+im Passwortmanager von VIBEZ. Bei GitHub zusätzlich: Branch-Schutz auf `main` (Änderungen nur über Pull Request mit grüner
+CI). Begründung: [Sicherheitsanalyse, Abschnitt D](sicherheitsanalyse.md#d-konten-und-identitäten).
 | GitHub `mbay-ODW` | Murat | – (Code und Image, keine Klientendaten) | – |
 | Passwortmanager | VIBEZ | – | Einträge: restic-Passwort, Server-Konsolenpasswort, Atlas-Benutzer |
 
@@ -54,9 +58,17 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    Das Skript aktualisiert das System, aktiviert automatische Sicherheitsupdates, legt das Admin-Konto an (nur
    Schlüssel), sperrt root- und Passwort-Login, installiert Docker und Tailscale und aktiviert die Host-Firewall, sobald
    Tailscale verbunden ist.
-4. Prüfen: `ssh murat@vibez-prod` (über Tailscale) funktioniert. **Dann** die Firewall-Regel aus 2.2 löschen und testen,
+4. **Tailscale-ACL** setzen, sodass nur Murats Admin-Geräte den Server erreichen:
+
+   ```json
+   "tagOwners": { "tag:vibez-prod": ["autogroup:admin"] },
+   "grants":    [ { "src": ["murat@…"], "dst": ["tag:vibez-prod"], "ip": ["tcp:22"] } ]
+   ```
+
+   Server mit `sudo tailscale up --advertise-tags=tag:vibez-prod` neu anmelden. Andere Geräte im Tailnet haben dann keinen Weg zum Server.
+5. Prüfen: `ssh murat@vibez-prod` (über Tailscale) funktioniert. **Dann** die Firewall-Regel aus 2.2 löschen und testen,
    dass `ssh murat@<öffentliche-ip>` scheitert.
-5. Ein **Konsolenpasswort** für `murat` setzen (`sudo passwd murat`) und im Passwortmanager von VIBEZ ablegen. Es wird nur
+6. Ein **Konsolenpasswort** für `murat` setzen (`sudo passwd murat`) und im Passwortmanager von VIBEZ ablegen. Es wird nur
    für die Hetzner-Webkonsole im Notfall gebraucht, SSH nimmt weiterhin keine Passwörter an.
 
 ## 3. MongoDB Atlas
@@ -112,7 +124,9 @@ sudo ./deploy.sh
 ## 6. Backup einrichten
 
 1. Hetzner **Storage Box** bestellen, Standort möglichst ein anderes Rechenzentrum als der Server. In der
-   Storage-Box-Verwaltung SSH-Zugang aktivieren.
+   Storage-Box-Verwaltung SSH-Zugang aktivieren und **automatische Snapshots** einschalten (z. B. täglich, 14 Stück).
+   Snapshots lassen sich nur in der Hetzner-Konsole löschen, nicht über SFTP. So übersteht die Sicherung auch einen
+   kompromittierten Server.
 2. SSH-Schlüssel für root auf dem Server erzeugen und hinterlegen:
 
    ```bash
@@ -161,6 +175,11 @@ Technik (Murat):
 - [ ] Atlas Cloud Backup: erster Snapshot vorhanden
 - [ ] restic-Passwort und Konsolenpasswort liegen im Passwortmanager von VIBEZ (Gegencheck durch Tobias)
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
+- [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen
+- [ ] Storage-Box-Snapshots aktiv; Tailscale-ACL aktiv (anderes Tailnet-Gerät erreicht Port 22 nicht)
+- [ ] Hilfsdomain: Auto-Verlängerung und Sperre aktiv; CAA-Eintrag gesetzt; Zertifikats-Monitoring eingerichtet
+- [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, Änderungen an Custom Hostnames
+- [ ] 2FA mit Passkey in Cloudflare, Atlas, Hetzner, GitHub, All-Inkl; App-Verwaltung mit 2FA (sobald umgesetzt)
 
 Organisation (VIBEZ):
 

@@ -26,6 +26,7 @@ flowchart LR
 | [Deployment](docs/deployment.md) | Schritt für Schritt vom leeren Konto bis zur Abnahme |
 | [Cloudflare](docs/cloudflare.md) | Konto, Hilfszone, Tunnel, Custom Hostname, WAF-Regeln, Einstellungen |
 | [Betriebshandbuch](docs/betriebshandbuch.md) | Update, Rollback, Wartung, Wiederherstellung, Störungen, Datenpannen, Übergabe |
+| [Sicherheitsanalyse](docs/sicherheitsanalyse.md) | Angriffsvektoren, Befunde, Maßnahmen nach Priorität |
 | [Datenschutz-Folgenabschätzung](datenschutz/dsfa.md) | Art. 35 DSGVO – Entwurf zur Prüfung und Freigabe |
 | [TOM](datenschutz/tom.md) | Technische und organisatorische Maßnahmen |
 | [Verzeichnis-Eintrag](datenschutz/vvt.md) | Art. 30 DSGVO |

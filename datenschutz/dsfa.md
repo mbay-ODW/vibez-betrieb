@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.9 – **Entwurf** vom 15.11.2026 |
+| **Version / Stand** | 0.10 – **Entwurf** vom 15.11.2026 (Stand nach Sicherheitsprüfung, App 0.2.5) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -252,13 +252,13 @@ Status der Maßnahmen: ✅ umgesetzt · ⏳ vor dem Echtbetrieb umzusetzen (Absc
 Gestohlene, erratene oder wiederverwendete Passwörter, Phishing.
 
 - ✅ Eigene Konten für jede Person, keine Sammelkonten; Rollen Pädagog:in / Verwaltung
-- ✅ Passwörter nur als scrypt-Hash; Mindestlänge 8 Zeichen
-- ✅ Anmeldebremse dreifach: App (8 Fehlversuche je Benutzer/IP in 10 Minuten), Cloudflare (5 Anmeldeversuche je IP in 10 s), Traefik (Rate je IP)
+- ✅ Passwörter nur als scrypt-Hash
+- ✅ Anmeldebremse dreifach: App (10 Fehlversuche je Konto, 30 je IP in 10 Minuten; IP von Cloudflare, nicht vom Client fälschbar), Cloudflare (5 Anmeldeversuche je IP in 10 s), Traefik (Rate je IP); fehlgeschlagene Anmeldungen protokolliert
 - ✅ Zugriff nur aus der EU und der Schweiz (Cloudflare-Geo-Block); bekannte Bots und Scanner blockiert
 - ✅ Sitzungs-Cookie `HttpOnly`, `Secure`, `SameSite=Lax`, signiert; CSRF-Schutz bei allen Formularen
-- ✅ Deaktivierte Konten verlieren sofort jede Sitzung
+- ✅ Deaktivierte Konten verlieren sofort jede Sitzung; Passwortwechsel/-reset beendet alle Sitzungen; „auf allen Geräten abmelden“
 - ⏳ **M1 Zwei-Faktor-Anmeldung (TOTP)**, Pflicht für die Verwaltungsrolle, empfohlen für alle
-- ⏳ **M2 Passwortregeln**: Mindestlänge 12, Abgleich mit Listen häufiger Passwörter, Startpasswort muss geändert werden
+- ✅ **M2 Passwortregeln**: Mindestlänge 12, Sperrliste häufiger Passwörter, nicht der eigene Name (seit 0.2.5); ⏳ Wechsel des Startpassworts erzwingen
 - ✅ Organisatorisch: Startpasswörter persönlich übergeben (Betriebshandbuch)
 
 *Restrisiko: gering (mit M1/M2)*
@@ -268,7 +268,7 @@ Gestohlene, erratene oder wiederverwendete Passwörter, Phishing.
 
 - ✅ Keine Daten auf dem Gerät gespeichert: keine App-Installation mit Datenhaltung, `Cache-Control: no-store`
 - ✅ Sitzung läuft nach spätestens 12 Stunden ab; sofortige Sperre durch Deaktivieren des Kontos
-- ⏳ **M3 Inaktivitäts-Abmeldung** (z. B. nach 2 Stunden ohne Aktivität)
+- ✅ **M3 Inaktivitäts-Abmeldung** nach 2 Stunden (seit 0.2.5)
 - ⏳ **O1 Geräteregeln** für Pädagog:innen: Bildschirmsperre mit PIN/Biometrie, aktuelles Betriebssystem, keine gemeinsam genutzten Geräte ohne Abmelden, Verlust **sofort** der Verwaltung melden
 
 *Restrisiko: gering*
@@ -280,7 +280,7 @@ Für Vertretungen können Pädagog:innen die Klient:innen jeder Kollegin und jed
 
 - ✅ Standardansicht nur eigene Klient:innen; Vertretung muss bewusst gewählt werden und wird deutlich angezeigt
 - ✅ Alle Änderungen protokolliert (wer, wann, was, alte/neue Werte)
-- ⏳ **M4 Protokollierung der Vertretungsansicht** (auch reines Lesen fremder Klient:innen) und monatliche Stichprobe durch die Verwaltung
+- ✅ **M4 Protokollierung der Vertretungsansicht** (auch reines Lesen fremder Klient:innen, seit 0.2.5); ⏳ monatliche Stichprobe durch die Verwaltung
 - ➕ Alternativ/zusätzlich: Vertretung nur nach Freigabe durch die Verwaltung bzw. befristet
 - ✅ Organisatorisch: Verpflichtung auf Vertraulichkeit / Sozialgeheimnis und § 203 StGB (bestehend bei VIBEZ **[VIBEZ: bestätigen]**)
 
@@ -399,7 +399,8 @@ Falsche Stunden führen zu falschen Rechnungen. Ein Nachweis beim falschen Jugen
 Die hinterlegte Unterschrift der Pädagog:in wird automatisch auf die Protokolle gedruckt. Unterschriften der Klient:innen
 liegen als Bild vor.
 
-- ✅ Unterschriften werden nur in den PDFs des jeweiligen Nachweises verwendet, sind nicht separat abrufbar und werden beim Speichern geprüft und neu kodiert
+- ✅ Unterschriften werden nur in den PDFs des jeweiligen Nachweises verwendet und beim Speichern geprüft (nur PNG, Größenlimit) und neu kodiert
+- ✅ Ein bereits gespeichertes Unterschriftsbild wird für einen weiteren Termin abgelehnt und protokolliert (seit 0.2.5)
 - ✅ Klient:innen-Unterschrift je Termin bzw. Monat, mit Zeitstempel, nicht übertragbar auf andere Termine
 - ✅ Jede Unterschrift und Änderung ist protokolliert
 
@@ -410,9 +411,10 @@ liegen als Bild vor.
 | Nr. | Maßnahme | Verantwortlich | Bis |
 |---|---|---|---|
 | M1 | Zwei-Faktor-Anmeldung (TOTP), Pflicht für Verwaltung | IT (App) | vor Echtbetrieb |
-| M2 | Passwortregeln (12 Zeichen, häufige Passwörter sperren, Startpasswort ändern) | IT (App) | vor Echtbetrieb |
-| M3 | Abmeldung bei Inaktivität (2 h) | IT (App) | vor Echtbetrieb |
-| M4 | Protokollierung der Vertretungsansicht + monatliche Stichprobe | IT (App) / Verwaltung | vor Echtbetrieb |
+| M2 | Passwortregeln ✅; Wechsel des Startpassworts erzwingen ⏳ | IT (App) | vor Echtbetrieb |
+| M3 | Abmeldung bei Inaktivität (2 h) ✅ | IT (App) | erledigt (0.2.5) |
+| M4 | Protokollierung der Vertretungsansicht ✅ + monatliche Stichprobe ⏳ | IT (App) / Verwaltung | vor Echtbetrieb |
+| S1 | Maßnahmen aus der [Sicherheitsanalyse](../docs/sicherheitsanalyse.md#nächste-schritte-nach-priorität) (2FA aller Konten, Hilfsdomain, Snapshots, Tailscale-ACL) | IT / VIBEZ | vor Echtbetrieb |
 | M5 | Löschkonzept beschlossen; Löschfunktion in der App | VIBEZ / IT | Konzept vor Echtbetrieb, Funktion vor Ablauf der ersten Frist |
 | M6 | AV-Verträge: Hetzner, MongoDB, Cloudflare, IT-Dienstleister (inkl. § 203 StGB); DPF-Status prüfen | VIBEZ | vor Echtbetrieb |
 | M7 | Auskunftsexport je Klient:in | IT (App) | innerhalb von 6 Monaten |
