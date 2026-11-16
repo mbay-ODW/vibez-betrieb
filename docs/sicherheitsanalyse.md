@@ -105,8 +105,8 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 | C3 | Diebstahl der Tunnel-Zugangsdaten | Mit `credentials.json` kann jemand einen **zweiten Connector** betreiben und einen Teil des Datenverkehrs empfangen (Mitlesen) | 🟠 | 📄 Datei nur root (600); ⏳ Cloudflare-Benachrichtigung bei Tunnel-Änderungen/zusätzlichen Connectoren; bei Verdacht Tunnel neu erzeugen (Betriebshandbuch) |
 | C4 | Backups löschen oder verschlüsseln (Ransomware) | Wer root auf dem Server hat, kann über SFTP auch die restic-Daten auf der Storage Box löschen | 🟠 | 📄 Atlas-Backups lassen sich mit den Datenbankbenutzern des Servers nicht löschen; ⏳ **automatische Snapshots der Storage Box** einschalten (nur in der Hetzner-Konsole verwaltbar) |
 | C5 | Tailscale als Seiteneingang | Jedes Gerät in Murats Tailnet erreicht standardmäßig den Server (Schlüssel nötig, aber größere Angriffsfläche) | 🟠 | ⏳ Tailscale-ACL: nur Murats Admin-Geräte → `tag:vibez-prod:22`; Tailnet Lock erwägen |
-| C6 | Übernahme der Hilfsdomain | Läuft `vibez-edge.de` aus und registriert sie jemand anders, zeigt `nachweise.vibez-jugendhilfe.de` (CNAME) auf dessen Server. Der Angreifer könnte dann ein gültiges Zertifikat beantragen und eine echt wirkende Login-Seite betreiben. | 🔴 | ⏳ Auto-Verlängerung + Registrar-Sperre, Ablauf im Monitoring; CNAME bei Abbau sofort entfernen |
-| C7 | Manipulation der DNS bei All-Inkl | Wer das KAS-Konto übernimmt, kann `nachweise` umleiten (Phishing, Zertifikat per DNS) | 🔴 | ⏳ 2FA im All-Inkl-Konto; **CAA-Eintrag** (nur die von Cloudflare genutzten CAs); Überwachung der Zertifikatstransparenz-Logs für `vibez-jugendhilfe.de` (z. B. Cert Spotter, kostenlos) |
+| C6 | Fehler beim DNS-Umzug | Fehlen beim Umzug der DNS zu Cloudflare Mail-Einträge (MX, SPF, DKIM), kommen E-Mails nicht an oder landen im Spam; aktives DNSSEC würde die Domain unerreichbar machen | 🟠 | ⏳ Bestand vorher sichern, Abgleich Eintrag für Eintrag, DNSSEC vorher aus, nach dem Umzug Senden und Empfangen testen; Rückweg: Nameserver zurück auf All-Inkl ([cloudflare.md](cloudflare.md#domain-zu-cloudflare-umziehen)) |
+| C7 | Übernahme von Cloudflare- oder All-Inkl-Konto | Wer das Cloudflare-Konto (DNS der ganzen Domain) oder das All-Inkl-Konto (Nameserver) übernimmt, kann App, Website **und E-Mail** umleiten (Phishing, Zertifikat per DNS) | 🔴 | ⏳ 2FA mit Passkey in beiden Konten; Cloudflare-Benachrichtigung bei DNS-Änderungen; DNSSEC; **CAA-Eintrag**; Überwachung der Zertifikatstransparenz-Logs für `vibez-jugendhilfe.de` (z. B. Cert Spotter, kostenlos) |
 | C8 | Atlas über das Internet | Atlas lässt nur die Server-IP zu; Passwort-Authentifizierung + TLS | 🟡 | 📄; ⏳ in der Atlas-Organisation „IP-Zugriffsliste für die Admin-API verlangen“ aktivieren, API-Keys mit eigener Zugriffsliste |
 | C9 | Geheimnisse auf dem Server | `.env` enthält Atlas-Passwort, Schlüssel und das restic-Passwort | 🟡 | 📄 Datei 600 root; Rechte der Atlas-Benutzer minimal; nach Kompromittierung alle rotieren (Betriebshandbuch) |
 | C10 | Protokolle mit IP-Adressen | Traefik 14 Tage, Cloudflare je Tarif | 🟡 | 📄 |
@@ -158,7 +158,7 @@ Die Demo enthält nur erfundene Daten. Trotzdem:
 
 1. ✅ **Zwei-Faktor-Anmeldung** in der App (A7) – erledigt in 0.2.6
 2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, netcup, Hetzner, GitHub und All-Inkl (D) und Branch-Schutz auf `main` (B2)
-3. ⏳ **Hilfsdomain absichern**: Auto-Verlängerung, Sperre, CAA, Zertifikats-Monitoring (C6, C7)
+3. ⏳ **Domain absichern**: sauberer DNS-Umzug mit Mail-Test, DNSSEC, CAA, Zertifikats-Monitoring, DNS-Änderungs-Alarm (C6, C7)
 4. ⏳ **Storage-Box-Snapshots** (C4) und **Tailscale-ACL** (C5)
 5. ⏳ Demo-Geheimnisse neu setzen (E1)
 6. ⏳ GitHub Actions per SHA pinnen (B3); ✅ `/logout` als POST (A16), Erstpasswort-Wechsel erzwungen (F4)

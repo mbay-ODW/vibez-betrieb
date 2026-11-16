@@ -10,7 +10,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 - [Weg einer Anfrage](#weg-einer-anfrage)
 - [Komponenten](#komponenten)
 - [Netze und Erreichbarkeit](#netze-und-erreichbarkeit)
-- [Domain und DNS: Cloudflare for SaaS](#domain-und-dns-cloudflare-for-saas)
+- [Domain und DNS](#domain-und-dns)
 - [Daten, Backup und Wiederherstellung](#daten-backup-und-wiederherstellung)
 - [Verwaltungszugang](#verwaltungszugang)
 - [Überwachung](#überwachung)
@@ -23,8 +23,8 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 |---|---|---|
 | Server | Eigener VPS bei **netcup** (VPS Lite 1 G12.5s), Rechenzentrum **Nürnberg**, **Vertragspartner VIBEZ** | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001, VIBEZ bleibt Herr der Daten |
 | Betrieb | Murat Bayram als IT-Dienstleister (Auftragsverarbeiter, Verschwiegenheit nach § 203 StGB) | Betreuung wie bisher, aber auf VIBEZ-eigener Infrastruktur |
-| Adresse | `nachweise.vibez-jugendhilfe.de` (Annahme, Name noch bestätigen) | Eigene Domain von VIBEZ; DNS bleibt bei **All-Inkl** |
-| Schutz vor dem Server | **Cloudflare** (Free) als Proxy mit WAF über **Cloudflare for SaaS** | Geo-Block, Schutz vor Angriffen und Scannern, Server ohne offene Ports |
+| Adresse | `nachweise.vibez-jugendhilfe.de` (Name noch bestätigen) | Eigene Domain von VIBEZ; Registrierung, Website und E-Mail bleiben bei **All-Inkl**, die **DNS-Verwaltung zieht zu Cloudflare** |
+| Schutz vor dem Server | **Cloudflare** (Free) als Proxy mit WAF, nur für `nachweise` | Geo-Block, Schutz vor Angriffen und Scannern, Server ohne offene Ports |
 | Anbindung Server | **Cloudflare Tunnel** (`cloudflared`) | Keine eingehenden Ports, Server-IP bleibt verborgen |
 | Reverse Proxy | **Traefik** v3 | Routing, Ratenbremse je echter IP, HSTS, Zugriffsprotokoll |
 | Datenbank | **MongoDB Atlas**, Region **AWS Frankfurt (eu-central-1)**, Projekt nur für VIBEZ | Wie bei der DRK-Klientendokumentation: verschlüsselt gespeichert, repliziert, verwaltete Backups; Zugriff nur von der IP des VPS (per Atlas-API gepflegt) |
@@ -40,11 +40,11 @@ flowchart LR
       H["Handy Pädagog:in"]
       P["PC Verwaltung"]
     end
-    subgraph AI["All-Inkl (DNS von vibez-jugendhilfe.de)"]
-      D["CNAME nachweise → origin.vibez-edge.de<br/>+ 2 TXT zur Prüfung"]
+    subgraph AI["All-Inkl (Registrar, Website, E-Mail)"]
+      D["Nameserver → Cloudflare"]
     end
     subgraph CF["Cloudflare-Konto VIBEZ (Free)"]
-      Z["Hilfszone vibez-edge.de<br/>Cloudflare for SaaS"]
+      Z["Zone vibez-jugendhilfe.de<br/>nachweise: proxied, Rest: DNS only"]
       W["WAF: Geo-Block, Scanner, Ratenlimit<br/>TLS-Zertifikat für nachweise.…"]
       TU["Tunnel vibez-prod"]
     end
@@ -62,7 +62,7 @@ flowchart LR
     end
     ADM["Murat (Admin)"] -. "Tailscale SSH" .-> VPS
     H & P -- "HTTPS" --> W
-    D -. "Namensauflösung" .- H
+    D -. "delegiert" .-> Z
     W --> Z --> TU
     TU <== "ausgehend aufgebaut" ==> CD
     CD --> TR --> APP -- "TLS, Benutzer vibez_app" --> DB
@@ -72,8 +72,8 @@ flowchart LR
 
 ## Weg einer Anfrage
 
-1. Das Handy fragt `nachweise.vibez-jugendhilfe.de` an. All-Inkl antwortet mit dem CNAME auf `origin.vibez-edge.de`, also auf
-   Cloudflare.
+1. Das Handy fragt `nachweise.vibez-jugendhilfe.de` an. Die Nameserver von Cloudflare antworten mit einer
+   Cloudflare-Adresse (proxied Eintrag).
 2. Cloudflare beendet TLS mit einem eigenen Zertifikat für `nachweise.vibez-jugendhilfe.de` und prüft die Anfrage (WAF,
    Geo-Block EU/CH, Ratenlimit, Managed Rules).
 3. Cloudflare schickt die Anfrage durch den **Tunnel** zu `cloudflared` auf dem Server. Diese Verbindung hat `cloudflared`
@@ -111,33 +111,30 @@ Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](.
 | Admin → Server | SSH nur über Tailscale, nur Schlüssel | `ufw allow in on tailscale0 port 22`, `PasswordAuthentication no`, `PermitRootLogin no` |
 | Server → Internet | ausgehend (Updates, Tunnel, Backup, Image-Download) | – |
 
-## Domain und DNS: Cloudflare for SaaS
+## Domain und DNS
 
-Die DNS von `vibez-jugendhilfe.de` bleibt bei All-Inkl (Website und E-Mail laufen dort weiter). Damit Cloudflare trotzdem
-vor der App stehen kann, nutzen wir **Cloudflare for SaaS**: Cloudflare nimmt einen fremden Hostnamen („Custom Hostname“)
-an und routet ihn über eine eigene Zone.
+Cloudflare verwaltet die **DNS der ganzen Domain** `vibez-jugendhilfe.de` (Entscheidung 16.11.2026). Domain-Registrierung,
+Website und E-Mail bleiben bei All-Inkl. Bei All-Inkl zeigen nur die Nameserver auf Cloudflare, und alle bisherigen
+Einträge werden in Cloudflare 1:1 als **„DNS only“** übernommen. Damit laufen Website und E-Mail weiterhin direkt zu
+All-Inkl, ohne Cloudflare-Proxy.
 
 | Wo | Eintrag | Zweck |
 |---|---|---|
-| Cloudflare, Zone `vibez-edge.de` (Hilfsdomain, Beispielname) | `origin` CNAME → `<TUNNEL-ID>.cfargotunnel.com`, **proxied** | Fallback-Origin = Tunnel |
-| Cloudflare, Custom Hostnames | `nachweise.vibez-jugendhilfe.de`, Fallback-Origin `origin.vibez-edge.de` | nimmt den VIBEZ-Hostnamen an, stellt das Zertifikat aus |
-| All-Inkl, Zone `vibez-jugendhilfe.de` | `nachweise` CNAME → `origin.vibez-edge.de` | lenkt die Besucher zu Cloudflare |
-| All-Inkl | `_cf-custom-hostname.nachweise` TXT → (Wert von Cloudflare) | Nachweis, dass VIBEZ den Namen besitzt |
-| All-Inkl | `_acme-challenge.nachweise` TXT → (Wert von Cloudflare) | Validierung des TLS-Zertifikats (bzw. CNAME bei „Delegated DCV“) |
+| All-Inkl (Registrar) | Nameserver von `vibez-jugendhilfe.de` → die zwei Cloudflare-Nameserver | Cloudflare beantwortet die DNS |
+| Cloudflare, Zone `vibez-jugendhilfe.de` | alle bisherigen Einträge (Website, MX, SPF, DKIM, DMARC, Autodiscover …), **DNS only** | Website und E-Mail unverändert |
+| Cloudflare | `nachweise` CNAME → `<TUNNEL-ID>.cfargotunnel.com`, **proxied** (legt `cloudflared tunnel route dns` an) | App über Tunnel, WAF und TLS |
 
-Fakten aus der Cloudflare-Doku (geprüft 15.11.2026):
+Fakten (geprüft 15./16.11.2026):
 
-- Die Standard-Konfiguration von Cloudflare for SaaS (Custom Hostname → Fallback-Origin) ist **in allen Tarifen**
-  verfügbar, auch im Free-Tarif. Zum Aktivieren muss ein **Zahlungsmittel** im Konto hinterlegt werden.
-- Ein **Tunnel als Fallback-Origin** ist ein dokumentiertes Muster.
-- Für Custom Hostnames gelten die **WAF-Regeln der Zone im Rahmen ihres Tarifs**. „WAF for SaaS“ mit eigenen Regelsätzen
-  je Hostname gibt es erst im Enterprise-Tarif; das brauchen wir bei einem einzigen Hostnamen nicht.
+- Universal SSL stellt das Zertifikat für `nachweise.vibez-jugendhilfe.de` automatisch aus (Free).
+- WAF-Regeln, Ratenlimit und Zoneneinstellungen wirken nur auf proxied Einträge, also nur auf die App.
 - **Regional Services** (TLS-Terminierung nur in EU-Rechenzentren) sind ein Enterprise-Zusatz. Im Free-Tarif kann die
-  Entschlüsselung in jedem Cloudflare-Rechenzentrum stattfinden (in der Praxis das nächstgelegene, also für Nutzer:innen
-  in Hessen meist Frankfurt). Das ist in der [Datenschutz-Folgenabschätzung](../datenschutz/dsfa.md) bewertet.
+  Entschlüsselung in jedem Cloudflare-Rechenzentrum stattfinden (in der Praxis das nächstgelegene, für Hessen meist
+  Frankfurt). Bewertet in der [Datenschutz-Folgenabschätzung](../datenschutz/dsfa.md).
+- Wichtig beim Umzug: DNSSEC vorher ausschalten, alle Mail-Einträge übernehmen, danach Mailversand und -empfang testen.
 
-Warum eine eigene Hilfszone statt `bay-ram.de`: Das Cloudflare-Konto gehört dann VIBEZ, und Murats eigene Zone hat mit
-VIBEZ nichts zu tun. Kündigt VIBEZ die Betreuung, nimmt es Konten (Cloudflare, netcup, Hetzner, Atlas), Server und Domain einfach mit.
+Das Cloudflare-Konto gehört VIBEZ. Kündigt VIBEZ die Betreuung, nimmt es Konten (Cloudflare, netcup, Hetzner, Atlas),
+Server und Domain einfach mit.
 
 Details und Regeln: [cloudflare.md](cloudflare.md).
 
@@ -178,7 +175,7 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 |---|---|---|
 | `https://nachweise.vibez-jugendhilfe.de/health` alle 60 s (HTTP-Monitor) | Uptime Kuma (bestehend, bei Murat) | ntfy an Murat |
 | Backup-Heartbeat (Push-Monitor, 26 h) | Uptime Kuma | ntfy an Murat |
-| Zertifikat Custom Hostname | Cloudflare (automatische Verlängerung) + Uptime-Kuma-Zertifikatsprüfung | ntfy |
+| Zertifikat `nachweise` | Cloudflare (automatische Verlängerung) + Uptime-Kuma-Zertifikatsprüfung | ntfy |
 | Sicherheitsupdates Betriebssystem | `unattended-upgrades` mit Neustart 04:15 Uhr bei Bedarf | – |
 | Container-Updates | monatlich manuell (Betriebshandbuch) | – |
 
@@ -207,6 +204,5 @@ als Auftragsverarbeiter; dafür liegen Verschlüsselung ruhender Daten und Backu
 | netcup VPS Lite 1 G12.5s (2 vCore, 4 GB, 80 GB, Nürnberg) | 5,86 € / Monat inkl. MwSt. (Angebot 16.11.2026) | 6 Monate Mindestlaufzeit |
 | MongoDB Atlas (dediziert M10, Frankfurt) | mittlerer zweistelliger €-Betrag / Monat | Flex günstiger; aktuelles Preisblatt prüfen |
 | Hetzner Storage Box (kleinste Größe) | wenige € / Monat | zweite Sicherung |
-| Hilfsdomain `vibez-edge.de` o. ä. | ca. 1 € / Monat | bei All-Inkl registrieren, Nameserver auf Cloudflare |
-| Cloudflare Free + Cloudflare for SaaS | 0 € im üblichen Rahmen | Zahlungsmittel nötig; vor Aktivierung Preisblatt prüfen |
+| Cloudflare Free | 0 € | |
 | Tailscale (Personal/Starter) | 0 € | nur Admin-Zugang |

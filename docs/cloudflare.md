@@ -1,114 +1,112 @@
-# Cloudflare – Konto, Hilfszone, Tunnel, WAF
+# Cloudflare – Konto, Zone, Tunnel, WAF
 
 Cloudflare steht vor der App: Es beendet TLS für `nachweise.vibez-jugendhilfe.de`, filtert Angriffe und leitet über einen
-Tunnel zum Server, der keine offenen Ports hat. Die DNS von `vibez-jugendhilfe.de` bleibt bei All-Inkl; dafür nutzen wir
-**Cloudflare for SaaS** mit einer kleinen Hilfszone. Hintergrund: [architektur.md](architektur.md#domain-und-dns-cloudflare-for-saas).
+Tunnel zum Server, der keine offenen Ports hat. Dafür verwaltet Cloudflare die **DNS der ganzen Domain**
+`vibez-jugendhilfe.de` (Entscheidung Murat, 16.11.2026). Domain, Website und E-Mail bleiben bei All-Inkl. Nur die
+Nameserver zeigen auf Cloudflare, und alle bisherigen DNS-Einträge werden dort 1:1 übernommen.
 
 ## Inhalt
 
 - [Konto und Zugriffe](#konto-und-zugriffe)
-- [Hilfszone](#hilfszone)
-- [Tunnel](#tunnel)
-- [Cloudflare for SaaS](#cloudflare-for-saas)
+- [Domain zu Cloudflare umziehen](#domain-zu-cloudflare-umziehen)
+- [Tunnel und App-Adresse](#tunnel-und-app-adresse)
 - [Einstellungen der Zone](#einstellungen-der-zone)
 - [WAF-Regeln](#waf-regeln)
 - [Ratenbegrenzung](#ratenbegrenzung)
+- [Absicherung von Konto und Domain](#absicherung-von-konto-und-domain)
 - [Was Cloudflare sieht und speichert](#was-cloudflare-sieht-und-speichert)
 
 ## Konto und Zugriffe
 
-- **Eigenes Cloudflare-Konto für VIBEZ** (Free). Inhaber ist eine VIBEZ-Adresse, z. B. `it@vibez-jugendhilfe.de`, nicht
-  Murats Konto.
-- Murat wird als **Mitglied** eingeladen (Rolle „Administrator“), 2FA für alle Mitglieder Pflicht.
-- API-Tokens nur mit dem Nötigsten, z. B. für DNS der Hilfszone; **kein Global API Key**.
-- Zahlungsmittel hinterlegen (nötig zum Aktivieren von Cloudflare for SaaS, siehe unten).
-- Data Processing Addendum (DPA) von Cloudflare ist Teil der Self-Serve-Bedingungen. In der
-  [Dienstleister-Übersicht](../datenschutz/dienstleister.md) ablegen.
+- **Eigenes Cloudflare-Konto für VIBEZ** (Free). Inhaber ist eine VIBEZ-Adresse, nicht Murats Konto.
+- 2FA mit **Passkey oder Hardwareschlüssel** für alle Mitglieder. Wer dieses Konto übernimmt, kann jetzt auch Website
+  und E-Mail umleiten.
+- Murat wird als **Mitglied** eingeladen (Rolle „Administrator“).
+- API-Tokens nur mit dem Nötigsten und mit Ablaufdatum; **kein Global API Key**.
+- Das Data Processing Addendum (DPA) von Cloudflare ist Teil der Self-Serve-Bedingungen, Ablage siehe
+  [Dienstleister](../datenschutz/dienstleister.md).
 
-## Hilfszone
+## Domain zu Cloudflare umziehen
 
-Eine kleine Zusatz-Domain, nur als technischer Ankerpunkt, z. B. `vibez-edge.de`. Der Name ist ein Beispiel und vor dem
-Kauf auf Verfügbarkeit prüfen.
+Ziel: Am Verhalten von Website und E-Mail ändert sich **nichts**. Nur der Ort, an dem die DNS-Einträge gepflegt werden,
+wandert zu Cloudflare.
 
-1. Domain bei All-Inkl registrieren (im bestehenden VIBEZ-Kundenkonto).
-2. In Cloudflare **Add a domain** → `vibez-edge.de` → Free-Plan.
-3. Bei All-Inkl die **Nameserver** dieser Hilfsdomain auf die beiden von Cloudflare genannten Nameserver umstellen.
-   Die Hauptdomain `vibez-jugendhilfe.de` bleibt unverändert bei All-Inkl.
-4. Warten, bis die Zone in Cloudflare „Active“ ist.
+1. **Bestand sichern.** In der All-Inkl-Verwaltung (KAS → DNS-Einstellungen für `vibez-jugendhilfe.de`) alle Einträge
+   abfotografieren oder exportieren. Typisch sind:
+   - `A` / `AAAA` für `@` und `www` (Website)
+   - `MX` (E-Mail-Server)
+   - `TXT` mit `v=spf1 …` (SPF)
+   - `TXT` unter `…._domainkey` (DKIM von All-Inkl)
+   - `TXT` unter `_dmarc` (falls vorhanden)
+   - `CNAME`/`SRV` für `autoconfig`, `autodiscover`, `_imaps._tcp`, `_submission._tcp` (Mail-Einrichtung)
+   - Bestätigungs-`TXT` anderer Dienste (z. B. Google, Microsoft, Apple)
+2. **DNSSEC** prüfen: Ist es bei All-Inkl aktiv, **vorher ausschalten**. Sonst ist die Domain nach dem Umstellen nicht
+   erreichbar. Nach dem Umzug kann DNSSEC in Cloudflare neu eingeschaltet werden; den DS-Eintrag setzt dann All-Inkl.
+3. **In Cloudflare:** *Add a domain* → `vibez-jugendhilfe.de` → Free-Plan. Cloudflare liest die vorhandenen Einträge ein.
+4. **Abgleichen.** Jeden Eintrag aus Schritt 1 in Cloudflare finden, fehlende ergänzen.
+   - **Alle bisherigen Einträge auf „DNS only“ (graue Wolke)** stellen, nicht „Proxied“. Website und E-Mail laufen dann
+     genau wie vorher direkt zu All-Inkl. Insbesondere `MX`, Mail-Hosts und `www` nie proxien.
+   - Für `nachweise` **keinen** Eintrag anlegen; den erzeugt der Tunnel (nächster Abschnitt).
+5. **Nameserver umstellen.** Im All-Inkl-Kundenbereich bei der Domain `vibez-jugendhilfe.de` die Nameserver auf die
+   beiden von Cloudflare angezeigten Nameserver ändern. Die Domain bleibt bei All-Inkl registriert; es ändert sich nur,
+   wer die DNS beantwortet.
+6. **Warten und prüfen.** Cloudflare meldet nach Minuten bis Stunden „Active“. Danach Website aufrufen und eine E-Mail
+   **senden und empfangen** (auch von einer externen Adresse an VIBEZ).
 
-## Tunnel
+Rückweg bei Problemen: Nameserver bei All-Inkl wieder auf die All-Inkl-Nameserver stellen. Die alten Einträge liegen dort
+noch.
+
+## Tunnel und App-Adresse
 
 Lokal verwalteter Tunnel. Die Konfiguration liegt im Repo ([`stack/cloudflared/config.yml`](../stack/cloudflared/config.yml)),
 die Zugangsdaten (`credentials.json`) nur auf dem Server.
 
 ```bash
-# auf dem Admin-Rechner oder dem Server (einmalig)
-cloudflared tunnel login                       # Browser: Zone vibez-edge.de auswählen
-cloudflared tunnel create vibez-prod           # erzeugt <TUNNEL-ID>.json
-cloudflared tunnel route dns vibez-prod origin.vibez-edge.de
+cloudflared tunnel login                     # Browser: Zone vibez-jugendhilfe.de auswählen
+cloudflared tunnel create vibez-prod         # erzeugt <TUNNEL-ID>.json
+cloudflared tunnel route dns vibez-prod nachweise.vibez-jugendhilfe.de
 ```
 
-- `<TUNNEL-ID>.json` als `/opt/vibez/stack/cloudflared/credentials.json` auf den Server kopieren (chmod 600). Danach
-  vom Admin-Rechner löschen.
-- `TUNNEL_ID` in `stack/cloudflared/config.yml` eintragen.
-- `cloudflared tunnel route dns` legt `origin.vibez-edge.de` als **proxied CNAME** auf `<TUNNEL-ID>.cfargotunnel.com` an.
-  Das ist die Fallback-Origin.
-- Die Datei `cert.pem` aus `tunnel login` wird nach der Einrichtung gelöscht. Sie wird nur zum Anlegen von Tunneln gebraucht.
-
-## Cloudflare for SaaS
-
-Zone `vibez-edge.de` → **SSL/TLS → Custom Hostnames**:
-
-1. **Enable** (Zahlungsmittel nötig).
-2. **Fallback Origin**: `origin.vibez-edge.de` → warten auf Status *Active*.
-3. **Add Custom Hostname**: `nachweise.vibez-jugendhilfe.de`
-   - Minimum TLS: **1.2**
-   - Zertifikats-Validierung: **TXT**
-   - kein Custom Origin (Fallback reicht)
-4. Cloudflare zeigt zwei Einträge an. Beide bei All-Inkl (KAS → DNS-Einstellungen `vibez-jugendhilfe.de`) anlegen:
-   - `_cf-custom-hostname.nachweise` **TXT** → Wert für die Hostname-Validierung
-   - `_acme-challenge.nachweise` **TXT** → Wert für die Zertifikats-Validierung
-5. Wenn beide *Active* sind: bei All-Inkl `nachweise` **CNAME** → `origin.vibez-edge.de` anlegen.
-6. Test: `https://nachweise.vibez-jugendhilfe.de/health` → `{"ok": true}`.
-
-Hinweis: Das Zertifikat erneuert Cloudflare automatisch. Der TXT-Eintrag `_acme-challenge` muss dafür bestehen bleiben,
-außer Cloudflare zeigt im Dashboard „Delegated DCV“ als Alternative an.
+- `route dns` legt `nachweise` als **proxied CNAME** auf `<TUNNEL-ID>.cfargotunnel.com` an. Das ist der einzige
+  proxied Eintrag der Zone.
+- Das Zertifikat für `nachweise.vibez-jugendhilfe.de` stellt Cloudflare automatisch aus (Universal SSL).
+- `<TUNNEL-ID>.json` wird zu `/opt/vibez/stack/cloudflared/credentials.json` (chmod 600). `cert.pem` aus `tunnel login`
+  wird nach dem Anlegen gelöscht.
 
 ## Einstellungen der Zone
 
 | Bereich | Einstellung | Wert | Grund |
 |---|---|---|---|
-| SSL/TLS | Encryption mode | Full (strict) | gilt nur für nicht getunnelte Ziele; schadet nicht |
+| SSL/TLS | Encryption mode | Full (strict) | gilt nur für proxied Einträge, also nur die App |
 | SSL/TLS → Edge Certificates | Always Use HTTPS | an | |
 | | Minimum TLS Version | 1.2 | |
 | | TLS 1.3 | an | |
-| | HSTS | aus (setzt Traefik) | doppelte Header vermeiden |
-| Security | Security Level | Medium | |
-| | Browser Integrity Check | an | |
-| | Bot Fight Mode | **aus** | keine JS-Challenges auf Diensthandys; Bots blockt Regel 4 |
+| | HSTS | aus (setzt Traefik nur für die App) | Website bei All-Inkl nicht beeinflussen |
+| Security | Browser Integrity Check | an | |
+| | Bot Fight Mode | **aus** | keine JS-Challenges auf Diensthandys; Bots blockt Regel 3 |
 | | Block AI Scrapers and Crawlers | an | |
 | | Managed Ruleset (Free) | an | |
-| Scrape Shield | Email Address Obfuscation | **aus** | würde Skripte einfügen → verletzt die CSP der App |
-| Speed | Rocket Loader | **aus** | dto. |
+| Scrape Shield | Email Address Obfuscation | **aus** | würde Skripte einfügen und damit die CSP der App verletzen |
+| Speed | Rocket Loader | **aus** | aus demselben Grund |
 | Analytics | Web Analytics (RUM) | **aus** | kein Tracking, kein eingefügtes Skript |
-| Caching → Cache Rules | Regel „Seiten nie cachen“ | Hostname = `nachweise.vibez-jugendhilfe.de` und Pfad beginnt **nicht** mit `/static/` → **Bypass cache** | Seiten mit Sozialdaten dürfen nie im CDN liegen (die App sendet zusätzlich `Cache-Control: no-store`) |
-| Network | WebSockets | egal | nicht genutzt |
+| Caching → Cache Rules | „App nie cachen“: Hostname = `nachweise.vibez-jugendhilfe.de` und Pfad beginnt **nicht** mit `/static/` → **Bypass cache** | | Seiten mit Sozialdaten dürfen nie im CDN liegen |
+
+Die Einstellungen wirken nur auf **proxied** Einträge. Website und E-Mail (DNS only) sind davon nicht betroffen.
 
 ## WAF-Regeln
 
-Zone `vibez-edge.de` → **Security → Security rules → Custom rules**. Für Custom Hostnames gelten die Regeln der Zone (laut
-Cloudflare-Doku „WAF rules with current zone plan“). Im Free-Tarif sind 5 Regeln möglich.
+**Security → Security rules → Custom rules** (Free: 5 Regeln). Alle Regeln sind auf die App-Adresse beschränkt.
 
 | Nr. | Name | Ausdruck | Aktion |
 |---|---|---|---|
-| 1 | Nur die App-Adresse | `(not http.host eq "nachweise.vibez-jugendhilfe.de")` | Block |
-| 2 | Nur EU und Schweiz | `(not ip.src.country in {"AT" "BE" "BG" "CH" "CY" "CZ" "DE" "DK" "EE" "ES" "FI" "FR" "GR" "HR" "HU" "IE" "IT" "LI" "LT" "LU" "LV" "MT" "NL" "PL" "PT" "RO" "SE" "SI" "SK"})` | Block |
-| 3 | Scanner-Pfade | `(http.request.uri.path contains "/." or http.request.uri.path contains ".php" or http.request.uri.path contains "wp-" or http.request.uri.path contains "xmlrpc" or http.request.uri.path contains "phpmyadmin" or http.request.uri.path contains "cgi-bin" or http.request.uri.path contains "/admin" or http.request.uri.path contains "/api/")` | Block |
-| 4 | Bekannte Bots | `(cf.client.bot)` | Block |
-| 5 | Nur übliche Methoden | `(not http.request.method in {"GET" "HEAD" "POST"})` | Block |
+| 1 | Nur EU und Schweiz | `(http.host eq "nachweise.vibez-jugendhilfe.de" and not ip.src.country in {"AT" "BE" "BG" "CH" "CY" "CZ" "DE" "DK" "EE" "ES" "FI" "FR" "GR" "HR" "HU" "IE" "IT" "LI" "LT" "LU" "LV" "MT" "NL" "PL" "PT" "RO" "SE" "SI" "SK"})` | Block |
+| 2 | Scanner-Pfade | `(http.host eq "nachweise.vibez-jugendhilfe.de" and (http.request.uri.path contains "/." or http.request.uri.path contains ".php" or http.request.uri.path contains "wp-" or http.request.uri.path contains "xmlrpc" or http.request.uri.path contains "phpmyadmin" or http.request.uri.path contains "cgi-bin" or http.request.uri.path contains "/admin" or http.request.uri.path contains "/api/"))` | Block |
+| 3 | Bekannte Bots | `(http.host eq "nachweise.vibez-jugendhilfe.de" and cf.client.bot)` | Block |
+| 4 | Nur übliche Methoden | `(http.host eq "nachweise.vibez-jugendhilfe.de" and not http.request.method in {"GET" "HEAD" "POST"})` | Block |
+| 5 | Unbekannte proxied Hosts | `(http.host ne "nachweise.vibez-jugendhilfe.de")` | Block |
 
-Ausnahmen bei Bedarf (z. B. Dienstreise ins Nicht-EU-Ausland): Land in Regel 2 **befristet** ergänzen und im
-Wartungsprotokoll vermerken. Uptime Kuma prüft von Murats Server in Deutschland aus und wird nicht geblockt.
+Regel 5 greift nur, falls versehentlich ein anderer Eintrag auf „Proxied“ gestellt wird. Website und Mail laufen als
+„DNS only“ ohnehin nicht über Cloudflare.
 
 ## Ratenbegrenzung
 
@@ -116,31 +114,27 @@ Wartungsprotokoll vermerken. Uptime Kuma prüft von Murats Server in Deutschland
 
 | Name | Ausdruck | Zählung | Grenze | Aktion |
 |---|---|---|---|---|
-| Anmeldung bremsen | `(http.request.uri.path eq "/login" and http.request.method eq "POST")` | je IP | 5 Anfragen / 10 s | Block für 10 s |
+| Anmeldung bremsen | `(http.host eq "nachweise.vibez-jugendhilfe.de" and http.request.uri.path in {"/login" "/login/code"} and http.request.method eq "POST")` | je IP | 5 Anfragen / 10 s | Block für 10 s |
 
-Dazu kommen die Bremse in der App (8 Fehlversuche je Benutzer/IP in 10 Minuten) und die Ratenbegrenzung in Traefik
-(20/s je IP, Burst 60).
+Dazu kommen die Bremsen in der App (je Konto und je IP) und in Traefik.
 
 ## Absicherung von Konto und Domain
 
-- **Benachrichtigungen** (Cloudflare → Notifications): Tunnel-Status („Tunnel Health Alert“) und Änderungen am SSL/TLS
-  bzw. an Custom Hostnames. Ein unerwarteter **zweiter Connector** am Tunnel deutet auf gestohlene Zugangsdaten hin:
-  dann sofort Tunnel neu erzeugen.
-- **Hilfsdomain** `vibez-edge.de`: automatische Verlängerung und Domain-Sperre beim Registrar (All-Inkl). Läuft sie aus,
-  könnte jemand anderes sie registrieren und `nachweise.vibez-jugendhilfe.de` übernehmen (siehe Sicherheitsanalyse C6).
-- **CAA** bei All-Inkl für `vibez-jugendhilfe.de`: nur die Zertifizierungsstellen erlauben, die Cloudflare für Custom
-  Hostnames nutzt, plus die der bestehenden Website. Die aktuelle Liste steht in der Cloudflare-Doku („CAA records“ für
-  SSL for SaaS) und muss vor dem Setzen geprüft werden, sonst schlägt die Zertifikatsausstellung fehl.
-- **Zertifikatstransparenz**: kostenlose Überwachung (z. B. Cert Spotter) für `vibez-jugendhilfe.de` mit Mail an Murat.
-  So fällt ein fremd ausgestelltes Zertifikat für die App-Adresse auf.
+- **Benachrichtigungen** (Cloudflare → Notifications): Tunnel-Status, DNS-Änderungen, neue Mitglieder. Ein unerwarteter
+  **zweiter Connector** am Tunnel deutet auf gestohlene Zugangsdaten hin: dann sofort einen neuen Tunnel erzeugen.
+- **All-Inkl-Konto** mit 2FA: Dort lassen sich die Nameserver zurückstellen und damit alles umleiten.
+- **DNSSEC** nach dem Umzug in Cloudflare aktivieren und den DS-Eintrag bei All-Inkl setzen lassen.
+- **CAA**: nur die Zertifizierungsstellen erlauben, die Cloudflare (Universal SSL) und die Website bei All-Inkl nutzen.
+  Cloudflare ergänzt seine CAs automatisch, sobald ein CAA-Eintrag existiert. Vor dem Setzen die aktuelle Doku prüfen.
+- **Zertifikatstransparenz**: kostenlose Überwachung (Cloudflare *Certificate Transparency Monitoring* oder Cert Spotter)
+  für `vibez-jugendhilfe.de`.
 
 ## Was Cloudflare sieht und speichert
 
-- Cloudflare entschlüsselt den Datenverkehr am Rand seines Netzes. Damit liegen **Inhalte** (z. B. Termintexte,
-  Unterschriften beim Absenden) dort **kurzzeitig im Arbeitsspeicher** vor. Die Cache-Regel oben verhindert, dass Seiten
-  gespeichert werden.
-- Im Free-Tarif gibt es keine Beschränkung der TLS-Terminierung auf EU-Rechenzentren (Regional Services sind ein
-  Enterprise-Zusatz). In der Praxis bedient das nächstgelegene Rechenzentrum, für Hessen meist Frankfurt.
-- Cloudflare speichert **Metadaten** (IP, Land, Pfad, Zeitpunkt, Regel-Treffer) in Security-Events und Analytics für
-  begrenzte Zeit.
-- Bewertung und Maßnahmen: [Datenschutz-Folgenabschätzung, Risiko R5](../datenschutz/dsfa.md).
+- Für die **App** entschlüsselt Cloudflare den Datenverkehr am Rand seines Netzes. Inhalte liegen dort kurzzeitig im
+  Arbeitsspeicher. Die Cache-Regel verhindert, dass Seiten gespeichert werden.
+- Im Free-Tarif ist die TLS-Terminierung nicht auf EU-Rechenzentren beschränkt (Regional Services: Enterprise). In der
+  Praxis bedient das nächstgelegene Rechenzentrum, für Hessen meist Frankfurt.
+- Für **Website und E-Mail** beantwortet Cloudflare nur DNS-Anfragen. Inhalte laufen weiter direkt zu All-Inkl.
+- Metadaten (IP, Land, Pfad, Zeitpunkt, Regel-Treffer) speichert Cloudflare für begrenzte Zeit in Security-Events.
+- Bewertung: [Datenschutz-Folgenabschätzung, R5](../datenschutz/dsfa.md).

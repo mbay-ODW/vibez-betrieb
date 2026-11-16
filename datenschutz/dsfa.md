@@ -161,7 +161,7 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 | netcup GmbH, Karlsruhe | Server (VPS) | Deutschland (Rechenzentrum Nürnberg) | technisch möglich (Betreiber der Hardware) |
 | Hetzner Online GmbH | Speicher für die zweite Sicherung (Storage Box) | Deutschland | nein – Daten sind vor der Übertragung verschlüsselt |
 | MongoDB, Inc. (mit AWS als Unterauftragnehmer) | Datenbank (Atlas) | USA / Speicherort AWS Frankfurt | gespeichert verschlüsselt; Betreiberzugriff technisch möglich, vertraglich ausgeschlossen |
-| Cloudflare, Inc. | Schutzschicht (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
+| Cloudflare, Inc. | DNS der Domain; Schutzschicht für die App (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
 | Murat Bayram | IT-Betreuung (Einrichtung, Updates, Backup, Störungen) | Deutschland | Administrativer Zugang; Datenbankzugriff nur bei Wartung, protokolliert |
 | All-Inkl (Neue Medien Münnich) | DNS der Domain | Deutschland | keine Klientendaten (nur DNS-Einträge) |
 | GitHub, Inc. | Quellcode und Container-Image | USA | keine Klientendaten |
@@ -416,7 +416,7 @@ liegen als Bild vor.
 | M2 | Passwortregeln ✅; Wechsel des Startpassworts erzwingen ✅ | IT (App) | erledigt (0.2.6) |
 | M3 | Abmeldung bei Inaktivität (2 h) ✅ | IT (App) | erledigt (0.2.5) |
 | M4 | Protokollierung der Vertretungsansicht ✅ + monatliche Stichprobe ⏳ | IT (App) / Verwaltung | vor Echtbetrieb |
-| S1 | Maßnahmen aus der [Sicherheitsanalyse](../docs/sicherheitsanalyse.md#nächste-schritte-nach-priorität) (2FA aller Konten, Hilfsdomain, Snapshots, Tailscale-ACL) | IT / VIBEZ | vor Echtbetrieb |
+| S1 | Maßnahmen aus der [Sicherheitsanalyse](../docs/sicherheitsanalyse.md#nächste-schritte-nach-priorität) (2FA aller Konten, Domain-Absicherung, Snapshots, Tailscale-ACL) | IT / VIBEZ | vor Echtbetrieb |
 | M5 | Löschkonzept beschlossen; Löschfunktion in der App | VIBEZ / IT | Konzept vor Echtbetrieb, Funktion vor Ablauf der ersten Frist |
 | M6 | AV-Verträge: netcup, Hetzner (Storage Box), MongoDB, Cloudflare, IT-Dienstleister (inkl. § 203 StGB); DPF-Status prüfen | VIBEZ | vor Echtbetrieb |
 | M7 | Auskunftsexport je Klient:in | IT (App) | innerhalb von 6 Monaten |

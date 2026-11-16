@@ -5,10 +5,7 @@ credentials-file: /etc/cloudflared/credentials.json
 no-autoupdate: true
 
 ingress:
-  # eigentliche Adresse der App (Custom Hostname über Cloudflare for SaaS)
+  # Adresse der App (proxied CNAME in der Zone vibez-jugendhilfe.de, angelegt mit `tunnel route dns`)
   - hostname: nachweise.vibez-jugendhilfe.de
-    service: http://traefik:80
-  # Fallback-Origin der Hilfszone (Cloudflare prüft diese Adresse)
-  - hostname: origin.vibez-edge.de
     service: http://traefik:80
   - service: http_status:404

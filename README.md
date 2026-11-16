@@ -12,7 +12,7 @@ Betrieb, Infrastruktur und Datenschutzunterlagen für den **Echtbetrieb** von
 ```mermaid
 flowchart LR
     U["Handy / PC"] -- HTTPS --> CF["Cloudflare<br/>WAF · TLS · Tunnel"]
-    DNS["All-Inkl DNS<br/>nachweise → CNAME"] -.-> CF
+    DNS["Cloudflare-DNS vibez-jugendhilfe.de<br/>(Registrar All-Inkl)"] -.-> CF
     CF == Tunnel ==> VPS["netcup VPS, Nürnberg<br/>cloudflared → Traefik → App"]
     VPS -- TLS --> DB[("MongoDB Atlas<br/>Frankfurt")]
     VPS -. "verschlüsselt" .-> SB[("Hetzner Storage Box<br/>(DE)")]
@@ -22,10 +22,10 @@ flowchart LR
 
 | Dokument | Inhalt |
 |---|---|
-| [Betriebsarchitektur](docs/architektur.md) | Entscheidungen, Komponenten, Netze, Cloudflare for SaaS, Atlas, Backup, Kosten |
+| [Betriebsarchitektur](docs/architektur.md) | Entscheidungen, Komponenten, Netze, Domain und DNS, Atlas, Backup, Kosten |
 | [Aufbau](docs/aufbau.md) | Aufbauphase mit Claude Code: Regeln, Serverwahl, Remote Control, Tokens, Protokoll, Übergabe |
 | [Deployment](docs/deployment.md) | Schritt für Schritt vom leeren Konto bis zur Abnahme |
-| [Cloudflare](docs/cloudflare.md) | Konto, Hilfszone, Tunnel, Custom Hostname, WAF-Regeln, Einstellungen |
+| [Cloudflare](docs/cloudflare.md) | Konto, Umzug der DNS zu Cloudflare, Tunnel, WAF-Regeln, Einstellungen |
 | [Betriebshandbuch](docs/betriebshandbuch.md) | Update, Rollback, Wartung, Wiederherstellung, Störungen, Datenpannen, Übergabe |
 | [Sicherheitsanalyse](docs/sicherheitsanalyse.md) | Angriffsvektoren, Befunde, Maßnahmen nach Priorität |
 | [Datenschutz-Folgenabschätzung](datenschutz/dsfa.md) | Art. 35 DSGVO – Entwurf zur Prüfung und Freigabe |

@@ -10,7 +10,7 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 | **MongoDB, Inc.**, New York (EU: MongoDB Ltd.) mit Unterauftragnehmer **Amazon Web Services** | Datenbank MongoDB Atlas | AWS eu-central-1 (Frankfurt) | ja | Data Processing Agreement (Bestandteil der Atlas-Bedingungen), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
 | **Cloudflare, Inc.**, San Francisco | Proxy, WAF, TLS, Tunnel | weltweites Netz, i. d. R. nächstes Rechenzentrum | Durchleitung (kurzzeitig entschlüsselt), keine Speicherung von Inhalten | Data Processing Addendum (Self-Serve), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
 | **Murat Bayram** (IT-Dienstleister) | Einrichtung, Betrieb, Updates, Backup, Störungsbehebung | Deutschland | Zugriff bei Wartung | **AV-Vertrag + Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 Satz 2 Nr. 1 StGB** | ⏳ |
-| Neue Medien Münnich (**All-Inkl**) | Domain und DNS `vibez-jugendhilfe.de` sowie Hilfsdomain | Deutschland | nein | bestehender Hostingvertrag; kein AV für diese App nötig | – |
+| Neue Medien Münnich (**All-Inkl**) | Registrar von `vibez-jugendhilfe.de`, Website und E-Mail (DNS-Verwaltung bei Cloudflare) | Deutschland | nein | bestehender Hostingvertrag; kein AV für diese App nötig | – |
 | GitHub, Inc. | Quellcode, CI, Container-Image | USA | nein (nur erfundene Demodaten) | – | – |
 | Tailscale Inc. | Verwaltungszugang (VPN für SSH) | USA (Koordination), Verbindung direkt und Ende-zu-Ende verschlüsselt | nein | – | – |
 | Anthropic (Claude Code) | **nur Aufbauphase**: Einrichtung des Servers über Remote Control, bevor echte Daten existieren | – | nein (Regeln in [Aufbau](../docs/aufbau.md)) | – | – |

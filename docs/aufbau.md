@@ -40,11 +40,11 @@ netcup **VPS Lite 1 G12.5s**: 2 vCore, 4 GB RAM, 80 GB SSD, 5,86 €/Monat (Ange
 
 | Wer | Was |
 |---|---|
-| Tobias | Hilfsdomain bei All-Inkl registrieren (automatische Verlängerung an); Cloudflare-Konto für VIBEZ (Free, 2FA, Zahlungsmittel), Hilfsdomain dort hinzufügen, deren **Nameserver bei All-Inkl** auf die zwei Cloudflare-Nameserver umstellen. `vibez-jugendhilfe.de` selbst bleibt unverändert. |
+| Tobias | Cloudflare-Konto für VIBEZ (Free, 2FA mit Passkey); `vibez-jugendhilfe.de` dort hinzufügen; DNS-Bestand bei All-Inkl sichern, DNSSEC aus; Einträge in Cloudflare abgleichen (alle **DNS only**); dann bei All-Inkl die **Nameserver** der Domain auf die zwei Cloudflare-Nameserver umstellen; Website und E-Mail testen. Schritt für Schritt: [cloudflare.md](cloudflare.md#domain-zu-cloudflare-umziehen) |
 | Tobias | netcup-VPS bestellen (VIBEZ als Kunde), AV-Vertrag im netcup-Kundencenter abschließen |
 | Tobias | MongoDB Atlas: Organisation und Projekt „VIBEZ Nachweise“ (Zahlungsmittel, 2FA); Murat als Projektmitglied |
 | Tobias | Hetzner Storage Box bestellen, SSH-Zugang aktivieren, automatische Snapshots an |
-| Tobias / Murat | Festlegen: App-Adresse (`nachweise.vibez-jugendhilfe.de`?) und Name der Hilfsdomain |
+| Tobias / Murat | Festlegen: App-Adresse (`nachweise.vibez-jugendhilfe.de`?) |
 | Murat | Debian 13 auf dem VPS installieren (netcup SCP), Remote Control einrichten (nächster Abschnitt) |
 | Murat | Tokens erzeugen (Abschnitt [Tokens](#tokens)) und im Formular der Sitzung eintragen |
 
@@ -73,7 +73,7 @@ Claude-Sitzung Bescheid geben. Die Sitzung fragt den Ordner an, und du bestätig
 
 | Für | Erzeugen | Rechte | Laufzeit / danach |
 |---|---|---|---|
-| Cloudflare (VIBEZ-Konto) | *My Profile → API Tokens → Create Token → Custom* | Zone (nur Hilfszone): DNS Edit, SSL and Certificates Edit, Zone Settings Edit, Zone WAF Edit, Cache Rules Edit; Account: Cloudflare Tunnel Edit, Notifications Edit | 7 Tage, nach Übergabe löschen |
+| Cloudflare (VIBEZ-Konto) | *My Profile → API Tokens → Create Token → Custom* | Zone (nur `vibez-jugendhilfe.de`): DNS Edit, SSL and Certificates Edit, Zone Settings Edit, Zone WAF Edit, Cache Rules Edit; Account: Cloudflare Tunnel Edit, Notifications Edit | 7 Tage, nach Übergabe löschen |
 | MongoDB Atlas | Projekt → *Access Manager → Service Accounts* | *Project Owner* nur für dieses Projekt | nach Übergabe löschen |
 | GitHub (Image ziehen) | Fine-grained Token, Zugriff nur auf `vibez-nachweise`, Berechtigung *Packages: read* | Image ziehen | bleibt auf dem Server (in `docker login`), Ablauf 1 Jahr, im Kalender vermerken |
 | Tailscale | *Settings → Keys → Generate auth key*, einmalig, Tag `tag:vibez-prod` | nur Anmeldung des Servers | verfällt nach Benutzung |
@@ -83,8 +83,9 @@ Claude-Sitzung Bescheid geben. Die Sitzung fragt den Ordner an, und du bestätig
 1. Server härten (`host/bootstrap.sh`; Tailscale; Firewall), Repo nach `/opt/vibez` klonen
 2. Atlas: Cluster Frankfurt, Benutzer `vibez_app`/`vibez_backup` (Passwörter auf dem Server erzeugt), IP-Zugriffsliste
    = Server-IP, Backups und Alerts
-3. Cloudflare: Tunnel `vibez-prod`, Fallback-Origin, Custom Hostname, 5 WAF-Regeln, Ratenlimit, Cache-Regel,
-   Einstellungen, Benachrichtigungen → **drei DNS-Einträge für Tobias** (All-Inkl)
+3. Cloudflare (nach dem DNS-Umzug durch Tobias): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag, 5 WAF-Regeln,
+   Ratenlimit, Cache-Regel, Einstellungen, Benachrichtigungen. An bestehenden DNS-Einträgen (Website, E-Mail) ändert
+   die Sitzung **nichts**.
 4. Stack ausrollen (`stack/deploy.sh <version>` mit Digest), Verwaltungszugang `tobias` mit Startpasswort (auf dem
    Server erzeugt), Pflicht-2FA
 5. Backup einrichten (Storage Box, restic init, erster Lauf, Restore-Test, Timer)

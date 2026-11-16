@@ -10,7 +10,7 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 1. [Verträge und Konten (VIBEZ)](#1-verträge-und-konten-vibez)
 2. [Server bestellen und härten](#2-server-bestellen-und-härten)
 3. [MongoDB Atlas](#3-mongodb-atlas)
-4. [Cloudflare: Hilfszone, Tunnel, Custom Hostname](#4-cloudflare-hilfszone-tunnel-custom-hostname)
+4. [Cloudflare: DNS-Umzug, Tunnel, Regeln](#4-cloudflare-dns-umzug-tunnel-regeln)
 5. [Stack ausrollen](#5-stack-ausrollen)
 6. [Backup einrichten](#6-backup-einrichten)
 7. [Überwachung](#7-überwachung)
@@ -88,15 +88,15 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    Server speichern.
 6. Atlas-Alerts an Murat: Verbindung, Speicher, fehlgeschlagenes Backup.
 
-## 4. Cloudflare: Hilfszone, Tunnel, Custom Hostname
+## 4. Cloudflare: DNS-Umzug, Tunnel, Regeln
 
 Komplett in [cloudflare.md](cloudflare.md):
 
-1. Hilfsdomain registrieren und Zone bei Cloudflare aktivieren
-2. Tunnel `vibez-prod` anlegen, `origin.vibez-edge.de` routen
-3. Cloudflare for SaaS aktivieren, Fallback-Origin setzen, Custom Hostname `nachweise.vibez-jugendhilfe.de` anlegen
-4. Zwei TXT-Einträge bei All-Inkl, danach den CNAME `nachweise`
-5. Zone-Einstellungen, 5 WAF-Regeln, Ratenlimit, Cache-Regel
+1. Bestand der DNS-Einträge bei All-Inkl sichern, DNSSEC ausschalten
+2. Zone `vibez-jugendhilfe.de` in Cloudflare anlegen, alle Einträge abgleichen (**DNS only**)
+3. Nameserver bei All-Inkl auf Cloudflare umstellen, Website und E-Mail testen
+4. Tunnel `vibez-prod` anlegen, `nachweise.vibez-jugendhilfe.de` routen (proxied)
+5. Zoneneinstellungen, 5 WAF-Regeln, Ratenlimit, Cache-Regel, Benachrichtigungen
 
 ## 5. Stack ausrollen
 
@@ -174,8 +174,8 @@ Technik (Murat):
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen
 - [ ] Storage-Box-Snapshots aktiv; Tailscale-ACL aktiv (anderes Tailnet-Gerät erreicht Port 22 nicht)
-- [ ] Hilfsdomain: Auto-Verlängerung und Sperre aktiv; CAA-Eintrag gesetzt; Zertifikats-Monitoring eingerichtet
-- [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, Änderungen an Custom Hostnames
+- [ ] Domain-Umzug: Website und E-Mail (Senden + Empfangen) getestet; DNSSEC neu aktiv; CAA-Eintrag gesetzt; Zertifikats-Monitoring eingerichtet
+- [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, DNS-Änderungen
 - [ ] 2FA mit Passkey in Cloudflare, Atlas, netcup, Hetzner, GitHub, All-Inkl; App-Verwaltung mit 2FA (sobald umgesetzt)
 
 Organisation (VIBEZ):
