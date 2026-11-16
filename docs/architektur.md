@@ -21,7 +21,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 
 | Thema | Entscheidung | Begründung |
 |---|---|---|
-| Server | Eigener Cloud-Server (VPS) bei **Hetzner**, Standort Deutschland, **Vertragspartner VIBEZ** | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001, VIBEZ bleibt Herr der Daten |
+| Server | Eigener VPS bei **netcup** (VPS Lite 1 G12.5s), Rechenzentrum **Nürnberg**, **Vertragspartner VIBEZ** | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001, VIBEZ bleibt Herr der Daten |
 | Betrieb | Murat Bayram als IT-Dienstleister (Auftragsverarbeiter, Verschwiegenheit nach § 203 StGB) | Betreuung wie bisher, aber auf VIBEZ-eigener Infrastruktur |
 | Adresse | `nachweise.vibez-jugendhilfe.de` (Annahme, Name noch bestätigen) | Eigene Domain von VIBEZ; DNS bleibt bei **All-Inkl** |
 | Schutz vor dem Server | **Cloudflare** (Free) als Proxy mit WAF über **Cloudflare for SaaS** | Geo-Block, Schutz vor Angriffen und Scannern, Server ohne offene Ports |
@@ -48,7 +48,7 @@ flowchart LR
       W["WAF: Geo-Block, Scanner, Ratenlimit<br/>TLS-Zertifikat für nachweise.…"]
       TU["Tunnel vibez-prod"]
     end
-    subgraph HZ["Hetzner Cloud, Deutschland (Vertrag VIBEZ)"]
+    subgraph HZ["netcup Nürnberg + Hetzner Storage Box (Verträge VIBEZ)"]
       subgraph VPS["VPS vibez-prod – keine offenen Ports"]
         CD["cloudflared"]
         TR["Traefik"]
@@ -102,7 +102,7 @@ Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](.
 
 | Von → nach | Erlaubt | Wie erzwungen |
 |---|---|---|
-| Internet → Server | **nichts** | Hetzner-Cloud-Firewall ohne eingehende Regeln, `ufw deny incoming`, keine veröffentlichten Docker-Ports |
+| Internet → Server | **nichts** | `ufw deny incoming`, keine veröffentlichten Docker-Ports |
 | Cloudflare → App | nur über den Tunnel | `cloudflared` baut ausgehend auf |
 | cloudflared → Traefik | HTTP im Netz `edge` | Traefik vertraut `X-Forwarded-*` nur aus `172.30.0.0/24` |
 | Traefik → App | HTTP im Netz `web` (intern) | Docker-Netz `internal: true` |
@@ -137,7 +137,7 @@ Fakten aus der Cloudflare-Doku (geprüft 15.11.2026):
   in Hessen meist Frankfurt). Das ist in der [Datenschutz-Folgenabschätzung](../datenschutz/dsfa.md) bewertet.
 
 Warum eine eigene Hilfszone statt `bay-ram.de`: Das Cloudflare-Konto gehört dann VIBEZ, und Murats eigene Zone hat mit
-VIBEZ nichts zu tun. Kündigt VIBEZ die Betreuung, nimmt es Konten (Cloudflare, Hetzner, Atlas), Server und Domain einfach mit.
+VIBEZ nichts zu tun. Kündigt VIBEZ die Betreuung, nimmt es Konten (Cloudflare, netcup, Hetzner, Atlas), Server und Domain einfach mit.
 
 Details und Regeln: [cloudflare.md](cloudflare.md).
 
@@ -163,9 +163,10 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 ## Verwaltungszugang
 
 - Nur Murat (Admin) hat SSH-Zugang: persönliches Konto, nur Schlüssel, nur über Tailscale (mit 2FA am Tailscale-Konto).
-- Notzugang über die Hetzner-Konsole (Web) mit dem Passwort des Admin-Kontos. Das Passwort liegt im Passwortmanager von VIBEZ.
-- Das Hetzner-Konto gehört VIBEZ. Murat bekommt dort eine eigene Mitgliedschaft (Rolle „Member“) und kein geteiltes Login.
-  2FA ist Pflicht.
+- Notzugang über die netcup-Konsole (SCP) mit dem Passwort des Admin-Kontos. Das Passwort liegt im Passwortmanager von VIBEZ.
+- Die Konten bei netcup und Hetzner gehören VIBEZ. 2FA ist Pflicht; Murat bekommt eigene Zugänge, kein geteiltes Login.
+- **Aufbauphase:** Nur solange keine echten Daten vorhanden sind, richtet eine KI-Sitzung den Server über Remote Control ein.
+  Danach wird dieser Zugang vollständig entfernt ([aufbau.md](aufbau.md)).
 - **Keine KI-/Automations-Zugänge zum Echtbetrieb:** Der VPS wird **nicht** in Portainer, MCP-Server oder andere
   Werkzeuge eingebunden, über die KI-Assistenten Befehle ausführen oder Daten lesen könnten. Entwicklung und Tests laufen
   ausschließlich mit der Demo und erfundenen Daten.
@@ -203,7 +204,7 @@ als Auftragsverarbeiter; dafür liegen Verschlüsselung ruhender Daten und Backu
 
 | Posten | Größenordnung | Bemerkung |
 |---|---|---|
-| Hetzner Cloud VPS (2–4 vCPU, 4–8 GB RAM, DE) | einstelliger bis niedriger zweistelliger €-Betrag / Monat | aktuelle Preise bei Bestellung prüfen |
+| netcup VPS Lite 1 G12.5s (2 vCore, 4 GB, 80 GB, Nürnberg) | 5,86 € / Monat inkl. MwSt. (Angebot 16.11.2026) | 6 Monate Mindestlaufzeit |
 | MongoDB Atlas (dediziert M10, Frankfurt) | mittlerer zweistelliger €-Betrag / Monat | Flex günstiger; aktuelles Preisblatt prüfen |
 | Hetzner Storage Box (kleinste Größe) | wenige € / Monat | zweite Sicherung |
 | Hilfsdomain `vibez-edge.de` o. ä. | ca. 1 € / Monat | bei All-Inkl registrieren, Nameserver auf Cloudflare |

@@ -114,9 +114,9 @@ wer wann was getan hat. Ablage: `wartung/JJJJ.md` in diesem Repo **ohne Personen
 
 ## Ende der Betreuung / Übergabe
 
-Alle Konten (Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ. Bei einem Wechsel des IT-Dienstleisters:
+Alle Konten (netcup, Hetzner Storage Box, Atlas, Cloudflare, Domain) gehören VIBEZ. Bei einem Wechsel des IT-Dienstleisters:
 
-1. Neue:n Dienstleister:in in Hetzner, Atlas und Cloudflare einladen, Murat entfernen.
+1. Neue:n Dienstleister:in in netcup, Hetzner, Atlas und Cloudflare einladen, Murat entfernen.
 2. Tailscale: Server aus Murats Tailnet entfernen, neuen Verwaltungszugang einrichten (z. B. eigenes Tailnet).
 3. Neue SSH-Schlüssel, Murats Schlüssel entfernen; `RESTIC_PASSWORD` behalten (liegt bei VIBEZ).
 4. Dieses Repo an VIBEZ übertragen bzw. forken; Container-Image ggf. in eine VIBEZ-Registry spiegeln.

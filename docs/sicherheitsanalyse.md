@@ -25,7 +25,7 @@ umgesetzt und getestet.
 | Klientendaten (Namen, Hilfeart, Termintexte, Unterschriften) | Sozialdaten von Kindern, teils mit Gesundheitsbezug – Offenlegung kann Familien schaden |
 | Abrechnungsdaten | Manipulation führt zu falschen Rechnungen gegenüber Jugendämtern (Betrugsvorwurf) |
 | Verfügbarkeit | ohne Nachweise keine Abrechnung |
-| Zugänge (App, Cloudflare, Atlas, Hetzner, GitHub, Domain) | Schlüssel zu allem Obigen |
+| Zugänge (App, Cloudflare, Atlas, netcup, Hetzner, GitHub, Domain) | Schlüssel zu allem Obigen |
 
 | Angreifer | Fähigkeit / Motiv |
 |---|---|
@@ -45,7 +45,7 @@ flowchart LR
     A -->|TLS| DB[("Atlas")]
     subgraph Verwaltungswege
       ADM["Admin (Tailscale-SSH)"]
-      KON["Konten: Cloudflare, Atlas, Hetzner,<br/>GitHub, All-Inkl, Tailscale"]
+      KON["Konten: Cloudflare, Atlas, netcup, Hetzner,<br/>GitHub, All-Inkl, Tailscale"]
       CI["GitHub Actions → GHCR-Image"]
     end
     ADM -.-> T
@@ -73,7 +73,7 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 | A4 | Offene Weiterleitung | `next=/\evil.example` nach dem Login führte auf eine fremde Seite (Browser behandeln `/\` wie `//`). Damit wäre Phishing mit echter VIBEZ-Adresse im Link möglich gewesen. | 🟠 | ✅ nur noch relative Pfade |
 | A5 | Gestohlene Sitzung bleibt gültig | Die Sitzung liegt signiert im Cookie. „Abmelden“ oder ein neues Passwort beendeten Sitzungen auf anderen Geräten nicht, sie liefen bis zu 12 Stunden weiter. | 🟠 | ✅ Sitzungsversion je Konto: Passwortwechsel, Reset, Deaktivieren und Rollenwechsel beenden alle Sitzungen; „auf allen Geräten abmelden“; Abmeldung nach 2 Stunden Inaktivität |
 | A6 | Schwache Passwörter | Mindestlänge 8, keine weitere Prüfung | 🟠 | ✅ 12 Zeichen, Sperrliste, nicht der eigene Name |
-| A7 | Zweiter Faktor fehlt | Ein gephishtes Passwort genügt für den Zugang | 🟠 | ⏳ TOTP, Pflicht für die Verwaltung (DSFA M1) |
+| A7 | Zweiter Faktor fehlt | Ein gephishtes Passwort genügt für den Zugang | 🟠 | ✅ TOTP seit 0.2.6, Pflicht für die Verwaltung, Ersatzcodes, Schutz gegen Code-Wiederverwendung |
 | A8 | Zu breite Einsicht | Jede Pädagog:in kann über die Vertretung **alle** Klient:innen sehen (fachlich gewollt). IDs sind ObjectIds und teilweise vorhersagbar, das spielt aber keine Rolle, weil der Zugriff ohnehin erlaubt ist. | 🟠 | ✅ Zugriffe auf fremde Klient:innen werden protokolliert (einmal je Sitzung und Ansicht), ebenso das Öffnen fremder Listen. ⏳ Prüfung der Protokolle durch die Verwaltung (organisatorisch) |
 | A9 | Gefälschte Unterschrift der Klient:in | Unterschriftsbilder sind für Berechtigte sichtbar. Eine Pädagog:in könnte ein vorhandenes Bild kopieren und für einen weiteren Termin absenden. | 🟠 | ✅ identische Unterschriftsbilder werden je Klient:in abgelehnt und protokolliert. Rest: Ein *abgemaltes* Bild ist technisch nicht erkennbar; das gilt auch auf Papier |
 | A10 | Manipulation von Bewilligungen | Über das Bewilligungsformular einer Klient:in ließ sich mit einer fremden Bewilligungs-ID eine Bewilligung einer anderen Klient:in überschreiben und umhängen. | 🟠 | ✅ ID muss zur Klient:in gehören |
@@ -82,7 +82,7 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 | A13 | Host-Header | `request.url` und der „Zurück“-Link stützen sich auf den Host-Header | 🟡 | ✅ optional nur bekannte Hosts (`VN_HOSTS`), im Echtbetrieb gesetzt |
 | A14 | XSS / CSRF / Injection | Jinja maskiert automatisch, kein `|safe`, kein `innerHTML`; CSRF-Token in allen Formularen; PyMongo ohne String-Abfragen; CSP ohne Inline-Skripte; keine Uploads außer Unterschriften | – | geprüft, ohne Befund |
 | A15 | Datenabfluss an Dritte | Bis 0.2.3 wurde die Schrift von Google Fonts geladen, dabei ging bei jedem Seitenaufruf die IP an Google. | 🟡 | ✅ seit 0.2.4 lokal |
-| A16 | Abmelden per GET | `/logout` lässt sich von einer fremden Seite auslösen (Nutzer:in wird nur abgemeldet) | 🟡 | ⏳ auf POST umstellen (gering) |
+| A16 | Abmelden per GET | `/logout` lässt sich von einer fremden Seite auslösen (Nutzer:in wird nur abgemeldet) | 🟡 | ✅ nur noch POST mit CSRF-Token (0.2.6) |
 | A17 | Nutzername erkennbar über Antwortzeit | Passwortprüfung nur bei existierendem Konto | 🟡 | ⏳ optional Schein-Prüfung; durch Bremse entschärft |
 | A18 | Verwaltung kann jede Person „sein“ | Die Verwaltung kann Passwörter neu setzen und Unterschriften hinterlegen und damit im Namen anderer handeln | 🟡 | ✅ Reset, Rollen- und Unterschriftsänderungen werden jetzt einzeln protokolliert; organisatorisch: Vier-Augen-Prinzip für Verwaltungszugänge |
 
@@ -100,7 +100,7 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 
 | # | Vektor | Befund | Schwere | Status |
 |---|---|---|---|---|
-| C1 | Direkter Angriff auf den Server | Keine offenen Ports (Tunnel), Hetzner-Firewall und `ufw` ohne Eingang, SSH nur über Tailscale | – | 📄 |
+| C1 | Direkter Angriff auf den Server | Keine offenen Ports (Tunnel), `ufw` ohne Eingang, SSH nur über Tailscale | – | 📄 |
 | C2 | Umgehen von Cloudflare | Ohne öffentliche Ports gibt es keinen Weg vorbei | – | 📄 |
 | C3 | Diebstahl der Tunnel-Zugangsdaten | Mit `credentials.json` kann jemand einen **zweiten Connector** betreiben und einen Teil des Datenverkehrs empfangen (Mitlesen) | 🟠 | 📄 Datei nur root (600); ⏳ Cloudflare-Benachrichtigung bei Tunnel-Änderungen/zusätzlichen Connectoren; bei Verdacht Tunnel neu erzeugen (Betriebshandbuch) |
 | C4 | Backups löschen oder verschlüsseln (Ransomware) | Wer root auf dem Server hat, kann über SFTP auch die restic-Daten auf der Storage Box löschen | 🟠 | 📄 Atlas-Backups lassen sich mit den Datenbankbenutzern des Servers nicht löschen; ⏳ **automatische Snapshots der Storage Box** einschalten (nur in der Hetzner-Konsole verwaltbar) |
@@ -144,7 +144,7 @@ Die Demo enthält nur erfundene Daten. Trotzdem:
 | F1 | Phishing auf Zugangsdaten (gefälschte Login-Seite) | 2FA (A7); Schulung: Adresse prüfen, Login nur über das Lesezeichen/den Home-Bildschirm |
 | F2 | Verlorenes Handy | Bildschirmsperre, sofort melden → Verwaltung deaktiviert das Konto, alle Sitzungen enden sofort |
 | F3 | Weitergabe von Passwörtern | Persönliche Konten, Protokoll zeigt, wer was getan hat |
-| F4 | Zugangsdaten über Messenger | Startpasswörter persönlich oder per Telefon übergeben, Wechsel beim ersten Login (⏳ erzwingen) |
+| F4 | Zugangsdaten über Messenger | Startpasswörter persönlich oder per Telefon übergeben, Wechsel beim ersten Login (✅ erzwungen seit 0.2.6) |
 | F5 | Ausgedruckte Nachweise | Druckstapel wie bisher sicher verwahren und versenden (je Jugendamt getrennt) |
 
 ## Was bewusst so bleibt
@@ -156,10 +156,10 @@ Die Demo enthält nur erfundene Daten. Trotzdem:
 
 ## Nächste Schritte nach Priorität
 
-1. ⏳ **Zwei-Faktor-Anmeldung** in der App (A7) – vor dem Echtbetrieb
-2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, Hetzner, GitHub und All-Inkl (D) und Branch-Schutz auf `main` (B2)
+1. ✅ **Zwei-Faktor-Anmeldung** in der App (A7) – erledigt in 0.2.6
+2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, netcup, Hetzner, GitHub und All-Inkl (D) und Branch-Schutz auf `main` (B2)
 3. ⏳ **Hilfsdomain absichern**: Auto-Verlängerung, Sperre, CAA, Zertifikats-Monitoring (C6, C7)
 4. ⏳ **Storage-Box-Snapshots** (C4) und **Tailscale-ACL** (C5)
 5. ⏳ Demo-Geheimnisse neu setzen (E1)
-6. ⏳ GitHub Actions per SHA pinnen (B3), `/logout` als POST (A16), Erstpasswort-Wechsel erzwingen (F4)
+6. ⏳ GitHub Actions per SHA pinnen (B3); ✅ `/logout` als POST (A16), Erstpasswort-Wechsel erzwungen (F4)
 7. ➕ externer Penetrationstest nach dem Aufbau des Echtbetriebs, danach jährlich

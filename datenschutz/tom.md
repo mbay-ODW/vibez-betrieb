@@ -6,8 +6,8 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 
 | Maßnahme | Status |
 |---|---|
-| **Zutritt:** Rechenzentren von Hetzner (DE) und AWS Frankfurt (über MongoDB Atlas) mit Zutrittskontrolle; zertifiziert nach ISO/IEC 27001 (Nachweise der Anbieter ablegen) | ✅ |
-| **Zugang Server:** keine offenen Ports; SSH nur über Tailscale, nur mit Schlüssel, kein root-Login; Notzugang über die Hetzner-Konsole mit Passwort im Passwortmanager von VIBEZ | ✅ |
+| **Zutritt:** Rechenzentren von netcup (Nürnberg), Hetzner (DE, nur verschlüsselte Sicherung) und AWS Frankfurt (über MongoDB Atlas) mit Zutrittskontrolle; zertifiziert nach ISO/IEC 27001 (Nachweise der Anbieter ablegen) | ✅ |
+| **Zugang Server:** keine offenen Ports; SSH nur über Tailscale, nur mit Schlüssel, kein root-Login; Notzugang über die netcup-Konsole (SCP) mit Passwort im Passwortmanager von VIBEZ | ✅ |
 | **Zugang App:** persönliche Konten, scrypt-Hashes, Anmeldebremse (App, Cloudflare, Traefik), Geo-Block EU/CH, Sitzung max. 12 h, sofortige Sperre beim Deaktivieren | ✅ |
 | Zwei-Faktor-Anmeldung (Verwaltung Pflicht) | ⏳ M1 |
 | Passwortregeln 12 Zeichen + Sperrliste + nicht der eigene Name | ✅ |

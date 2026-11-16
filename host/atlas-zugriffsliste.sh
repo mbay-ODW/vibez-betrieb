@@ -14,7 +14,7 @@ if [[ "${1:-}" != "setzen" ]]; then liste; exit 0; fi
 
 ip="$(curl -fsS -4 https://api.ipify.org)"
 echo "Server-IP: $ip"
-curl -fsS "${auth[@]}" "${H[@]}" -X POST "$API" -d "[{\"ipAddress\":\"${ip}\",\"comment\":\"vibez-prod (Hetzner)\"}]" >/dev/null
+curl -fsS "${auth[@]}" "${H[@]}" -X POST "$API" -d "[{\"ipAddress\":\"${ip}\",\"comment\":\"vibez-prod (netcup)\"}]" >/dev/null
 for eintrag in $(curl -fsS "${auth[@]}" "${H[@]}" "$API?itemsPerPage=100" | jq -r '.results[] | (.cidrBlock // .ipAddress)'); do
   if [[ "$eintrag" != "${ip}/32" && "$eintrag" != "$ip" ]]; then
     echo "entferne $eintrag"

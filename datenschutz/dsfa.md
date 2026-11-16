@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.10 – **Entwurf** vom 15.11.2026 (Stand nach Sicherheitsprüfung, App 0.2.5) |
+| **Version / Stand** | 0.11 – **Entwurf** vom 16.11.2026 (Server bei netcup, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -34,7 +34,7 @@
   Gesundheitsbezug. Eine DSFA ist **erforderlich** (Abschnitt 2.1).
 - Die App erfasst nur die Daten, die für Tätigkeitsnachweis und Abrechnung nötig sind. Klientenakte, Berichte,
   Dokumente, Adressen und Geburtsdaten wurden bewusst entfernt (Datenminimierung, Abschnitt 4.3).
-- Betrieb auf einem eigenen Server von VIBEZ in Deutschland (Hetzner), Datenbank **MongoDB Atlas in Frankfurt**, Schutz durch
+- Betrieb auf einem eigenen Server von VIBEZ in Deutschland (netcup, Nürnberg), Datenbank **MongoDB Atlas in Frankfurt**, Schutz durch
   **Cloudflare** (WAF, Tunnel). Der Server hat keine offenen Ports, die Datenbank nimmt nur Verbindungen dieses Servers an.
 - Die wesentlichen Risiken sind **Kontoübernahme** (R1), **verlorene Handys** (R2), **zu breite Einsicht über die
   Vertretung** (R3) und der **Drittlandbezug von Cloudflare und MongoDB** (R5, R6).
@@ -127,7 +127,7 @@ Hilfeplan-Inhalte, Dokumente/Uploads, Fotos, Standortdaten.
 flowchart LR
     P["Pädagog:in<br/>(Handy, Browser)"] -- "Termin + Unterschrift" --> CF["Cloudflare<br/>(TLS, WAF)"]
     V["Verwaltung<br/>(PC, Browser)"] -- "Prüfung, Abrechnung" --> CF
-    CF -- "Tunnel" --> APP["App auf VPS<br/>Hetzner, DE"]
+    CF -- "Tunnel" --> APP["App auf VPS<br/>netcup, Nürnberg"]
     APP -- "TLS" --> DB[("MongoDB Atlas<br/>Frankfurt")]
     DB -. "verschlüsseltes Backup" .-> SB[("Storage Box<br/>Hetzner, DE")]
     V -- "PDF: Rechnung + Protokoll<br/>(Papier/Post bzw. Versand an JA)" --> JA["Jugendamt"]
@@ -158,7 +158,8 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 
 | Dienstleister | Rolle | Sitz / Ort der Verarbeitung | Zugriff auf Inhalte |
 |---|---|---|---|
-| Hetzner Online GmbH | Server (VPS) und Backup-Speicher | Deutschland | Server: technisch möglich (Betreiber der Hardware). Backup: nein, ist vorher verschlüsselt. |
+| netcup GmbH, Karlsruhe | Server (VPS) | Deutschland (Rechenzentrum Nürnberg) | technisch möglich (Betreiber der Hardware) |
+| Hetzner Online GmbH | Speicher für die zweite Sicherung (Storage Box) | Deutschland | nein – Daten sind vor der Übertragung verschlüsselt |
 | MongoDB, Inc. (mit AWS als Unterauftragnehmer) | Datenbank (Atlas) | USA / Speicherort AWS Frankfurt | gespeichert verschlüsselt; Betreiberzugriff technisch möglich, vertraglich ausgeschlossen |
 | Cloudflare, Inc. | Schutzschicht (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
 | Murat Bayram | IT-Betreuung (Einrichtung, Updates, Backup, Störungen) | Deutschland | Administrativer Zugang; Datenbankzugriff nur bei Wartung, protokolliert |
@@ -257,8 +258,8 @@ Gestohlene, erratene oder wiederverwendete Passwörter, Phishing.
 - ✅ Zugriff nur aus der EU und der Schweiz (Cloudflare-Geo-Block); bekannte Bots und Scanner blockiert
 - ✅ Sitzungs-Cookie `HttpOnly`, `Secure`, `SameSite=Lax`, signiert; CSRF-Schutz bei allen Formularen
 - ✅ Deaktivierte Konten verlieren sofort jede Sitzung; Passwortwechsel/-reset beendet alle Sitzungen; „auf allen Geräten abmelden“
-- ⏳ **M1 Zwei-Faktor-Anmeldung (TOTP)**, Pflicht für die Verwaltungsrolle, empfohlen für alle
-- ✅ **M2 Passwortregeln**: Mindestlänge 12, Sperrliste häufiger Passwörter, nicht der eigene Name (seit 0.2.5); ⏳ Wechsel des Startpassworts erzwingen
+- ✅ **M1 Zwei-Faktor-Anmeldung (TOTP)**, Pflicht für die Verwaltungsrolle, freiwillig für Pädagog:innen (seit 0.2.6)
+- ✅ **M2 Passwortregeln**: Mindestlänge 12, Sperrliste häufiger Passwörter, nicht der eigene Name (seit 0.2.5); Wechsel des Startpassworts erzwungen (seit 0.2.6)
 - ✅ Organisatorisch: Startpasswörter persönlich übergeben (Betriebshandbuch)
 
 *Restrisiko: gering (mit M1/M2)*
@@ -328,7 +329,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 ### R7 – Kompromittierung des Servers
 *Vertraulichkeit, Integrität, Verfügbarkeit · Schwere: groß · Wahrscheinlichkeit: überschaubar → Risiko mittel*
 
-- ✅ Keine offenen Ports (Cloudflare Tunnel, Hetzner-Firewall und Host-Firewall ohne eingehende Regeln)
+- ✅ Keine offenen Ports (Cloudflare Tunnel, Host-Firewall ohne eingehende Regeln)
 - ✅ SSH nur über Tailscale, nur mit Schlüssel, kein root-Login
 - ✅ Automatische Sicherheitsupdates; Container read-only, ohne Zusatzrechte, feste Versionen; interne Netze ohne Internet für Traefik/App-Frontnetz
 - ✅ Geheimnisse nur auf dem Server (`.env`, Rechte 600), nicht im Repository
@@ -340,9 +341,10 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Vertraulichkeit · Schwere: groß · Wahrscheinlichkeit: geringfügig → Risiko mittel*
 
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
-- ✅ Alle Konten (Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ; Dienstleister nur als Mitglied mit 2FA
+- ✅ Alle Konten (netcup, Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ; Dienstleister nur als Mitglied mit 2FA
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
 - ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, keine MCP-Anbindung); Entwicklung nur mit erfundenen Daten (T12)
+- ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
 
 *Restrisiko: gering*
 
@@ -357,7 +359,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 
 *Restrisiko: gering*
 
-### R10 – Nichtverfügbarkeit (Ausfall Cloudflare, Hetzner, Atlas)
+### R10 – Nichtverfügbarkeit (Ausfall Cloudflare, netcup, Atlas)
 *Verfügbarkeit · Schwere: überschaubar · Wahrscheinlichkeit: überschaubar → Risiko gering*
 
 - ✅ Überwachung mit Alarm; Wiederanlauf eines neuen Servers innerhalb eines Arbeitstags (Daten liegen in Atlas)
@@ -410,13 +412,13 @@ liegen als Bild vor.
 
 | Nr. | Maßnahme | Verantwortlich | Bis |
 |---|---|---|---|
-| M1 | Zwei-Faktor-Anmeldung (TOTP), Pflicht für Verwaltung | IT (App) | vor Echtbetrieb |
-| M2 | Passwortregeln ✅; Wechsel des Startpassworts erzwingen ⏳ | IT (App) | vor Echtbetrieb |
+| M1 | Zwei-Faktor-Anmeldung (TOTP), Pflicht für Verwaltung ✅ | IT (App) | erledigt (0.2.6) |
+| M2 | Passwortregeln ✅; Wechsel des Startpassworts erzwingen ✅ | IT (App) | erledigt (0.2.6) |
 | M3 | Abmeldung bei Inaktivität (2 h) ✅ | IT (App) | erledigt (0.2.5) |
 | M4 | Protokollierung der Vertretungsansicht ✅ + monatliche Stichprobe ⏳ | IT (App) / Verwaltung | vor Echtbetrieb |
 | S1 | Maßnahmen aus der [Sicherheitsanalyse](../docs/sicherheitsanalyse.md#nächste-schritte-nach-priorität) (2FA aller Konten, Hilfsdomain, Snapshots, Tailscale-ACL) | IT / VIBEZ | vor Echtbetrieb |
 | M5 | Löschkonzept beschlossen; Löschfunktion in der App | VIBEZ / IT | Konzept vor Echtbetrieb, Funktion vor Ablauf der ersten Frist |
-| M6 | AV-Verträge: Hetzner, MongoDB, Cloudflare, IT-Dienstleister (inkl. § 203 StGB); DPF-Status prüfen | VIBEZ | vor Echtbetrieb |
+| M6 | AV-Verträge: netcup, Hetzner (Storage Box), MongoDB, Cloudflare, IT-Dienstleister (inkl. § 203 StGB); DPF-Status prüfen | VIBEZ | vor Echtbetrieb |
 | M7 | Auskunftsexport je Klient:in | IT (App) | innerhalb von 6 Monaten |
 | O1 | Geräteregeln für Pädagog:innen, Einweisung | VIBEZ | vor Echtbetrieb |
 | O2 | Informationsblätter ausgeben | VIBEZ | vor Echtbetrieb |

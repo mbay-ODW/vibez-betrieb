@@ -20,7 +20,8 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 
 | Konto | Inhaber | Vertrag / AV | Zugang Murat |
 |---|---|---|---|
-| Hetzner (Cloud + Storage Box) | VIBEZ | AV-Vertrag im Hetzner-Konto abschließen | Projektmitglied, 2FA |
+| netcup (VPS) | VIBEZ | AV-Vertrag im netcup-Kundencenter (CCP) abschließen | eigener SCP-Zugang bzw. Zugriff auf Zuruf, 2FA |
+| Hetzner (nur Storage Box) | VIBEZ | AV-Vertrag im Hetzner-Konto abschließen | Projektmitglied, 2FA |
 | MongoDB Atlas | VIBEZ (Organisation „VIBEZ“) | DPA aus den Atlas-Bedingungen dokumentieren | Projektmitglied „Project Owner“, 2FA |
 | Cloudflare | VIBEZ | DPA aus den Self-Serve-Bedingungen dokumentieren | Mitglied „Administrator“, 2FA |
 | All-Inkl (Domain, DNS) | VIBEZ (bestehend) | – (keine Klientendaten) | nur DNS-Einträge, auf Zuruf |
@@ -37,18 +38,15 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
 
 ## 2. Server bestellen und härten
 
-1. Hetzner Cloud → neues Projekt „VIBEZ Nachweise“ → Server:
-   - Standort **Nürnberg** oder **Falkenstein** (Deutschland)
-   - Image **Debian 13**
-   - Typ: 2 vCPU, 4 GB RAM reichen (Shared vCPU, x86)
-   - IPv4 **an** (feste IP für die Atlas-Zugriffsliste), IPv6 an
-   - SSH-Schlüssel von Murat hinterlegen
-   - Name `vibez-prod`
-   - Backups (Hetzner-Snapshots) **an**: sichert den Server, nicht die Daten (die liegen in Atlas)
-2. **Hetzner Cloud Firewall** „vibez-prod“:
-   - eingehend nur `22/tcp` von Murats aktueller IP (nur für die Einrichtung)
-   - **nach Schritt 2.4 die Regel löschen**, sodass eingehend nichts erlaubt ist
-3. Einrichten (als root, einmalig):
+1. netcup → **VPS Lite 1 G12.5s** (2 vCore, 4 GB RAM, 80 GB SSD; Auswahl und Begründung: [aufbau.md](aufbau.md#serverwahl)):
+   - Standort **Nürnberg** (netcup bietet auch Wien, Amsterdam, USA, Singapur an – nicht wählen)
+   - Image **Debian 13** (im Server Control Panel, SCP, installieren)
+   - feste IPv4 (für die Atlas-Zugriffsliste)
+   - Hostname `vibez-prod`
+   - Snapshot nach der Einrichtung im SCP anlegen (sichert den Server, nicht die Daten – die liegen in Atlas)
+2. Bis zur Einrichtung ist SSH aus dem Internet erreichbar. Deshalb die Einrichtung zügig abschließen. Nach Schritt 5
+   ist eingehend nichts mehr offen (`ufw`).
+3. Einrichten (als root, einmalig) – im Aufbau übernimmt das die KI-Sitzung über Remote Control ([aufbau.md](aufbau.md)):
 
    ```bash
    scp host/bootstrap.sh root@<server-ip>:/root/
@@ -66,10 +64,9 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    ```
 
    Server mit `sudo tailscale up --advertise-tags=tag:vibez-prod` neu anmelden. Andere Geräte im Tailnet haben dann keinen Weg zum Server.
-5. Prüfen: `ssh murat@vibez-prod` (über Tailscale) funktioniert. **Dann** die Firewall-Regel aus 2.2 löschen und testen,
-   dass `ssh murat@<öffentliche-ip>` scheitert.
+5. Prüfen: `ssh murat@vibez-prod` (über Tailscale) funktioniert und `ssh murat@<öffentliche-ip>` scheitert.
 6. Ein **Konsolenpasswort** für `murat` setzen (`sudo passwd murat`) und im Passwortmanager von VIBEZ ablegen. Es wird nur
-   für die Hetzner-Webkonsole im Notfall gebraucht, SSH nimmt weiterhin keine Passwörter an.
+   für die netcup-Konsole (SCP, „Bildschirm“) im Notfall gebraucht, SSH nimmt weiterhin keine Passwörter an.
 
 ## 3. MongoDB Atlas
 
@@ -123,7 +120,7 @@ sudo ./deploy.sh
 
 ## 6. Backup einrichten
 
-1. Hetzner **Storage Box** bestellen, Standort möglichst ein anderes Rechenzentrum als der Server. In der
+1. Hetzner **Storage Box** bestellen (anderer Anbieter und anderer Standort als der netcup-Server). In der
    Storage-Box-Verwaltung SSH-Zugang aktivieren und **automatische Snapshots** einschalten (z. B. täglich, 14 Stück).
    Snapshots lassen sich nur in der Hetzner-Konsole löschen, nicht über SFTP. So übersteht die Sicherung auch einen
    kompromittierten Server.
@@ -179,7 +176,7 @@ Technik (Murat):
 - [ ] Storage-Box-Snapshots aktiv; Tailscale-ACL aktiv (anderes Tailnet-Gerät erreicht Port 22 nicht)
 - [ ] Hilfsdomain: Auto-Verlängerung und Sperre aktiv; CAA-Eintrag gesetzt; Zertifikats-Monitoring eingerichtet
 - [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, Änderungen an Custom Hostnames
-- [ ] 2FA mit Passkey in Cloudflare, Atlas, Hetzner, GitHub, All-Inkl; App-Verwaltung mit 2FA (sobald umgesetzt)
+- [ ] 2FA mit Passkey in Cloudflare, Atlas, netcup, Hetzner, GitHub, All-Inkl; App-Verwaltung mit 2FA (sobald umgesetzt)
 
 Organisation (VIBEZ):
 

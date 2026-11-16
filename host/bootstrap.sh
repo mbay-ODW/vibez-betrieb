@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grundeinrichtung eines frischen Hetzner-Cloud-Servers (Debian 13) für VIBEZ Nachweise.
+# Grundeinrichtung eines frischen netcup-VPS (Debian 13) für VIBEZ Nachweise.
 # Einmal als root ausführen:  ADMIN=murat ADMIN_KEY="ssh-ed25519 AAAA… murat" bash bootstrap.sh
 # Danach ist SSH nur noch per Schlüssel und – nach `tailscale up` – nur noch über Tailscale erreichbar.
 set -euo pipefail
@@ -55,7 +55,7 @@ if [[ -n "${TS_AUTHKEY:-}" ]]; then
 fi
 
 # Host-Firewall: eingehend nur SSH über Tailscale. Erst scharf schalten, wenn Tailscale verbunden ist –
-# sonst sperrt man sich aus. (Die Hetzner-Cloud-Firewall blockt zusätzlich alles von außen.)
+# sonst sperrt man sich aus.
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow in on tailscale0 to any port 22 proto tcp
