@@ -1,12 +1,14 @@
-# VIBEZ Nachweise – Echtbetrieb auf dem VPS (Docker Compose)
+# VIBEZ Nachweise – Echtbetrieb auf dem VPS (Docker Compose), ohne Cloudflare
 #
-# Weg einer Anfrage:  Browser -> Cloudflare (WAF, TLS) -> Tunnel -> cloudflared -> traefik -> app -> MongoDB Atlas (Frankfurt)
-# Der Server hat KEINE offenen Ports: cloudflared baut die Verbindung zu Cloudflare von innen nach außen auf.
+# Weg einer Anfrage:  Browser -> (DNS bei All-Inkl: A nachweise -> Server-IP) -> Traefik :443 (TLS, Let's Encrypt)
+#                     -> App -> MongoDB Atlas (Frankfurt)
+# Offen sind nur 80 (Weiterleitung auf HTTPS) und 443. SSH nur über Tailscale.
+# CrowdSec (auf dem Host) liest das Traefik-Zugriffsprotokoll und sperrt Angreifer per Firewall.
 #
 # Netze:
-#   edge   – cloudflared <-> traefik (ausgehend ins Internet, nur für den Tunnel)
 #   web    – traefik <-> app          (intern, kein Internet)
 #   atlas  – app -> MongoDB Atlas     (ausgehend; Atlas lässt nur die IP dieses Servers zu)
+#   edge   – traefik nach außen       (veröffentlichte Ports 80/443)
 #
 # Alle Werte kommen aus .env (Vorlage: .env.example, Datei nur auf dem Server, chmod 600).
 # Versionen sind fest gepinnt; Aktualisieren nur über deploy.sh (siehe docs/betriebshandbuch.md).
@@ -14,22 +16,6 @@
 name: vibez
 
 services:
-  cloudflared:
-    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION}
-    container_name: vibez-cloudflared
-    restart: unless-stopped
-    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
-    volumes:
-      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
-      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
-    networks: [edge]
-    depends_on:
-      traefik:
-        condition: service_healthy
-    read_only: true
-    security_opt: ["no-new-privileges:true"]
-    mem_limit: 128m
-
   traefik:
     image: traefik:${TRAEFIK_VERSION}
     container_name: vibez-traefik
@@ -38,19 +24,20 @@ services:
       - --configFile=/etc/traefik/traefik.yml
     environment:
       VN_HOST: ${VN_HOST}
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
-      - ./logs/traefik:/var/log/traefik
+      - /srv/vibez/acme:/acme                 # Let's-Encrypt-Zertifikat (acme.json, chmod 600)
+      - ./logs/traefik:/var/log/traefik       # Zugriffsprotokoll, liest CrowdSec
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--configFile=/etc/traefik/traefik.yml"]
       interval: 30s
       timeout: 5s
       retries: 3
-    networks:
-      edge:
-        ipv4_address: 172.30.0.10
-      web: {}
+    networks: [edge, web]
     read_only: true
     security_opt: ["no-new-privileges:true"]
     mem_limit: 128m
@@ -68,6 +55,7 @@ services:
       VN_SECURE_COOKIE: "1"
       VN_HOSTS: ${VN_HOST}          # nur dieser Hostname wird angenommen
       VN_IDLE_MINUTES: "120"        # Abmeldung nach 2 Stunden Inaktivität
+      VN_2FA_PFLICHT: verwaltung    # Zwei-Faktor-Anmeldung Pflicht für die Verwaltung
       TZ: Europe/Berlin
     networks: [web, atlas]
     read_only: true
@@ -76,10 +64,7 @@ services:
     mem_limit: 512m
 
 networks:
-  edge:
-    ipam:
-      config:
-        - subnet: 172.30.0.0/24
+  edge: {}
   web:
     internal: true
   atlas: {}

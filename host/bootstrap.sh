@@ -2,6 +2,7 @@
 # Grundeinrichtung eines frischen netcup-VPS (Debian 13) für VIBEZ Nachweise.
 # Einmal als root ausführen:  ADMIN=murat ADMIN_KEY="ssh-ed25519 AAAA… murat" bash bootstrap.sh
 # Danach ist SSH nur noch per Schlüssel und – nach `tailscale up` – nur noch über Tailscale erreichbar.
+# Öffentlich offen sind nur 80/443 (Traefik); CrowdSec sperrt auffällige Adressen.
 set -euo pipefail
 : "${ADMIN:?ADMIN=<benutzername> setzen}"
 : "${ADMIN_KEY:?ADMIN_KEY=<öffentlicher SSH-Schlüssel> setzen}"
@@ -59,6 +60,10 @@ fi
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow in on tailscale0 to any port 22 proto tcp
+# App: HTTP (nur Weiterleitung + Let's Encrypt) und HTTPS. Docker veröffentlicht diese Ports ohnehin an ufw vorbei;
+# die Regeln stehen hier zur Klarheit. Sperren übernimmt CrowdSec (auch in der DOCKER-USER-Kette).
+ufw allow 80/tcp
+ufw allow 443/tcp
 if tailscale status >/dev/null 2>&1; then
   ufw --force enable
   echo "Firewall aktiv: SSH nur noch über Tailscale ($(tailscale ip -4 | head -1))."
@@ -66,7 +71,22 @@ else
   echo "ACHTUNG: Tailscale nicht verbunden – Firewall NICHT aktiviert. Erst 'tailscale up', dann 'ufw --force enable'."
 fi
 
+# CrowdSec: wertet das Traefik-Zugriffsprotokoll aus (Scanner, Passwort-Durchprobieren, bekannte Exploits),
+# nutzt die Community-Sperrliste und sperrt per Firewall-Bouncer – auch für die Docker-Ports (Kette DOCKER-USER)
+curl -fsSL https://install.crowdsec.net | sh
+apt-get install -y crowdsec crowdsec-firewall-bouncer-iptables
+cscli collections install crowdsecurity/traefik crowdsecurity/http-cve
+install -d -m 755 /etc/crowdsec/acquis.d
+cat > /etc/crowdsec/acquis.d/vibez-traefik.yaml <<'CONF'
+filenames:
+  - /opt/vibez/stack/logs/traefik/access.log
+labels:
+  type: traefik
+CONF
+sed -i 's/^#\?\s*- DOCKER-USER/  - DOCKER-USER/' /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+systemctl restart crowdsec crowdsec-firewall-bouncer
+
 # Verzeichnisse
-install -d -m 700 /srv/vibez /srv/vibez/restic-cache
+install -d -m 700 /srv/vibez /srv/vibez/restic-cache /srv/vibez/acme
 install -d -m 755 /opt/vibez
 echo "Fertig. Weiter mit docs/deployment.md, Schritt „Tailscale verbinden“."

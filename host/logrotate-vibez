@@ -1,5 +1,5 @@
-# Traefik-Zugriffsprotokoll: täglich rotieren, 14 Tage aufbewahren (enthält IP-Adressen)
-/opt/vibez/stack/logs/traefik/*.json {
+# Traefik-Zugriffsprotokoll: täglich rotieren, 14 Tage aufbewahren (enthält IP-Adressen; CrowdSec liest es)
+/opt/vibez/stack/logs/traefik/*.log {
   daily
   rotate 14
   compress

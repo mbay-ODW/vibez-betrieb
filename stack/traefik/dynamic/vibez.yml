@@ -1,13 +1,14 @@
-# Traefik – dynamische Konfiguration: Router, Dienst, Middlewares
+# Traefik – dynamische Konfiguration: Router, Dienst, Middlewares, TLS
 http:
   routers:
     vibez:
-      entryPoints: [web]
+      entryPoints: [websecure]
       rule: 'Host(`{{ env "VN_HOST" }}`)'
       service: vibez-app
-      middlewares: [sicherheit, bremse, groesse]
-
-    # alle anderen Hostnamen (z. B. direkter Aufruf der Hilfs-Adresse) bekommen Traefiks 404
+      middlewares: [kopfzeilen, bremse, groesse]
+      tls:
+        certResolver: letsencrypt
+    # alle anderen Hostnamen (z. B. Aufruf über die nackte IP) bekommen Traefiks 404
 
   services:
     vibez-app:
@@ -20,29 +21,42 @@ http:
           timeout: 5s
 
   middlewares:
-    sicherheit:
+    kopfzeilen:
       headers:
         # CSP, X-Frame-Options, Referrer-Policy u. a. setzt die App selbst
         stsSeconds: 31536000
-        forceSTSHeader: true   # Traefik sieht hinter dem Tunnel nur HTTP
         stsIncludeSubdomains: false
         contentTypeNosniff: true
-        browserXssFilter: false
+        customRequestHeaders:
+          # ohne Cloudflare davor darf niemand eine „echte IP“ vorgaukeln: Header entfernen
+          Cf-Connecting-Ip: ""
+          X-Real-Ip: ""
         customResponseHeaders:
           Server: ""
           X-Powered-By: ""
           X-Robots-Tag: "noindex, nofollow"
 
-    # Ratenbegrenzung je echter Besucher-IP (von Cloudflare im Header Cf-Connecting-Ip übergeben)
+    # Ratenbegrenzung je Client-IP (direkte Verbindung, kein Proxy davor)
     bremse:
       rateLimit:
         average: 20
         period: 1s
         burst: 60
-        sourceCriterion:
-          requestHeaderName: Cf-Connecting-Ip
 
     # Formulare sind klein; Unterschriften als PNG max. ~0,5 MB
     groesse:
       buffering:
         maxRequestBodyBytes: 2000000
+
+tls:
+  options:
+    modern:
+      minVersion: VersionTLS12
+      sniStrict: true
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
