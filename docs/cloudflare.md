@@ -40,6 +40,24 @@ wandert zu Cloudflare.
    - `TXT` unter `_dmarc` (falls vorhanden)
    - `CNAME`/`SRV` für `autoconfig`, `autodiscover`, `_imaps._tcp`, `_submission._tcp` (Mail-Einrichtung)
    - Bestätigungs-`TXT` anderer Dienste (z. B. Google, Microsoft, Apple)
+   **Bestand am 16.11.2026** (KAS, 7 Einträge): Website bei **Webflow**, E-Mail bei **Microsoft 365**.
+
+   | Name | Typ | Wert | In Cloudflare |
+   |---|---|---|---|
+   | `@` | A | `198.202.211.1` (Webflow) | DNS only – Pflicht bei Webflow |
+   | `www` | CNAME | `cdn.webflow.com` | DNS only – Pflicht bei Webflow |
+   | `@` | MX 0 | `vibezjugendhilfe-de01c.mail.protection.outlook.com` | DNS only |
+   | `@` | TXT | `MS=ms32462337` (Microsoft-Domainnachweis) | DNS only |
+   | `@` | TXT | `v=spf1 include:spf.protection.outlook.com -all` | DNS only |
+   | `_dmarc` | TXT | `v=DMARC1; p=none;` | DNS only |
+   | `kas202606290135._domainkey` | TXT | DKIM-Schlüssel von All-Inkl (für Microsoft 365 nicht genutzt) | übernehmen, schadet nicht |
+
+   Am einfachsten: bei All-Inkl **„Export als BIND-Zonefile“**, in Cloudflare unter *DNS → Records → Import* hochladen,
+   danach jede Zeile prüfen und alle Wolken auf grau stellen.
+
+   Nebenbefund (nicht Teil der App): Für Microsoft 365 fehlen die DKIM-Einträge (`selector1._domainkey`,
+   `selector2._domainkey`) und DMARC steht auf `p=none`. Empfehlung: DKIM im Microsoft-Defender-Portal aktivieren,
+   danach DMARC schrittweise auf `p=quarantine`.
 2. **DNSSEC** prüfen: Ist es bei All-Inkl aktiv, **vorher ausschalten**. Sonst ist die Domain nach dem Umstellen nicht
    erreichbar. Nach dem Umzug kann DNSSEC in Cloudflare neu eingeschaltet werden; den DS-Eintrag setzt dann All-Inkl.
 3. **In Cloudflare:** *Add a domain* → `vibez-jugendhilfe.de` → Free-Plan. Cloudflare liest die vorhandenen Einträge ein.
