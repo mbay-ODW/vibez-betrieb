@@ -89,6 +89,8 @@ services:
     container_name: vibez-usersync
     restart: unless-stopped
     command: ["python", "-m", "app.usersync"]
+    healthcheck:
+      disable: true                 # kein Webserver; der HTTP-Check des App-Images passt hier nicht
     profiles: ["authelia"]          # startet nur mit COMPOSE_PROFILES=authelia (siehe .env)
     environment:
       MONGODB_URI: ${MONGODB_URI}
