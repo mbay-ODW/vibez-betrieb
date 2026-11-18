@@ -159,8 +159,11 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 - Der netcup-Vertrag läuft auf Murat, die Storage Box auf VIBEZ. 2FA ist Pflicht, kein geteiltes Login. Der Notzugang zur netcup-Konsole muss VIBEZ auch ohne Murat möglich sein (Zugangsdaten versiegelt bzw. im Passwortmanager von VIBEZ).
 - **Aufbauphase:** Nur solange keine echten Daten vorhanden sind, richtet eine KI-Sitzung den Server über Remote Control ein.
   Danach wird dieser Zugang vollständig entfernt ([aufbau.md](aufbau.md)).
-- **Keine KI-/Automations-Zugänge zum Echtbetrieb:** Der VPS wird **nicht** in Portainer, MCP-Server oder andere
-  Werkzeuge eingebunden, über die KI-Assistenten Befehle ausführen oder Daten lesen könnten. Entwicklung und Tests laufen
+- **Verwaltungsoberflächen wie bei DRK (Entscheidung Murat, 18.11.2026): LLDAP (Benutzer und Gruppen), Authelia (Anmeldung mit 2FA), Portainer, Dozzle und Uptime Kuma auf dem Server, nur über den Tunnel unter `auth.`, `ldap.`, `portainer.`, `logs.` und `status.vibez-odenwald.de`; Zugang nur für die LDAP-Gruppe `vibez-infra_admin` mit zweitem Faktor** (Stack [`stack-admin/`](../stack-admin/compose.yml), Regeln in
+  [`stack-admin/authelia/configuration.yml`](../stack-admin/authelia/configuration.yml)). Die App-Konten folgen mit der
+  LDAP-Anbindung der App (Gruppen `vibez-app_admin`/`vibez-app_user`, Testing `vibez-testing_*`).
+- **Keine KI-/Automations-Zugänge zum Echtbetrieb:** Portainer und die anderen Oberflächen werden **nicht** an MCP-Server
+  oder andere Werkzeuge angebunden, über die KI-Assistenten Befehle ausführen oder Daten lesen könnten. Entwicklung und Tests laufen
   ausschließlich mit der Demo und erfundenen Daten.
 - Jede Wartung mit Datenbankzugriff wird im Wartungsprotokoll vermerkt ([Betriebshandbuch](betriebshandbuch.md#wartungsprotokoll)).
 

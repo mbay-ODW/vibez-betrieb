@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.17 – **Entwurf** vom 18.11.2026 (SSH ohne Tailscale auf Port 5022; Atlas Flex mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.18 – **Entwurf** vom 18.11.2026 (Verwaltungsoberflächen wie bei DRK: LLDAP, Authelia mit 2FA, Portainer, Dozzle, Uptime Kuma – nur Gruppe `vibez-infra_admin`; SSH ohne Tailscale auf Port 5022; Atlas Flex mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -329,7 +329,8 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 ### R7 – Kompromittierung des Servers
 *Vertraulichkeit, Integrität, Verfügbarkeit · Schwere: groß · Wahrscheinlichkeit: überschaubar → Risiko mittel*
 
-- ✅ Keine offenen Ports (Cloudflare Tunnel, Host-Firewall ohne eingehende Regeln)
+- ✅ Kein Web-Port am Server (Cloudflare Tunnel); eingehend nur SSH 5022
+- ✅ Verwaltungsoberflächen nur über den Tunnel und Authelia (2FA, Gruppe `vibez-infra_admin`); Cloudflare-WAF: nur EU/CH, keine bekannten Bots, nur bekannte Hostnamen
 - ✅ SSH nur per Schlüssel auf Port 5022, kein root- und Passwort-Login, `ufw limit` (Ratenbegrenzung) (Entscheidung 18.11.2026: kein VPN; SSH ist öffentlich erreichbar)
 - ✅ Automatische Sicherheitsupdates; Container read-only, ohne Zusatzrechte, feste Versionen; interne Netze ohne Internet für Traefik/App-Frontnetz
 - ✅ Geheimnisse nur auf dem Server (`.env`, Rechte 600), nicht im Repository
@@ -343,7 +344,8 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
 - ⏳ Atlas und Storage Box gehören VIBEZ (Dienstleister nur als Mitglied mit 2FA). Server (netcup), Cloudflare-Zone und Domain laufen dauerhaft auf dem Dienstleister: Unterauftrag im AV-Vertrag genehmigt, Übertragung bzw. Neuaufbau bei Ende der Betreuung geregelt, Notzugang für VIBEZ zur netcup-Konsole. Die Klientendaten liegen in Atlas unter dem Vertrag von VIBEZ; der Server ist ersetzbar
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
-- ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, kein SSH, keine Datenbank); Entwicklung nur mit erfundenen Daten (T12)
+- ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer-MCP o. ä., kein SSH, keine Datenbank); Entwicklung nur mit erfundenen Daten (T12)
+- ⏳ **Verwaltungsoberflächen wie bei DRK (Entscheidung Murat, 18.11.2026): LLDAP (Benutzer und Gruppen), Authelia (Anmeldung mit 2FA), Portainer, Dozzle und Uptime Kuma auf dem Server, nur über den Tunnel unter `auth.`, `ldap.`, `portainer.`, `logs.` und `status.vibez-odenwald.de`; Zugang nur für die LDAP-Gruppe `vibez-infra_admin` mit zweitem Faktor.** Portainer kann in jeden Container (auch die App) und damit mittelbar auf alle Daten in Atlas zugreifen; Dozzle zeigt Container-Protokolle, die Personendaten enthalten können. Begrenzung: nur benannte Personen in der Gruppe, Authelia mit TOTP/Passkey, Sperre nach 5 Fehlversuchen, Sitzungsende nach 2 h Inaktivität, Oberflächen nie mit KI-Werkzeugen verbinden; Mitgliedschaft in `vibez-infra_admin` bei jeder monatlichen Wartung prüfen. **Restrisiko von VIBEZ (Geschäftsführung) bewusst zu akzeptieren.**
 - ⏳ **Begrenzte Ausnahme Cloudflare (T12):** Die KI-Werkzeuge des Dienstleisters sind über die Cloudflare-Anbindung (MCP) mit seinem Konto verbunden, in dem die Zone `vibez-odenwald.de` liegt. Sie sehen keine Inhalte, könnten aber DNS, WAF oder Tunnel-Routing ändern und den Datenverkehr umleiten. Begrenzung: Änderungen nur mit ausdrücklicher Freigabe des Dienstleisters im Einzelfall und Eintrag im Wartungsprotokoll; Cloudflare-Benachrichtigung bei DNS-Änderungen; Prüfung des Cloudflare-Audit-Logs bei der monatlichen Wartung; Konto mit 2FA (Passkey)
 - ✅ **Aufbauphase:** Die Installation mit KI ist ausdrücklich erlaubt (jeder von Murat bereitgestellte Zugang: Claude Code auf dem Server, Remote Control, SSH, API-Tokens), aber nur, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
 
@@ -428,7 +430,7 @@ liegen als Bild vor.
 | O4 | Datenschutzbeauftragte:n benennen und der Aufsichtsbehörde melden (§ 38 BDSG, Art. 37 Abs. 7 DSGVO) | VIBEZ | vor Echtbetrieb |
 | O5 | Verzeichnis der Verarbeitungstätigkeiten ergänzen ([vvt.md](vvt.md)) | VIBEZ | vor Echtbetrieb |
 | O6 | Leistungsvereinbarungen auf Datenschutzvorgaben prüfen; Jugendämter informieren | VIBEZ | vor Echtbetrieb |
-| T12 | Kein KI-/Automationszugriff auf den Echtbetrieb; Prüfpunkt in der Abnahme. **Ausnahme:** Konfiguration der Cloudflare-Zone über Murats Cloudflare-Anbindung (MCP) – nur Einstellungen, keine Inhalte; Änderungen nur mit Freigabe im Einzelfall, Wartungsprotokoll, DNS-Änderungs-Benachrichtigung, monatliche Prüfung des Audit-Logs (Entscheidung 18.11.2026) | IT | dauerhaft |
+| T12 | Kein KI-/Automationszugriff auf den Echtbetrieb; Prüfpunkt in der Abnahme. Verwaltungsoberflächen (Portainer, Dozzle, LLDAP, Uptime Kuma) nur für Menschen in `vibez-infra_admin` mit 2FA, nie an KI-Werkzeuge (z. B. Portainer-MCP) angebunden. **Ausnahme:** Konfiguration der Cloudflare-Zone über Murats Cloudflare-Anbindung (MCP) – nur Einstellungen, keine Inhalte; Änderungen nur mit Freigabe im Einzelfall, Wartungsprotokoll, DNS-Änderungs-Benachrichtigung, monatliche Prüfung des Audit-Logs (Entscheidung 18.11.2026) | IT | dauerhaft |
 
 ## 8. Restrisiko und Ergebnis
 

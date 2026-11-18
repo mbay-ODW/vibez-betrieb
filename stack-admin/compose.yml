@@ -1,0 +1,115 @@
+# VIBEZ Nachweise – Verwaltungs-Stack (wie DRK): LLDAP, Authelia, Portainer, Dozzle, Uptime Kuma
+#
+# Erreichbar nur über den Cloudflare-Tunnel und Traefik (Stack „vibez“), jede Adresse hinter Authelia (2FA)
+# und nur für die LDAP-Gruppe „vibez-infra_admin“ (Regeln: authelia/configuration.yml).
+#
+# Netze:
+#   vibez-admin  – traefik <-> Oberflächen (intern, kein Internet; wird von diesem Stack angelegt)
+#   admin-intern – authelia <-> redis, lldap (LDAP 3890) (intern)
+#   admin-out    – nur uptime-kuma (ausgehend für Prüfungen)
+#
+# Geheimnisse liegen nur auf dem Server: .env (Versionen, LLDAP_KEY_SEED) und secrets/ (Dateien, 600).
+# Entscheidung Murat 18.11.2026; Bewertung in datenschutz/dsfa.md (T12).
+
+name: vibez-admin
+
+services:
+  redis:
+    image: redis:${REDIS_VERSION}
+    container_name: vibez-admin-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]   # nur Sitzungen, nichts auf Platte
+    networks: [admin-intern]
+    read_only: true
+    tmpfs: ["/data"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 64m
+
+  lldap:
+    image: lldap/lldap:${LLDAP_VERSION}
+    container_name: vibez-admin-lldap
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      LLDAP_LDAP_BASE_DN: dc=vibez-odenwald,dc=de
+      LLDAP_HTTP_URL: https://ldap.vibez-odenwald.de
+      LLDAP_KEY_SEED: ${LLDAP_KEY_SEED}
+      LLDAP_JWT_SECRET_FILE: /run/secrets/lldap_jwt_secret
+      LLDAP_LDAP_USER_PASS_FILE: /run/secrets/lldap_admin_pass
+      LLDAP_FORCE_LDAP_USER_PASS_RESET: "false"
+    volumes:
+      - /srv/vibez/admin/lldap:/data
+      - ./secrets/lldap_jwt_secret:/run/secrets/lldap_jwt_secret:ro
+      - ./secrets/lldap_admin_pass:/run/secrets/lldap_admin_pass:ro
+      - ./lldap/bootstrap:/bootstrap:ro
+      - ./secrets/lldap-users:/bootstrap-users:ro
+    networks: [vibez-admin, admin-intern]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+  authelia:
+    image: authelia/authelia:${AUTHELIA_VERSION}
+    container_name: authelia
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      X_AUTHELIA_CONFIG_FILTERS: template
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: /secrets/jwt_secret
+      AUTHELIA_SESSION_SECRET_FILE: /secrets/session_secret
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: /secrets/storage_key
+      AUTHELIA_AUTHENTICATION_BACKEND_LDAP_PASSWORD_FILE: /secrets/ldap_authelia_pass
+    volumes:
+      - ./authelia/configuration.yml:/config/configuration.yml:ro
+      - /srv/vibez/admin/authelia:/data
+      - ./secrets/authelia:/secrets:ro
+    depends_on: [redis, lldap]
+    networks: [vibez-admin, admin-intern]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+
+  portainer:
+    image: portainer/portainer-ce:${PORTAINER_VERSION}
+    container_name: vibez-admin-portainer
+    restart: unless-stopped
+    command: ["-H", "unix:///var/run/docker.sock", "--admin-password-file", "/run/secrets/portainer_admin_pass"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/vibez/admin/portainer:/data
+      - ./secrets/portainer_admin_pass:/run/secrets/portainer_admin_pass:ro
+    networks: [vibez-admin]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+
+  dozzle:
+    image: amir20/dozzle:${DOZZLE_VERSION}
+    container_name: vibez-admin-dozzle
+    restart: unless-stopped
+    environment:
+      DOZZLE_AUTH_PROVIDER: forward-proxy     # Benutzer kommt von Authelia (Remote-User)
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [vibez-admin]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:${UPTIME_KUMA_VERSION}
+    container_name: vibez-admin-uptime-kuma
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+    volumes:
+      - /srv/vibez/admin/uptime-kuma:/app/data
+    networks: [vibez-admin, admin-out]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+
+networks:
+  vibez-admin:
+    name: vibez-admin
+    internal: true
+  admin-intern:
+    internal: true
+  admin-out: {}

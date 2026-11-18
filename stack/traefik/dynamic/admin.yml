@@ -1,0 +1,60 @@
+# Traefik – Verwaltungsoberflächen (Stack „vibez-admin“), jede Adresse hinter Authelia.
+# Wer was darf, steht in stack-admin/authelia/configuration.yml (LDAP-Gruppen).
+http:
+  middlewares:
+    authelia:
+      forwardAuth:
+        address: http://authelia:9091/api/authz/forward-auth
+        trustForwardHeader: true          # X-Forwarded-* setzt nur cloudflared (trustedIPs in traefik.yml)
+        authResponseHeaders: [Remote-User, Remote-Groups, Remote-Email, Remote-Name]
+    admin-header:
+      headers:
+        stsSeconds: 31536000
+        forceSTSHeader: true
+        contentTypeNosniff: true
+        referrerPolicy: same-origin
+        frameDeny: true
+
+  routers:
+    auth:
+      entryPoints: [web]
+      rule: Host(`auth.vibez-odenwald.de`)
+      service: authelia
+      middlewares: [admin-header, bremse]
+    ldap:
+      entryPoints: [web]
+      rule: Host(`ldap.vibez-odenwald.de`)
+      service: lldap
+      middlewares: [admin-header, authelia]
+    portainer:
+      entryPoints: [web]
+      rule: Host(`portainer.vibez-odenwald.de`)
+      service: portainer
+      middlewares: [admin-header, authelia]
+    logs:
+      entryPoints: [web]
+      rule: Host(`logs.vibez-odenwald.de`)
+      service: dozzle
+      middlewares: [admin-header, authelia]
+    status:
+      entryPoints: [web]
+      rule: Host(`status.vibez-odenwald.de`)
+      service: uptime-kuma
+      middlewares: [admin-header, authelia]
+
+  services:
+    authelia:
+      loadBalancer:
+        servers: [{url: "http://authelia:9091"}]
+    lldap:
+      loadBalancer:
+        servers: [{url: "http://vibez-admin-lldap:17170"}]
+    portainer:
+      loadBalancer:
+        servers: [{url: "http://vibez-admin-portainer:9000"}]
+    dozzle:
+      loadBalancer:
+        servers: [{url: "http://vibez-admin-dozzle:8080"}]
+    uptime-kuma:
+      loadBalancer:
+        servers: [{url: "http://vibez-admin-uptime-kuma:3001"}]

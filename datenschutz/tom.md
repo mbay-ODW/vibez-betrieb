@@ -22,6 +22,7 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 | **Keine Drittinhalte:** Schrift lokal, keine CDNs/Tracker; Content-Security-Policy; Cloudflare-Skripteinfügungen abgeschaltet | ✅ |
 | **Kein Caching sensibler Seiten:** `Cache-Control: no-store`, Cloudflare Cache-Regel „Bypass“ | ✅ |
 | **Keine KI-/Automationszugriffe** auf den Echtbetrieb; Entwicklung nur mit erfundenen Daten | ✅ (Prüfpunkt Abnahme) |
+| **Verwaltungsoberflächen** (LLDAP, Portainer, Dozzle, Uptime Kuma) nur über Cloudflare-Tunnel und Authelia: zweiter Faktor (TOTP/Passkey) Pflicht, nur LDAP-Gruppe `vibez-infra_admin`, Sperre nach 5 Fehlversuchen, Abmeldung nach 2 h Inaktivität; Gruppenmitglieder monatlich prüfen | ✅ (18.11.2026) |
 | **Geheimnisse** nur auf dem Server (`.env` 600) bzw. im Passwortmanager von VIBEZ; nie im Repository | ✅ |
 
 ## Integrität

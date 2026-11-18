@@ -92,15 +92,15 @@ Die Einstellungen wirken nur auf **proxied** Einträge, also auf die App.
 
 ## WAF-Regeln
 
-**Security → Security rules → Custom rules** (Free: 5 Regeln). Alle Regeln sind auf die App-Adresse beschränkt.
+**Security → Security rules → Custom rules** (Free: 5 Regeln). Regeln 2 und 4 gelten nur für die App (Portainer und LLDAP brauchen `/api/` und `PUT`/`DELETE`), 1, 3 und 5 für alle Adressen (Stand 18.11.2026, Version 4 des Regelsatzes).
 
 | Nr. | Name | Ausdruck | Aktion |
 |---|---|---|---|
-| 1 | Nur EU und Schweiz | `(http.host eq "nachweise.vibez-odenwald.de" and not ip.src.country in {"AT" "BE" "BG" "CH" "CY" "CZ" "DE" "DK" "EE" "ES" "FI" "FR" "GR" "HR" "HU" "IE" "IT" "LI" "LT" "LU" "LV" "MT" "NL" "PL" "PT" "RO" "SE" "SI" "SK"})` | Block |
+| 1 | Nur EU und Schweiz (alle Adressen) | `(not ip.src.country in {"AT" "BE" "BG" "CH" "CY" "CZ" "DE" "DK" "EE" "ES" "FI" "FR" "GR" "HR" "HU" "IE" "IT" "LI" "LT" "LU" "LV" "MT" "NL" "PL" "PT" "RO" "SE" "SI" "SK"})` | Block |
 | 2 | Scanner-Pfade | `(http.host eq "nachweise.vibez-odenwald.de" and (http.request.uri.path contains "/." or http.request.uri.path contains ".php" or http.request.uri.path contains "wp-" or http.request.uri.path contains "xmlrpc" or http.request.uri.path contains "phpmyadmin" or http.request.uri.path contains "cgi-bin" or http.request.uri.path contains "/admin" or http.request.uri.path contains "/api/"))` | Block |
-| 3 | Bekannte Bots | `(http.host eq "nachweise.vibez-odenwald.de" and cf.client.bot)` | Block |
+| 3 | Bekannte Bots (alle Adressen) | `(cf.client.bot)` | Block |
 | 4 | Nur übliche Methoden | `(http.host eq "nachweise.vibez-odenwald.de" and not http.request.method in {"GET" "HEAD" "POST"})` | Block |
-| 5 | Unbekannte proxied Hosts | `(http.host ne "nachweise.vibez-odenwald.de")` | Block |
+| 5 | Unbekannte proxied Hosts | `(not http.host in {"nachweise.vibez-odenwald.de" "auth.vibez-odenwald.de" "ldap.vibez-odenwald.de" "portainer.vibez-odenwald.de" "logs.vibez-odenwald.de" "status.vibez-odenwald.de"})` | Block |
 
 Regel 5 sperrt alle anderen Namen der Zone, die über Cloudflare laufen. Wird `@`/`www` als Weiterleitung genutzt,
 Regel 5 auf `not http.host in {"nachweise.vibez-odenwald.de" "vibez-odenwald.de" "www.vibez-odenwald.de"}` erweitern.

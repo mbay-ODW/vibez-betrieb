@@ -8,4 +8,15 @@ ingress:
   # Adresse der App (proxied CNAME in der Zone vibez-odenwald.de, angelegt mit `tunnel route dns`)
   - hostname: nachweise.vibez-odenwald.de
     service: http://traefik:80
+  # Verwaltung (Stack stack-admin), alle hinter Authelia
+  - hostname: auth.vibez-odenwald.de
+    service: http://traefik:80
+  - hostname: ldap.vibez-odenwald.de
+    service: http://traefik:80
+  - hostname: portainer.vibez-odenwald.de
+    service: http://traefik:80
+  - hostname: logs.vibez-odenwald.de
+    service: http://traefik:80
+  - hostname: status.vibez-odenwald.de
+    service: http://traefik:80
   - service: http_status:404

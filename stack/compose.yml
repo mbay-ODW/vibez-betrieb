@@ -51,6 +51,7 @@ services:
       edge:
         ipv4_address: 172.30.0.10
       web: {}
+      vibez-admin: {}   # Verwaltungsoberflächen und Authelia (Stack stack-admin)
     read_only: true
     security_opt: ["no-new-privileges:true"]
     mem_limit: 128m
@@ -86,3 +87,5 @@ networks:
   web:
     internal: true
   atlas: {}
+  vibez-admin:
+    external: true    # wird von stack-admin angelegt (intern, kein Internet)

@@ -1,0 +1,82 @@
+# Authelia – Anmeldung (2FA) vor allen Oberflächen von VIBEZ Nachweise. Geheimnisse kommen aus /secrets (*_FILE).
+# Benutzer und Gruppen: LLDAP. Regeln: Standard „deny“, Freigabe nur per Gruppe.
+
+theme: auto
+
+server:
+  address: tcp://0.0.0.0:9091/
+  endpoints:
+    authz:
+      forward-auth:
+        implementation: ForwardAuth
+
+log:
+  level: info
+
+ntp:
+  disable_startup_check: true   # kein NTP-Zugang im internen Netz; Uhrzeit kommt vom Host
+
+totp:
+  issuer: vibez-odenwald.de
+
+webauthn:
+  disable: false
+  display_name: VIBEZ Nachweise
+
+authentication_backend:
+  refresh_interval: 1m           # Gruppenänderungen in LLDAP wirken nach spätestens 1 Minute
+  password_reset:
+    disable: false
+  ldap:
+    implementation: lldap
+    address: ldap://lldap:3890
+    base_dn: dc=vibez-odenwald,dc=de
+    user: uid=authelia,ou=people,dc=vibez-odenwald,dc=de
+
+password_policy:
+  standard:
+    enabled: true
+    min_length: 12
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: auth.vibez-odenwald.de
+      policy: bypass
+    # Verwaltungswerkzeuge: nur Gruppe vibez-infra_admin, immer mit zweitem Faktor
+    - domain:
+        - ldap.vibez-odenwald.de
+        - portainer.vibez-odenwald.de
+        - logs.vibez-odenwald.de
+        - status.vibez-odenwald.de
+      subject: group:vibez-infra_admin
+      policy: two_factor
+    # App-Regeln (nachweise, nachweise-testing) folgen mit der LDAP-Anbindung der App (0.3.0)
+
+session:
+  name: vibez_auth
+  inactivity: 2h
+  expiration: 12h
+  remember_me: -1
+  cookies:
+    - domain: vibez-odenwald.de
+      authelia_url: https://auth.vibez-odenwald.de
+      default_redirection_url: https://nachweise.vibez-odenwald.de
+  redis:
+    host: redis
+    port: 6379
+
+regulation:
+  max_retries: 5
+  find_time: 10m
+  ban_time: 30m
+
+storage:
+  local:
+    path: /data/db.sqlite3
+
+notifier:
+  # Vorerst ohne Mailversand: Codes für 2FA-Registrierung und Passwort-Reset stehen in dieser Datei auf dem Server.
+  # Später durch SMTP ersetzen.
+  filesystem:
+    filename: /data/benachrichtigungen.txt

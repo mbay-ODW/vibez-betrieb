@@ -153,12 +153,17 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Stack gestartet: `VN_VERSION=0.2.6@sha256:8c8fbf3d…` in `.env`, `deploy.sh` ohne Versionsangabe (erster Start, leere Datenbank – Backup vor dem Update entfällt, restic folgt in Schritt 5); Verwaltungskonto `tobias` mit Startpasswort vom Server | ✅ | – |
 | 18.11.2026 | Traefik-Health-Check sendet jetzt den App-Hostnamen (`hostname` in `vibez.yml`), sonst 400 wegen `VN_HOSTS` | ✅ | `/health`, `/login`, `/hilfe` über Cloudflare 200; HSTS, CSP, `X-Frame-Options`, `no-store` gesetzt; Tunnel mit 4 Verbindungen; eingehend nur 5022 |
 | 18.11.2026 | `/root/aufbau/zugaenge-fuer-bitwarden.sh`: zeigt Murat die auf dem Server erzeugten Zugänge im eigenen Terminal zum Übertragen in Bitwarden | ✅ | Nur von Murat auszuführen |
+| 18.11.2026 | Verwaltungs-Stack `stack-admin/` gestartet (Entscheidung Murat, wie DRK): Redis 8.8.4, LLDAP v0.6.3, Authelia 4.39.28, Portainer CE 2.45.3, Dozzle v11.4.3, Uptime Kuma 2.5.12; Geheimnisse auf dem Server erzeugt (`stack-admin/.env`, `stack-admin/secrets/`) | ✅ | Daten unter `/srv/vibez/admin/` |
+| 18.11.2026 | LLDAP-Bootstrap: Gruppen `vibez-infra_admin`, `vibez-app_admin`, `vibez-app_user`, `vibez-testing_admin`, `vibez-testing_user`; Dienstkonto `authelia` (Gruppe `lldap_password_manager`) | ✅ | Benutzer legt Murat an |
+| 18.11.2026 | Traefik am Netz `vibez-admin`, Routen `admin.yml` mit Authelia-ForwardAuth; cloudflared-Ingress und DNS für `auth`, `ldap`, `portainer`, `logs`, `status` (neuer `tunnel login`, `cert.pem` danach gelöscht) | ✅ | Erster Versuch ohne angekommene Bestätigung: nichts angelegt, Login neu gestartet |
+| 18.11.2026 | Cloudflare-WAF angepasst (Wartungsprotokoll `wartung/2026.md`); Probe: alle fünf Adressen leiten ohne Anmeldung auf `auth.` um, gefälschte `Remote-User`/`Remote-Groups` werden ignoriert, App weiter 200 | ✅ | DSFA 0.18, TOM, Architektur angepasst |
 
 ## Übergabe-Checkliste
 
 Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
+- [ ] LLDAP-`admin` und Portainer-Admin: Passwörter in Bitwarden, persönliche Konten in `vibez-infra_admin` mit 2FA eingerichtet; `stack-admin/secrets/portainer_admin_pass` und `lldap-users/` vom Server gelöscht
 - [ ] `/etc/sudoers.d/90-aufbau` gelöscht (sudo für `murat` wieder mit Passwort; vorher Passwort setzen)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht

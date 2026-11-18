@@ -165,7 +165,7 @@ Technik (Murat):
 - [ ] Backup gelaufen, Restore-Test erfolgreich, Uptime-Kuma-Monitore grün
 - [ ] Sicherung: erster restic-Lauf und Restore-Test erfolgreich (Atlas hält bei Flex nur 7 Tage); Atlas-Speicheralarm bei 70 % eingerichtet
 - [ ] restic-Passwort und Konsolenpasswort liegen im Passwortmanager von VIBEZ (Gegencheck durch Tobias)
-- [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
+- [ ] Der Server ist **nicht** an MCP-Server oder sonstige KI-/Automationswerkzeuge angebunden (auch Portainer nicht); Verwaltungsoberflächen nur mit Authelia-2FA für `vibez-infra_admin` (Probe: ohne Anmeldung leitet jede Adresse auf `auth.` um)
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen
 - [ ] Storage-Box-Snapshots aktiv; SSH nur auf 5022 mit Schlüssel (Passwort-Login abgelehnt geprüft)
 - [ ] Domain `vibez-odenwald.de`: DNSSEC aktiv, CAA und Mail-Schutz gesetzt, Transfer Lock und automatische Verlängerung an, Zertifikats-Monitoring eingerichtet

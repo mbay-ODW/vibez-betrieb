@@ -7,4 +7,6 @@ stack/logs/
 *.archive.gz
 *.key
 stack/secrets/
+stack-admin/.env
+stack-admin/secrets/
 *.pem
