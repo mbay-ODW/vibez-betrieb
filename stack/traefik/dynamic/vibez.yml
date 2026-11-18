@@ -5,7 +5,7 @@ http:
       entryPoints: [web]
       rule: 'Host(`{{ env "VN_HOST" }}`)'
       service: vibez-app
-      middlewares: [sicherheit, bremse, groesse]
+      middlewares: [remote-weg, bremse, authelia, proxy-geheimnis, sicherheit, groesse]   # Anmeldung über Authelia (ab 0.3.0)
 
     # alle anderen Hostnamen (z. B. direkter Aufruf der Hilfs-Adresse) bekommen Traefiks 404
 

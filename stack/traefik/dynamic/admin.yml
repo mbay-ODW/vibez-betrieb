@@ -2,6 +2,21 @@
 # Wer was darf, steht in stack-admin/authelia/configuration.yml (LDAP-Gruppen).
 http:
   middlewares:
+    # Vor Authelia: alle vom Client mitgeschickten Identitäts-Header entfernen (sonst könnte ein Header, den
+    # Authelia nicht setzt, unverändert durchrutschen). Authelia setzt sie danach neu.
+    remote-weg:
+      headers:
+        customRequestHeaders:
+          Remote-User: ""
+          Remote-Groups: ""
+          Remote-Name: ""
+          Remote-Email: ""
+          X-Proxy-Secret: ""
+    # Nach Authelia: Geheimnis für die App (sie glaubt den Remote-*-Headern nur damit)
+    proxy-geheimnis:
+      headers:
+        customRequestHeaders:
+          X-Proxy-Secret: '{{ env "VN_PROXY_SECRET" }}'
     authelia:
       forwardAuth:
         address: http://authelia:9091/api/authz/forward-auth
@@ -25,22 +40,22 @@ http:
       entryPoints: [web]
       rule: Host(`ldap.vibez-odenwald.de`)
       service: lldap
-      middlewares: [admin-header, authelia]
+      middlewares: [remote-weg, admin-header, authelia]
     portainer:
       entryPoints: [web]
       rule: Host(`portainer.vibez-odenwald.de`)
       service: portainer
-      middlewares: [admin-header, authelia]
+      middlewares: [remote-weg, admin-header, authelia]
     logs:
       entryPoints: [web]
       rule: Host(`logs.vibez-odenwald.de`)
       service: dozzle
-      middlewares: [admin-header, authelia]
+      middlewares: [remote-weg, admin-header, authelia]
     status:
       entryPoints: [web]
       rule: Host(`status.vibez-odenwald.de`)
       service: uptime-kuma
-      middlewares: [admin-header, authelia]
+      middlewares: [remote-weg, admin-header, authelia]
 
   services:
     authelia:

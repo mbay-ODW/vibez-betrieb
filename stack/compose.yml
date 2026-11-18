@@ -38,6 +38,7 @@ services:
       - --configFile=/etc/traefik/traefik.yml
     environment:
       VN_HOST: ${VN_HOST}
+      VN_PROXY_SECRET: ${VN_PROXY_SECRET}   # setzt Traefik als X-Proxy-Secret (dynamic/vibez.yml)
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
@@ -68,7 +69,10 @@ services:
       VN_DEMO: "0"
       VN_SECURE_COOKIE: "1"
       VN_HOSTS: ${VN_HOST}          # nur dieser Hostname wird angenommen
-      VN_IDLE_MINUTES: "120"        # Abmeldung nach 2 Stunden Inaktivität
+      VN_IDLE_MINUTES: "120"        # Abmeldung nach 2 Stunden Inaktivität (lokaler Modus; sonst Authelia)
+      VN_AUTH: ${VN_AUTH:-lokal}    # authelia = Anmeldung über Authelia/LDAP (ab 0.3.0)
+      VN_PROXY_SECRET: ${VN_PROXY_SECRET}
+      VN_LOGOUT_URL: https://auth.vibez-odenwald.de/logout
       TZ: Europe/Berlin
     volumes:
       # X.509-Zertifikat für Atlas (Benutzer „prod“), Besitzer UID 10001, Rechte 400
@@ -79,6 +83,30 @@ services:
     security_opt: ["no-new-privileges:true"]
     mem_limit: 512m
 
+  usersync:
+    # Abgleich LDAP-Gruppen -> App-Konten (ab 0.3.0), deaktiviert Konten ohne App-Gruppe
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_VERSION}
+    container_name: vibez-usersync
+    restart: unless-stopped
+    command: ["python", "-m", "app.usersync"]
+    profiles: ["authelia"]          # startet nur mit COMPOSE_PROFILES=authelia (siehe .env)
+    environment:
+      MONGODB_URI: ${MONGODB_URI}
+      VN_LDAP_URL: ldap://lldap:3890
+      VN_LDAP_BASE_DN: dc=vibez-odenwald,dc=de
+      VN_LDAP_BIND_DN: uid=vibez-usersync,ou=people,dc=vibez-odenwald,dc=de
+      VN_LDAP_PASSWORD_FILE: /run/secrets/ldap_usersync_pass
+      VN_SYNC_MINUTEN: "10"
+      TZ: Europe/Berlin
+    volumes:
+      - ./secrets/atlas-app.pem:/run/secrets/atlas-app.pem:ro
+      - ../stack-admin/secrets/ldap_usersync_pass:/run/secrets/ldap_usersync_pass:ro
+    networks: [atlas, vibez-ldap]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
 networks:
   edge:
     ipam:
@@ -87,5 +115,7 @@ networks:
   web:
     internal: true
   atlas: {}
+  vibez-ldap:
+    external: true    # wird von stack-admin angelegt (intern)
   vibez-admin:
     external: true    # wird von stack-admin angelegt (intern, kein Internet)

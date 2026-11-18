@@ -51,7 +51,16 @@ access_control:
         - status.vibez-odenwald.de
       subject: group:vibez-infra_admin
       policy: two_factor
-    # App-Regeln (nachweise, nachweise-testing) folgen mit der LDAP-Anbindung der App (0.3.0)
+    # App Produktion: Health-Check ohne Anmeldung (Uptime Kuma), sonst nur App-Gruppen mit zweitem Faktor
+    - domain: nachweise.vibez-odenwald.de
+      resources: ['^/health$']
+      policy: bypass
+    - domain: nachweise.vibez-odenwald.de
+      subject:
+        - group:vibez-app_admin
+        - group:vibez-app_user
+      policy: two_factor
+    # Testing folgt mit dem Testing-Stack (Gruppen vibez-testing_admin / vibez-testing_user)
 
 session:
   name: vibez_auth

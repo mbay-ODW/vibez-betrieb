@@ -157,12 +157,17 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | LLDAP-Bootstrap: Gruppen `vibez-infra_admin`, `vibez-app_admin`, `vibez-app_user`, `vibez-testing_admin`, `vibez-testing_user`; Dienstkonto `authelia` (Gruppe `lldap_password_manager`) | ✅ | Benutzer legt Murat an |
 | 18.11.2026 | Traefik am Netz `vibez-admin`, Routen `admin.yml` mit Authelia-ForwardAuth; cloudflared-Ingress und DNS für `auth`, `ldap`, `portainer`, `logs`, `status` (neuer `tunnel login`, `cert.pem` danach gelöscht) | ✅ | Erster Versuch ohne angekommene Bestätigung: nichts angelegt, Login neu gestartet |
 | 18.11.2026 | Cloudflare-WAF angepasst (Wartungsprotokoll `wartung/2026.md`); Probe: alle fünf Adressen leiten ohne Anmeldung auf `auth.` um, gefälschte `Remote-User`/`Remote-Groups` werden ignoriert, App weiter 200 | ✅ | DSFA 0.18, TOM, Architektur angepasst |
+| 18.11.2026 | LLDAP: Dienstkonto `vibez-usersync` (`lldap_strict_readonly`) und Konto `murat` (`vibez-infra_admin`, `vibez-app_admin`, Startpasswort vom Server) | ✅ | Startpasswort über `zugaenge-fuer-bitwarden.sh` |
+| 18.11.2026 | App 0.3.0 (PR mbay-ODW/vibez-nachweise#7, CI grün) ausgerollt, Digest `sha256:41a5bb07…f7a683` (Registry = GitHub-API, Tag `sha-143439a`, Freigabe Murat); `VN_AUTH=authelia`, `VN_PROXY_SECRET` auf dem Server erzeugt | ✅ | – |
+| 18.11.2026 | Traefik: Middleware `remote-weg` entfernt eingehende `Remote-*`/`X-Proxy-Secret` vor Authelia (auch Verwaltungsadressen), `proxy-geheimnis` setzt das Geheimnis danach; Authelia-Regel `nachweise` (2FA, Gruppen `vibez-app_*`, `/health` frei); Netz `vibez-ldap` für UserSync | ✅ | Probe: ohne Anmeldung → `auth.`; gefälschte Header + falsches Geheimnis → `auth.`; direkt an die App ohne Geheimnis → 403; `/health` 200 |
+| 18.11.2026 | UserSync 0.3.0 brach mit `LDAPAttributeError` ab (LLDAP liefert Attributnamen klein) → Korrektur 0.3.1 (PR mbay-ODW/vibez-nachweise#8), einmal gegen das echte LLDAP geprüft: `murat` abgeglichen | ⏳ | Ausrollen von 0.3.1 nach Merge und Digest-Freigabe |
 
 ## Übergabe-Checkliste
 
 Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
+- [ ] Konto `tobias` in LLDAP (Benutzername `tobias`, Gruppe `vibez-app_admin`) – übernimmt das bestehende App-Konto; Startpasswort von `murat` geändert
 - [ ] LLDAP-`admin` und Portainer-Admin: Passwörter in Bitwarden, persönliche Konten in `vibez-infra_admin` mit 2FA eingerichtet; `stack-admin/secrets/portainer_admin_pass` und `lldap-users/` vom Server gelöscht
 - [ ] `/etc/sudoers.d/90-aufbau` gelöscht (sudo für `murat` wieder mit Passwort; vorher Passwort setzen)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft

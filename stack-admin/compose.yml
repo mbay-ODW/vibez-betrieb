@@ -7,6 +7,7 @@
 #   vibez-admin  – traefik <-> Oberflächen (intern, kein Internet; wird von diesem Stack angelegt)
 #   admin-intern – authelia <-> redis, lldap (LDAP 3890) (intern)
 #   admin-out    – nur uptime-kuma (ausgehend für Prüfungen)
+#   vibez-ldap   – lldap <-> usersync der App (intern)
 #
 # Geheimnisse liegen nur auf dem Server: .env (Versionen, LLDAP_KEY_SEED) und secrets/ (Dateien, 600).
 # Entscheidung Murat 18.11.2026; Bewertung in datenschutz/dsfa.md (T12).
@@ -43,7 +44,7 @@ services:
       - ./secrets/lldap_admin_pass:/run/secrets/lldap_admin_pass:ro
       - ./lldap/bootstrap:/bootstrap:ro
       - ./secrets/lldap-users:/bootstrap-users:ro
-    networks: [vibez-admin, admin-intern]
+    networks: [vibez-admin, admin-intern, vibez-ldap]
     security_opt: ["no-new-privileges:true"]
     mem_limit: 128m
 
@@ -113,3 +114,6 @@ networks:
   admin-intern:
     internal: true
   admin-out: {}
+  vibez-ldap:
+    name: vibez-ldap
+    internal: true    # nur LDAP 3890 für den UserSync der App (Stack „vibez“)
