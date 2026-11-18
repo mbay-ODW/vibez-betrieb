@@ -5,7 +5,7 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 
 | Dienstleister | Leistung | Ort der Daten | Klientendaten? | Vertrag | Status |
 |---|---|---|---|---|---|
-| **netcup GmbH**, Karlsruhe | Server (VPS Lite 1 G12.5s) | Deutschland (Rechenzentrum Nürnberg) | ja (Server mit laufender App; Daten selbst in Atlas) | AV-Vertrag im netcup-Kundencenter (CCP) online abschließen; Zertifikate des Rechenzentrums anfordern und ablegen | ⏳ |
+| **netcup GmbH**, Karlsruhe | Server (VPS Lite 1 G12.5s) | Deutschland (Rechenzentrum Nürnberg) | ja (Server mit laufender App; Daten selbst in Atlas) | **Vertrag auf Murat** (Unterauftragsverarbeiter): AV-Vertrag Murat ↔ netcup im Kundencenter (CCP) online abschließen; Zertifikate des Rechenzentrums anfordern und ablegen | ⏳ |
 | **Hetzner Online GmbH**, Gunzenhausen | Storage Box (zweite Sicherung) | Deutschland | nur verschlüsselt (restic, Schlüssel nur bei VIBEZ) | AV-Vertrag im Hetzner-Konto online abschließen | ⏳ |
 | **MongoDB, Inc.**, New York (EU: MongoDB Ltd.) mit Unterauftragnehmer **Amazon Web Services** | Datenbank MongoDB Atlas | AWS eu-central-1 (Frankfurt) | ja | Data Processing Agreement (Bestandteil der Atlas-Bedingungen), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
 | **Cloudflare, Inc.**, San Francisco | DNS der App-Domain `vibez-odenwald.de`, Proxy, WAF, TLS, Tunnel | weltweites Netz, i. d. R. nächstes Rechenzentrum | Durchleitung (kurzzeitig entschlüsselt), keine Speicherung von Inhalten | Data Processing Addendum (Self-Serve), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
@@ -16,10 +16,15 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 | Tailscale Inc. | Verwaltungszugang (VPN für SSH) | USA (Koordination), Verbindung direkt und Ende-zu-Ende verschlüsselt | nein | – | – |
 | Anthropic (Claude Code) | **nur Aufbauphase**: Einrichtung des Servers über Remote Control, bevor echte Daten existieren | – | nein (Regeln in [Aufbau](../docs/aufbau.md)) | – | – |
 
-**Vertragspartner:** Ziel ist, dass VIBEZ selbst Kunde bei netcup, Cloudflare und dem Registrar ist (Murat richtet ein,
-VIBEZ ist Inhaber). Bucht Murat einen Dienst auf eigenen Namen, ist der Anbieter **Unterauftragsverarbeiter** von Murat:
-Er muss dann im AV-Vertrag VIBEZ ↔ Murat genehmigt sein, Murat schließt selbst den AV-Vertrag mit dem Anbieter ab, und
-die Übertragung an VIBEZ bei Ende der Betreuung ist vereinbart.
+**Vertragspartner (Stand 18.11.2026):** netcup (Server), Cloudflare (Zone `vibez-odenwald.de` in Murats Konto) und
+febas (Domain) laufen auf **Murat**. Sie sind damit **Unterauftragsverarbeiter** von Murat (Art. 28 Abs. 2 und 4 DSGVO):
+
+- Der AV-Vertrag VIBEZ ↔ Murat nennt sie als genehmigte Unterauftragsverarbeiter.
+- Murat schließt selbst die AV-Verträge mit netcup und Cloudflare ab und legt sie VIBEZ vor.
+- Die Übertragung an VIBEZ bei Ende der Betreuung ist vereinbart ([Betriebshandbuch](../docs/betriebshandbuch.md#ende-der-betreuung--übergabe)).
+- VIBEZ hat einen Notzugang zur netcup-Konsole, der ohne Murat funktioniert.
+
+MongoDB Atlas und die Hetzner Storage Box schließt VIBEZ selbst ab.
 
 ## Prüfpunkte je Vertrag
 

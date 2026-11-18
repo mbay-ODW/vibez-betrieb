@@ -56,7 +56,7 @@ datenschutz/           DSFA, TOM, VVT, Dienstleister, Informationsblätter
 
 ## Grundsätze
 
-- Alle Konten (netcup, Hetzner Storage Box, Atlas, Cloudflare, Domain) gehören **VIBEZ**; die IT-Betreuung arbeitet als Auftragsverarbeiter.
+- Atlas und Hetzner Storage Box gehören **VIBEZ**. Server (netcup), Cloudflare und Domain laufen auf **Murat** und sind seine Unterauftragsverarbeiter (Genehmigung im AV-Vertrag VIBEZ ↔ Murat, Übertragung an VIBEZ bei Ende der Betreuung). Die IT-Betreuung arbeitet als Auftragsverarbeiter.
 - Der Server hat **keine offenen Ports**; die Datenbank akzeptiert nur diesen Server.
 - **Keine Geheimnisse und keine Personendaten** in diesem Repository.
 - **Kein KI- oder Automationszugriff** auf den Echtbetrieb.

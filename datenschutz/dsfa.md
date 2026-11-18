@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.12 – **Entwurf** vom 18.11.2026 (eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.13 – **Entwurf** vom 18.11.2026 (eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -34,7 +34,7 @@
   Gesundheitsbezug. Eine DSFA ist **erforderlich** (Abschnitt 2.1).
 - Die App erfasst nur die Daten, die für Tätigkeitsnachweis und Abrechnung nötig sind. Klientenakte, Berichte,
   Dokumente, Adressen und Geburtsdaten wurden bewusst entfernt (Datenminimierung, Abschnitt 4.3).
-- Betrieb auf einem eigenen Server von VIBEZ in Deutschland (netcup, Nürnberg), Datenbank **MongoDB Atlas in Frankfurt**, Schutz durch
+- Betrieb auf einem eigenen, nur für VIBEZ genutzten Server in Deutschland (netcup, Nürnberg), Datenbank **MongoDB Atlas in Frankfurt**, Schutz durch
   **Cloudflare** (WAF, Tunnel). Der Server hat keine offenen Ports, die Datenbank nimmt nur Verbindungen dieses Servers an.
 - Die wesentlichen Risiken sind **Kontoübernahme** (R1), **verlorene Handys** (R2), **zu breite Einsicht über die
   Vertretung** (R3) und der **Drittlandbezug von Cloudflare und MongoDB** (R5, R6).
@@ -158,7 +158,7 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 
 | Dienstleister | Rolle | Sitz / Ort der Verarbeitung | Zugriff auf Inhalte |
 |---|---|---|---|
-| netcup GmbH, Karlsruhe | Server (VPS) | Deutschland (Rechenzentrum Nürnberg) | technisch möglich (Betreiber der Hardware) |
+| netcup GmbH, Karlsruhe (Unterauftragsverarbeiter von Murat) | Server (VPS) | Deutschland (Rechenzentrum Nürnberg) | technisch möglich (Betreiber der Hardware) |
 | Hetzner Online GmbH | Speicher für die zweite Sicherung (Storage Box) | Deutschland | nein – Daten sind vor der Übertragung verschlüsselt |
 | MongoDB, Inc. (mit AWS als Unterauftragnehmer) | Datenbank (Atlas) | USA / Speicherort AWS Frankfurt | gespeichert verschlüsselt; Betreiberzugriff technisch möglich, vertraglich ausgeschlossen |
 | Cloudflare, Inc. | DNS der App-Domain `vibez-odenwald.de`; Schutzschicht für die App (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
@@ -341,7 +341,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Vertraulichkeit · Schwere: groß · Wahrscheinlichkeit: geringfügig → Risiko mittel*
 
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
-- ⏳ Alle Konten (netcup, Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ; Dienstleister nur als Mitglied mit 2FA. Legt der Dienstleister ein Konto an (z. B. Domain `vibez-odenwald.de`, Cloudflare), ist die Übertragung an VIBEZ schriftlich geregelt
+- ⏳ Atlas und Storage Box gehören VIBEZ (Dienstleister nur als Mitglied mit 2FA). Server (netcup), Cloudflare-Zone und Domain laufen auf dem Dienstleister: Unterauftrag im AV-Vertrag genehmigt, Übertragung bei Ende der Betreuung geregelt, Notzugang für VIBEZ zur netcup-Konsole. Die Klientendaten liegen in Atlas unter dem Vertrag von VIBEZ; der Server ist ersetzbar
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
 - ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, keine MCP-Anbindung); Entwicklung nur mit erfundenen Daten (T12)
 - ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
@@ -418,7 +418,7 @@ liegen als Bild vor.
 | M4 | Protokollierung der Vertretungsansicht ✅ + monatliche Stichprobe ⏳ | IT (App) / Verwaltung | vor Echtbetrieb |
 | S1 | Maßnahmen aus der [Sicherheitsanalyse](../docs/sicherheitsanalyse.md#nächste-schritte-nach-priorität) (2FA aller Konten, Domain-Absicherung, Snapshots, Tailscale-ACL) | IT / VIBEZ | vor Echtbetrieb |
 | M5 | Löschkonzept beschlossen; Löschfunktion in der App | VIBEZ / IT | Konzept vor Echtbetrieb, Funktion vor Ablauf der ersten Frist |
-| M6 | AV-Verträge: netcup, Hetzner (Storage Box), MongoDB, Cloudflare, IT-Dienstleister (inkl. § 203 StGB); DPF-Status prüfen | VIBEZ | vor Echtbetrieb |
+| M6 | AV-Verträge: IT-Dienstleister (inkl. § 203 StGB, mit Genehmigung der Unterauftragsverarbeiter netcup und Cloudflare), Hetzner (Storage Box), MongoDB; Murat ↔ netcup und Murat ↔ Cloudflare; DPF-Status prüfen | VIBEZ / Murat | vor Echtbetrieb |
 | M7 | Auskunftsexport je Klient:in | IT (App) | innerhalb von 6 Monaten |
 | O1 | Geräteregeln für Pädagog:innen, Einweisung | VIBEZ | vor Echtbetrieb |
 | O2 | Informationsblätter ausgeben | VIBEZ | vor Echtbetrieb |

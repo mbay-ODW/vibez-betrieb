@@ -21,7 +21,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 
 | Thema | Entscheidung | Begründung |
 |---|---|---|
-| Server | Eigener VPS bei **netcup** (VPS Lite 1 G12.5s), Rechenzentrum **Nürnberg**, **Vertragspartner VIBEZ** | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001, VIBEZ bleibt Herr der Daten |
+| Server | Eigener VPS bei **netcup** (VPS Lite 1 G12.5s), Rechenzentrum **Nürnberg**, **Vertragspartner Murat** (Unterauftragsverarbeiter, Stand 18.11.2026) | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001; die Daten liegen in Atlas (Vertrag VIBEZ), der Server ist ersetzbar |
 | Betrieb | Murat Bayram als IT-Dienstleister (Auftragsverarbeiter, Verschwiegenheit nach § 203 StGB) | Betreuung wie bisher, aber auf VIBEZ-eigener Infrastruktur |
 | Adresse | `nachweise.vibez-odenwald.de` | **Eigene Domain nur für die App**, DNS komplett bei Cloudflare (Entscheidung 18.11.2026). Website und E-Mail von VIBEZ (`vibez-jugendhilfe.de`, All-Inkl) bleiben unberührt |
 | Schutz vor dem Server | **Cloudflare** (Free) als Proxy mit WAF, nur für `nachweise` | Geo-Block, Schutz vor Angriffen und Scannern, Server ohne offene Ports |
@@ -48,7 +48,7 @@ flowchart LR
       W["WAF: Geo-Block, Scanner, Ratenlimit<br/>TLS-Zertifikat für nachweise.…"]
       TU["Tunnel vibez-prod"]
     end
-    subgraph HZ["netcup Nürnberg + Hetzner Storage Box (Verträge VIBEZ)"]
+    subgraph HZ["netcup Nürnberg (Vertrag Murat) + Hetzner Storage Box (Vertrag VIBEZ)"]
       subgraph VPS["VPS vibez-prod – keine offenen Ports"]
         CD["cloudflared"]
         TR["Traefik"]
@@ -156,7 +156,7 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 
 - Nur Murat (Admin) hat SSH-Zugang: persönliches Konto, nur Schlüssel, nur über Tailscale (mit 2FA am Tailscale-Konto).
 - Notzugang über die netcup-Konsole (SCP) mit dem Passwort des Admin-Kontos. Das Passwort liegt im Passwortmanager von VIBEZ.
-- Die Konten bei netcup und Hetzner gehören VIBEZ. 2FA ist Pflicht; Murat bekommt eigene Zugänge, kein geteiltes Login.
+- Der netcup-Vertrag läuft auf Murat, die Storage Box auf VIBEZ. 2FA ist Pflicht, kein geteiltes Login. Der Notzugang zur netcup-Konsole muss VIBEZ auch ohne Murat möglich sein (Zugangsdaten versiegelt bzw. im Passwortmanager von VIBEZ).
 - **Aufbauphase:** Nur solange keine echten Daten vorhanden sind, richtet eine KI-Sitzung den Server über Remote Control ein.
   Danach wird dieser Zugang vollständig entfernt ([aufbau.md](aufbau.md)).
 - **Keine KI-/Automations-Zugänge zum Echtbetrieb:** Der VPS wird **nicht** in Portainer, MCP-Server oder andere

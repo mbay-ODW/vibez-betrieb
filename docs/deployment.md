@@ -20,7 +20,7 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 
 | Konto | Inhaber | Vertrag / AV | Zugang Murat |
 |---|---|---|---|
-| netcup (VPS) | VIBEZ | AV-Vertrag im netcup-Kundencenter (CCP) abschließen | eigener SCP-Zugang bzw. Zugriff auf Zuruf, 2FA |
+| netcup (VPS) | Murat (Unterauftragsverarbeiter, Stand 18.11.2026) | AV-Vertrag Murat ↔ netcup im Kundencenter (CCP); Genehmigung im AV-Vertrag VIBEZ ↔ Murat | Inhaber; Notzugang für VIBEZ hinterlegen |
 | Hetzner (nur Storage Box) | VIBEZ | AV-Vertrag im Hetzner-Konto abschließen | Projektmitglied, 2FA |
 | MongoDB Atlas | VIBEZ (Organisation „VIBEZ“) | DPA aus den Atlas-Bedingungen dokumentieren | Projektmitglied „Project Owner“, 2FA |
 | Cloudflare | VIBEZ | DPA aus den Self-Serve-Bedingungen dokumentieren | Mitglied „Administrator“, 2FA |
