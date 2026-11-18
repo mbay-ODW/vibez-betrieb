@@ -16,8 +16,8 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 | Tailscale Inc. | Verwaltungszugang (VPN für SSH) | USA (Koordination), Verbindung direkt und Ende-zu-Ende verschlüsselt | nein | – | – |
 | Anthropic (Claude Code) | **nur Aufbauphase**: Einrichtung des Servers über Remote Control, bevor echte Daten existieren | – | nein (Regeln in [Aufbau](../docs/aufbau.md)) | – | – |
 
-**Vertragspartner (Stand 18.11.2026):** netcup (Server), Cloudflare (Zone `vibez-odenwald.de` in Murats Konto) und
-febas (Domain) laufen auf **Murat**. Sie sind damit **Unterauftragsverarbeiter** von Murat (Art. 28 Abs. 2 und 4 DSGVO):
+**Vertragspartner (Entscheidung Murat, 18.11.2026):** netcup (Server), Cloudflare (Zone `vibez-odenwald.de` in Murats
+Konto) und febas (Domain) laufen **dauerhaft auf Murat**, wie bei seinen anderen betreuten Systemen. Sie sind damit **Unterauftragsverarbeiter** von Murat (Art. 28 Abs. 2 und 4 DSGVO):
 
 - Der AV-Vertrag VIBEZ ↔ Murat nennt sie als genehmigte Unterauftragsverarbeiter.
 - Murat schließt selbst die AV-Verträge mit netcup und Cloudflare ab und legt sie VIBEZ vor.

@@ -41,7 +41,7 @@ netcup **VPS Lite 1 G12.5s**: 2 vCore, 4 GB RAM, 80 GB SSD, 5,86 €/Monat (Ange
 | Wer | Was |
 |---|---|
 | Murat | Domain `vibez-odenwald.de` registrieren (Domaininhaber möglichst VIBEZ), Cloudflare-Konto (Free, 2FA mit Passkey), Zone anlegen und Nameserver beim Registrar auf Cloudflare stellen. Schritt für Schritt: [cloudflare.md](cloudflare.md#domain-und-zone-einrichten) |
-| Murat | ✅ netcup-VPS bestellt (Vertrag auf Murat). AV-Vertrag Murat ↔ netcup im Kundencenter (CCP) abschließen; netcup, Cloudflare und febas als Unterauftragsverarbeiter im AV-Vertrag VIBEZ ↔ Murat aufführen |
+| Murat | ✅ netcup-VPS bestellt (Vertrag dauerhaft auf Murat). AV-Vertrag Murat ↔ netcup im Kundencenter (CCP) abschließen; netcup, Cloudflare und febas als Unterauftragsverarbeiter im AV-Vertrag VIBEZ ↔ Murat aufführen |
 | Tobias | MongoDB Atlas: Organisation und Projekt „VIBEZ Nachweise“ (Zahlungsmittel, 2FA); Murat als Projektmitglied |
 | Tobias | Hetzner Storage Box bestellen, SSH-Zugang aktivieren, automatische Snapshots an |
 | ✅ | App-Adresse festgelegt: `nachweise.vibez-odenwald.de` (18.11.2026) |
@@ -113,8 +113,8 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht
-- [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (alle auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Übertragung bei Ende der Betreuung schriftlich geregelt
-- [ ] Die Cloudflare-Anbindung von Murats KI-Werkzeugen (Cloudflare-MCP) hat **keinen** Zugriff mehr auf die Zone `vibez-odenwald.de` (Zone in eigenes Konto verschieben oder Anbindung entziehen) – sonst gilt T12 nicht
+- [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (dauerhaft auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Vorgehen bei Ende der Betreuung schriftlich geregelt
+- [ ] Cloudflare-Anbindung von Murats KI-Werkzeugen (Cloudflare-MCP, Zugriff auf das ganze Konto inkl. `vibez-odenwald.de`) geregelt: **offen, Entscheidung Murat** – Anbindung trennen oder als begrenzte Ausnahme in DSFA T12 dokumentieren
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
 - [ ] Tailscale-Auth-Key verbraucht/gelöscht
 - [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)

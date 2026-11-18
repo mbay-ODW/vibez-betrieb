@@ -115,7 +115,7 @@ wer wann was getan hat. Ablage: `wartung/JJJJ.md` in diesem Repo **ohne Personen
 ## Ende der Betreuung / Übergabe
 
 Atlas und Hetzner Storage Box gehören VIBEZ. Server (netcup), Cloudflare-Zone und Domain `vibez-odenwald.de` laufen
-auf Murat (Stand 18.11.2026). Bei einem Wechsel des IT-Dienstleisters:
+dauerhaft auf Murat. Erst bei einem Ende der Betreuung bzw. Wechsel des IT-Dienstleisters:
 
 1. Übertragen, was auf Murat läuft:
    - **Domain** `vibez-odenwald.de`: Inhaberwechsel bei febas auf VIBEZ (oder Transfer zum Registrar von VIBEZ).

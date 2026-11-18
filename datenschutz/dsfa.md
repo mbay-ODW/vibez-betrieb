@@ -341,7 +341,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Vertraulichkeit · Schwere: groß · Wahrscheinlichkeit: geringfügig → Risiko mittel*
 
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
-- ⏳ Atlas und Storage Box gehören VIBEZ (Dienstleister nur als Mitglied mit 2FA). Server (netcup), Cloudflare-Zone und Domain laufen auf dem Dienstleister: Unterauftrag im AV-Vertrag genehmigt, Übertragung bei Ende der Betreuung geregelt, Notzugang für VIBEZ zur netcup-Konsole. Die Klientendaten liegen in Atlas unter dem Vertrag von VIBEZ; der Server ist ersetzbar
+- ⏳ Atlas und Storage Box gehören VIBEZ (Dienstleister nur als Mitglied mit 2FA). Server (netcup), Cloudflare-Zone und Domain laufen dauerhaft auf dem Dienstleister: Unterauftrag im AV-Vertrag genehmigt, Übertragung bzw. Neuaufbau bei Ende der Betreuung geregelt, Notzugang für VIBEZ zur netcup-Konsole. Die Klientendaten liegen in Atlas unter dem Vertrag von VIBEZ; der Server ist ersetzbar
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
 - ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, keine MCP-Anbindung); Entwicklung nur mit erfundenen Daten (T12)
 - ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
