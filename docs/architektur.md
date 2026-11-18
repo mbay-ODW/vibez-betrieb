@@ -197,6 +197,6 @@ als Auftragsverarbeiter; dafür liegen Verschlüsselung ruhender Daten und Backu
 | Posten | Größenordnung | Bemerkung |
 |---|---|---|
 | netcup VPS Lite 1 G12.5s (2 vCore, 4 GB, 80 GB, Nürnberg) | 5,86 € / Monat inkl. MwSt. (Angebot 16.11.2026) | 6 Monate Mindestlaufzeit |
-| MongoDB Atlas (M0, Frankfurt) | 0 € (Start); Flex bzw. M10 bei Bedarf | aktuelles Preisblatt prüfen |
+| MongoDB Atlas (M0, Frankfurt) | 0 € | Flex und M10 sind kostenpflichtig; Wechsel nur bei Bedarf (Speicher, Last), vorher Preisblatt prüfen |
 | Hetzner Storage Box (kleinste Größe) | wenige € / Monat | zweite Sicherung |
 | Cloudflare Free | 0 € | |
