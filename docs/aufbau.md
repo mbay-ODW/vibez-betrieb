@@ -131,6 +131,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Domain bei febas registriert (Murat); Zone in Cloudflare angelegt (vorerst Murats Konto, Nameserver `cory`/`kenia`) | ✅ | Übertragung an VIBEZ offen (Übergabe-Checkliste) |
 | 18.11.2026 | Cloudflare-API: 10 vom Registrar übernommene Einträge gelöscht (Parkseite, febas-Mail); Null-MX, SPF `-all`, DMARC `p=reject`, leerer DKIM angelegt | ✅ | Zone noch „pending“, bis die Nameserver bei febas umgestellt sind |
 | 18.11.2026 | Nameserver bei febas umgestellt, Zone „active“ (08:58 UTC); DNSSEC in Cloudflare eingeschaltet (Schlüssel 2371, Algorithmus 13) | ✅ | DS-Eintrag bei febas ausstehend |
+| 18.11.2026 | Server: Debian 13, Claude Code, Remote Control (tmux `aufbau`); `gh` mit Murats Konto angemeldet (Browser-Anmeldung, Zusatzrecht `read:packages`); Repo nach `/opt/vibez/repo` | ✅ | GitHub-Anmeldung vor Übergabe ersetzen (Checkliste) |
 | 18.11.2026 | DS-Eintrag (Key Tag 2371) über den febas-Support beantragt; febas meldet: bei DENIC hinterlegt | ✅ | Cloudflare-Status noch „pending“ (prüft selbst in Abständen) |
 | 18.11.2026 | netcup-VPS bestellt, Vertrag auf Murat | ✅ | AV-Vertrag Murat ↔ netcup offen; Unterauftrag im AV-Vertrag mit VIBEZ aufnehmen |
 | 18.11.2026 | Cloudflare-Token (nur Zone `vibez-odenwald.de`) über das sichere Formular hinterlegt; Zoneneinstellungen gesetzt (Full strict, TLS ≥ 1.2, Always HTTPS, 0-RTT aus, Email Obfuscation/Rocket Loader/SSE aus, AI-Bots blockiert); 5 WAF-Regeln, Ratenlimit `/login`, Cache-Regel, Managed Free Ruleset; CAA `letsencrypt.org` und `pki.goog` | ✅ | Universal SSL aktiv (Let's Encrypt, Reserve Google). Benachrichtigungen (Konto-Ebene) noch von Hand |
@@ -146,6 +147,7 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Cloudflare-Anbindung (MCP) bleibt als begrenzte Ausnahme nach DSFA T12 (Entscheidung 18.11.2026): Benachrichtigung bei DNS-Änderungen eingerichtet, Prüfung des Audit-Logs in die monatliche Wartung aufgenommen
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
 - [ ] Tailscale-Auth-Key verbraucht/gelöscht
+- [ ] GitHub auf dem Server: `gh auth logout` (Anmeldung mit Murats ganzem Konto aus der Aufbauphase entfernt); für das Image nur noch der Fine-grained Token mit *Packages: read* in `docker login ghcr.io`; Repo-Updates mit Token nur *Contents: read*
 - [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)
 - [ ] Startpasswort von `tobias` wurde beim ersten Login geändert, 2FA eingerichtet
 - [ ] Datenbank enthält keine Testdaten (nur Einstellungen, Jugendämter, Konten)
