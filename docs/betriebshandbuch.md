@@ -14,6 +14,15 @@ Abläufe für den laufenden Betrieb. Befehle laufen auf `vibez-prod` (`ssh -p 50
 - [Wartungsprotokoll](#wartungsprotokoll)
 - [Ende der Betreuung / Übergabe](#ende-der-betreuung--übergabe)
 
+## Stacks und Portainer
+
+Die drei Stacks `vibez` (`stack/`), `vibez-admin` (`stack-admin/`) und `vibez-testing` (`stack-testing/`) laufen mit
+`docker compose` direkt aus dem Repo unter `/opt/vibez/repo` (Entscheidung Murat, 18.11.2026). Portainer zeigt sie als
+**externe Stacks**: Logs, Konsole, Statistiken und Neustart gehen dort, Bearbeiten und Neu-Ausrollen nicht. Grund:
+Compose-Dateien versioniert im Repo, Geheimnisse nur als Dateien auf dem Server (nicht in der Portainer-Datenbank),
+Versionen mit Digest über `deploy.sh`/`autodeploy.sh`. **Stacks nicht in Portainer neu anlegen** – Änderungen im Repo,
+dann `sudo docker compose up -d` im jeweiligen Verzeichnis.
+
 ## Update der App
 
 1. Im App-Repo: Änderung fertig, `VERSION` und `CHANGELOG.md` erhöht, CI grün → Image `ghcr.io/mbay-odw/vibez-nachweise:<version>`.
