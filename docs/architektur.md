@@ -28,7 +28,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 | Anbindung Server | **Cloudflare Tunnel** (`cloudflared`) | Keine eingehenden Ports, Server-IP bleibt verborgen |
 | Reverse Proxy | **Traefik** v3 | Routing, Ratenbremse je echter IP, HSTS, Zugriffsprotokoll |
 | Datenbank | **MongoDB Atlas**, Region **AWS Frankfurt (eu-central-1)**, Projekt nur für VIBEZ | Wie bei der DRK-Klientendokumentation: verschlüsselt gespeichert, repliziert, verwaltete Backups; Zugriff nur von der IP des VPS (per Atlas-API gepflegt) |
-| Backup | **Atlas Cloud Backup** + zweite, unabhängige Kopie mit **restic** (verschlüsselt) auf einer **Hetzner Storage Box** | Zwei Anbieter, zwei Standorte; monatlicher Wiederherstellungstest |
+| Backup | Nächtliche Sicherung mit **restic** (verschlüsselt) auf einer **Hetzner Storage Box**; Atlas Cloud Backup erst ab Flex/M10 (Start mit M0 hat keins) | Anderer Anbieter, anderer Standort; monatlicher Wiederherstellungstest |
 | Verwaltung | SSH nur über **Tailscale**, keine öffentlichen Ports | Angriffsfläche minimal |
 | Versionen | App-Image mit fester Versionsnummer (`VERSION` im App-Repo), Ausrollen mit `deploy.sh` | Nachvollziehbar, Rückweg möglich |
 
@@ -58,7 +58,7 @@ flowchart LR
     end
     subgraph AT["MongoDB Atlas, AWS Frankfurt (Vertrag VIBEZ)"]
       DB[("Cluster vibez<br/>IP-Liste: nur VPS")]
-      AB[("Cloud Backup")]
+      AB[("Cloud Backup<br/>(erst ab Flex/M10)")]
     end
     ADM["Murat (Admin)"] -. "Tailscale SSH" .-> VPS
     H & P -- "HTTPS" --> W
@@ -92,7 +92,7 @@ flowchart LR
 | `vibez-cloudflared` | `cloudflare/cloudflared:2026.10.7` | edge | Tunnel zu Cloudflare | read-only, no-new-privileges, 128 MB |
 | `vibez-traefik` | `traefik:v3.7.17` | edge, web | Reverse Proxy | read-only, kein Dashboard, keine Docker-Socket-Anbindung (nur Datei-Konfiguration) |
 | `vibez-app` | `ghcr.io/mbay-odw/vibez-nachweise:<VERSION>` | web, atlas | Anwendung | read-only, unprivilegierter Benutzer, ausgehend nur zu Atlas nötig |
-| (Atlas) | MongoDB 7, dediziert empfohlen | – | Datenbank | TLS, IP-Zugriffsliste, getrennte Benutzer (App: `readWrite` auf `vibez`; Backup: `backup`), Verschlüsselung ruhender Daten |
+| (Atlas) | MongoDB, Start mit M0 (Free) | – | Datenbank | TLS, IP-Zugriffsliste, getrennte Benutzer (App: `readWrite` auf `vibez`; Backup: `backup`), Verschlüsselung ruhender Daten |
 
 Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](../stack/traefik/),
 [`stack/cloudflared/config.yml`](../stack/cloudflared/config.yml). Geheimnisse stehen ausschließlich in `stack/.env` und
@@ -138,7 +138,7 @@ Fakten (geprüft 15./16.11.2026):
 | Was | Wo | Schutz |
 |---|---|---|
 | Datenbank | MongoDB Atlas, AWS Frankfurt (eu-central-1) | TLS, IP-Zugriffsliste, Benutzer je Zweck, Verschlüsselung ruhender Daten durch Atlas |
-| Backup 1 | Atlas Cloud Backup (Snapshots, je nach Tarif Point-in-Time) | in Atlas, Region Frankfurt |
+| Backup 1 | Atlas Cloud Backup – **bei M0 nicht vorhanden**, erst ab Flex/M10 | in Atlas, Region Frankfurt |
 | Backup 2 | Hetzner Storage Box (DE) | `mongodump` mit Lese-Benutzer → **restic-Verschlüsselung (AES-256) auf dem VPS**; Hetzner sieht nur verschlüsselte Blöcke |
 | restic-Passwort | `.env` auf dem Server **und** offline im Passwortmanager von VIBEZ | ohne Passwort keine Wiederherstellung – beide Kopien sind Pflicht |
 | Zugriffsprotokoll Traefik | `/opt/vibez/stack/logs/traefik` | 14 Tage, nur Metadaten (IP, Land, Pfad, Status) |
@@ -182,11 +182,11 @@ Uptime Kuma sieht nur die öffentliche Health-Adresse (Antwort `{"ok": true}`), 
 |---|---|
 | Organisation / Projekt | eigenes Projekt „VIBEZ Nachweise“; Organisation von VIBEZ (Murat als Projektmitglied mit 2FA) |
 | Region | AWS **eu-central-1 (Frankfurt)** |
-| Tarif | **dedizierter Cluster (M10)** empfohlen: Cloud Backup mit Point-in-Time, eigene Verschlüsselungsschlüssel möglich. Flex nur, wenn dessen Backup-Umfang laut aktuellem Preisblatt reicht |
+| Tarif | **M0 (Free)** zum Start (Entscheidung Murat, 18.11.2026, wie bei DRK). Laut Atlas-Doku (Stand 18.11.2026, vor Echtbetrieb prüfen): **kein Cloud Backup**, 512 MB Speicher, gemeinsam genutzte Hardware, begrenzte Durchsatz- und Verbindungszahlen, von MongoDB nicht für Produktion vorgesehen. Wechsel auf Flex oder M10, sobald Speicher (Alarm bei 70 %) oder Last es verlangen oder VIBEZ eine zweite Sicherung beim Anbieter will |
 | Netzwerkzugang | IP-Zugriffsliste **nur** die öffentliche IPv4 des VPS, gepflegt mit [`host/atlas-zugriffsliste.sh`](../host/atlas-zugriffsliste.sh) (Atlas Admin API); kein `0.0.0.0/0` |
-| Datenbank-Benutzer | `vibez_app` (readWrite auf `vibez`), `vibez_backup` (Rolle `backup`); Admin-Rechte nur befristet für Wartung |
-| Backup | Cloud Backup an, Aufbewahrung mindestens 7 Tage täglich + 4 Wochen + 12 Monate (an Backup 2 angleichen) |
-| Benachrichtigungen | Atlas-Alerts (Verbindungen, Speicher, Backup fehlgeschlagen) an Murat |
+| Datenbank-Benutzer | `vibez_app` (readWrite auf `vibez`), `vibez_backup` (nur *read* auf `vibez`, reicht für `mongodump` einer Datenbank); Admin-Rechte nur befristet für Wartung. Anmeldung per Passwort (SCRAM) oder per X.509-Zertifikat von Atlas |
+| Backup | Bei M0 keins; die restic-Sicherung (Backup 2) ist die **einzige** Sicherung und muss vor dem Echtbetrieb samt Restore-Test laufen. Ab Flex/M10: Cloud Backup an, 7 Tage täglich + 4 Wochen + 12 Monate |
+| Benachrichtigungen | Atlas-Alerts (Verbindungen, Speicher ab 70 %) an Murat; Backup-Fehler meldet `host/backup.sh` |
 | AV-Vertrag | MongoDB-DPA (Bestandteil der Atlas-Bedingungen) für VIBEZ dokumentieren, Region und Unterauftragnehmer (AWS) festhalten |
 
 Alternative ohne Atlas: MongoDB als Container auf dem VPS (internes Netz, `--auth`). Dann entfallen MongoDB Inc. und AWS
@@ -197,7 +197,7 @@ als Auftragsverarbeiter; dafür liegen Verschlüsselung ruhender Daten und Backu
 | Posten | Größenordnung | Bemerkung |
 |---|---|---|
 | netcup VPS Lite 1 G12.5s (2 vCore, 4 GB, 80 GB, Nürnberg) | 5,86 € / Monat inkl. MwSt. (Angebot 16.11.2026) | 6 Monate Mindestlaufzeit |
-| MongoDB Atlas (dediziert M10, Frankfurt) | mittlerer zweistelliger €-Betrag / Monat | Flex günstiger; aktuelles Preisblatt prüfen |
+| MongoDB Atlas (M0, Frankfurt) | 0 € (Start); Flex bzw. M10 bei Bedarf | aktuelles Preisblatt prüfen |
 | Hetzner Storage Box (kleinste Größe) | wenige € / Monat | zweite Sicherung |
 | Cloudflare Free | 0 € | |
 | Tailscale (Personal/Starter) | 0 € | nur Admin-Zugang |

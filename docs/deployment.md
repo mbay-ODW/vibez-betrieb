@@ -71,12 +71,13 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
 ## 3. MongoDB Atlas
 
 1. Organisation „VIBEZ“, Projekt **„VIBEZ Nachweise“**, Murat als Projektmitglied einladen, 2FA erzwingen.
-2. Cluster anlegen: **AWS, eu-central-1 (Frankfurt)**, dedizierter Tarif (M10) oder Flex (siehe
+2. Cluster anlegen: **AWS, eu-central-1 (Frankfurt)**, Tarif M0 zum Start (siehe
    [Architektur](architektur.md#atlas-einrichtung-wie-drk)), Name `vibez`.
-3. **Backup** aktivieren (Cloud Backup), Aufbewahrung wie in der Architektur.
+3. **Backup:** M0 hat kein Cloud Backup. Die restic-Sicherung (Abschnitt 6) ist deshalb Pflicht vor dem Echtbetrieb.
+   Ab Flex/M10 Cloud Backup einschalten.
 4. **Database Access**:
    - `vibez_app`: Passwort generieren, Rolle *readWrite* nur auf Datenbank `vibez`
-   - `vibez_backup`: Passwort generieren, Rolle *backup*
+   - `vibez_backup`: Passwort generieren, nur *read* auf Datenbank `vibez` (M0 kennt die Rolle *backup* nicht sicher)
 5. **Network Access**: einen Programmatic API Key für das Projekt mit der Rolle *Project IP Access List Admin*
    anlegen, dann auf dem Server ausführen:
 
@@ -169,7 +170,7 @@ Technik (Murat):
 - [ ] Atlas-Zugriffsliste enthält nur die Server-IP; Verbindung von einem anderen Rechner scheitert
 - [ ] Antwort-Header enthalten `Content-Security-Policy`, `Strict-Transport-Security`, `Cache-Control: no-store`
 - [ ] Backup gelaufen, Restore-Test erfolgreich, Uptime-Kuma-Monitore grün
-- [ ] Atlas Cloud Backup: erster Snapshot vorhanden
+- [ ] Sicherung: erster restic-Lauf und Restore-Test erfolgreich (bei M0 die einzige Sicherung); Atlas-Speicheralarm bei 70 % eingerichtet
 - [ ] restic-Passwort und Konsolenpasswort liegen im Passwortmanager von VIBEZ (Gegencheck durch Tobias)
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen

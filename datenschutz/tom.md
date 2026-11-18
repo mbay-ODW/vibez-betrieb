@@ -43,7 +43,7 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 
 | Maßnahme | Status |
 |---|---|
-| Atlas Cloud Backup (Snapshots; je nach Tarif Point-in-Time) und Replikation des Clusters | ✅ |
+| Replikation des Clusters (Atlas); Atlas Cloud Backup erst ab Flex/M10 – beim Start mit M0 nicht vorhanden | ⏳ |
 | Zweite, verschlüsselte Sicherung nachts auf Hetzner Storage Box, 12 Monate | ✅ |
 | Monatlicher automatischer Wiederherstellungstest; wöchentliche Prüfung der Backup-Daten | ✅ |
 | Überwachung (Uptime Kuma: Erreichbarkeit, Zertifikat, Backup-Heartbeat; Atlas-Alerts) | ✅ |
