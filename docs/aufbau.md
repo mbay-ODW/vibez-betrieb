@@ -103,6 +103,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Domain bei febas registriert (Murat); Zone in Cloudflare angelegt (vorerst Murats Konto, Nameserver `cory`/`kenia`) | ✅ | Übertragung an VIBEZ offen (Übergabe-Checkliste) |
 | 18.11.2026 | Cloudflare-API: 10 vom Registrar übernommene Einträge gelöscht (Parkseite, febas-Mail); Null-MX, SPF `-all`, DMARC `p=reject`, leerer DKIM angelegt | ✅ | Zone noch „pending“, bis die Nameserver bei febas umgestellt sind |
 | 18.11.2026 | Nameserver bei febas umgestellt, Zone „active“ (08:58 UTC); DNSSEC in Cloudflare eingeschaltet (Schlüssel 2371, Algorithmus 13) | ✅ | DS-Eintrag bei febas ausstehend |
+| 18.11.2026 | DS-Eintrag (Key Tag 2371) über den febas-Support beantragt | ⏳ | Cloudflare zeigt DNSSEC „pending“, bis der DS bei DENIC steht |
 | 18.11.2026 | netcup-VPS bestellt, Vertrag auf Murat | ✅ | AV-Vertrag Murat ↔ netcup offen; Unterauftrag im AV-Vertrag mit VIBEZ aufnehmen |
 | 18.11.2026 | Cloudflare-Token (nur Zone `vibez-odenwald.de`) über das sichere Formular hinterlegt; Zoneneinstellungen gesetzt (Full strict, TLS ≥ 1.2, Always HTTPS, 0-RTT aus, Email Obfuscation/Rocket Loader/SSE aus, AI-Bots blockiert); 5 WAF-Regeln, Ratenlimit `/login`, Cache-Regel, Managed Free Ruleset; CAA `letsencrypt.org` und `pki.goog` | ✅ | Universal SSL aktiv (Let's Encrypt, Reserve Google). Benachrichtigungen (Konto-Ebene) noch von Hand |
 
