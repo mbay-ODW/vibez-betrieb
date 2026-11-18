@@ -41,8 +41,12 @@ ghcr_digest() {
     -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json" \
     "https://ghcr.io/v2/${REPO_IMAGE}/manifests/$1" | tr -d '\r' | awk -F': ' 'tolower($1)=="docker-content-digest"{print $2}'
 }
-app_gesund() {   # app_gesund <container>
+app_gesund() {   # app_gesund <container> [digest] – mit Digest erst, wenn der Container wirklich dieses Image hat
   for _ in $(seq 1 60); do
+    if [[ -n "${2:-}" ]]; then
+      local img; img="$(docker inspect -f '{{.Config.Image}} {{.State.Running}}' "$1" 2>/dev/null || true)"
+      [[ "$img" == *"$2"*" true" ]] || { sleep 3; continue; }
+    fi
     docker exec "$1" python -c "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3).status==200 else 1)" 2>/dev/null && return 0
     sleep 3
   done

@@ -33,13 +33,13 @@ if [[ $umg == prod ]]; then
   fi
 fi
 stack_redeploy "$stack" "VN_VERSION=${neu}"
-if app_gesund "$app"; then
+if app_gesund "$app" "$digest"; then
   echo "${stack}: ${neu} läuft."; logger -t vibez-deploy "deploy ok ${stack} ${neu} by=${wer}"; exit 0
 fi
 echo "FEHLER: ${app} meldet sich nicht gesund."
 if [[ -n "$alt" ]]; then
   echo "Rücksprung auf ${alt} …"; stack_redeploy "$stack" "VN_VERSION=${alt}"
-  app_gesund "$app" && echo "Vorige Version läuft wieder." || echo "ACHTUNG: auch die vorige Version ist nicht gesund."
+  app_gesund "$app" "${alt#*@}" && echo "Vorige Version läuft wieder." || echo "ACHTUNG: auch die vorige Version ist nicht gesund."
 fi
 logger -t vibez-deploy "deploy FEHLGESCHLAGEN ${stack} ${neu} – zurück auf ${alt} by=${wer}"
 exit 1
