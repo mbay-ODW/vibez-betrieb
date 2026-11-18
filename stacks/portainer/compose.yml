@@ -12,10 +12,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /srv/vibez/admin/portainer:/data
       - /srv/vibez/secrets:/srv/vibez/secrets:ro
-    networks: [fe-admin]
+    networks: [fe-admin, raus]   # raus: Git-Stacks aus GitHub holen, Images ziehen
     security_opt: ["no-new-privileges:true"]
     mem_limit: 256m
 
 networks:
   fe-admin:
     external: true
+  raus: {}
