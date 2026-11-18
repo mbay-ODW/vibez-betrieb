@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.14 – **Entwurf** vom 18.11.2026 (Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.15 – **Entwurf** vom 18.11.2026 (Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -346,7 +346,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
 - ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, kein SSH, keine Datenbank); Entwicklung nur mit erfundenen Daten (T12)
 - ⏳ **Begrenzte Ausnahme Cloudflare (T12):** Die KI-Werkzeuge des Dienstleisters sind über die Cloudflare-Anbindung (MCP) mit seinem Konto verbunden, in dem die Zone `vibez-odenwald.de` liegt. Sie sehen keine Inhalte, könnten aber DNS, WAF oder Tunnel-Routing ändern und den Datenverkehr umleiten. Begrenzung: Änderungen nur mit ausdrücklicher Freigabe des Dienstleisters im Einzelfall und Eintrag im Wartungsprotokoll; Cloudflare-Benachrichtigung bei DNS-Änderungen; Prüfung des Cloudflare-Audit-Logs bei der monatlichen Wartung; Konto mit 2FA (Passkey)
-- ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
+- ✅ **Aufbauphase:** Die Installation mit KI ist ausdrücklich erlaubt (jeder von Murat bereitgestellte Zugang: Claude Code auf dem Server, Remote Control, SSH, API-Tokens), aber nur, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
 
 *Restrisiko: gering*
 

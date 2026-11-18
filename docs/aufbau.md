@@ -1,8 +1,8 @@
 # Aufbau des Echtbetriebs (Aufbauphase)
 
-Stand 18.11.2026. Der Echtbetrieb wird von einer Claude-Code-Sitzung aufgebaut. Diese Ausnahme vom Grundsatz
-„kein KI-Zugriff auf den Echtbetrieb“ hat Murat am 16.11.2026 freigegeben. Sie gilt **nur, solange keine echten Daten
-vorhanden sind**.
+Stand 18.11.2026. Die Installation des Echtbetriebs mit KI ist **ausdrücklich erlaubt** (freigegeben von Murat am
+16.11.2026, am 18.11.2026 auf jeden bereitgestellten Zugang erweitert: Claude Code auf dem Server, Remote Control, SSH,
+API-Tokens, Cloudflare-Anbindung). Das gilt **nur, solange keine echten Daten vorhanden sind**.
 
 ## Inhalt
 
