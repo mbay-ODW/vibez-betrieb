@@ -94,9 +94,10 @@ flowchart LR
 | `vibez-app` | `ghcr.io/mbay-odw/vibez-nachweise:<VERSION>` | web, atlas | Anwendung | read-only, unprivilegierter Benutzer, ausgehend nur zu Atlas nötig |
 | (Atlas) | MongoDB, Tarif Flex | – | Datenbank | TLS, IP-Zugriffsliste, getrennte Benutzer (App: `readWrite` auf `vibez`; Backup: `read` auf `vibez`), Verschlüsselung ruhender Daten |
 
-Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](../stack/traefik/),
-[`stack/cloudflared/config.yml`](../stack/cloudflared/config.yml). Geheimnisse stehen ausschließlich in `stack/.env` und
-`stack/cloudflared/credentials.json` auf dem Server (nicht im Repo).
+Konfiguration: [`stacks/`](../stacks/) (ein Portainer-Stack je Dienst, siehe
+[Betriebshandbuch](betriebshandbuch.md#stacks-und-portainer)), [`config/traefik/`](../config/traefik/),
+[`config/cloudflared/config.yml`](../config/cloudflared/config.yml). Geheimnisse stehen ausschließlich unter
+`/srv/vibez/secrets/` auf dem Server (nicht im Repo, nicht in Portainer).
 
 ## Netze und Erreichbarkeit
 
@@ -141,7 +142,7 @@ Fakten (geprüft 15./16.11.2026):
 | Backup 1 | Atlas Backup (Flex): tägliche Snapshots, 7 Tage (laut Atlas-Oberfläche, Murat 18.11.2026), kein Point-in-Time | in Atlas, Region Frankfurt |
 | Backup 2 | Hetzner Storage Box (DE) | `mongodump` mit Lese-Benutzer → **restic-Verschlüsselung (AES-256) auf dem VPS**; Hetzner sieht nur verschlüsselte Blöcke |
 | restic-Passwort | `.env` auf dem Server **und** offline im Passwortmanager von VIBEZ | ohne Passwort keine Wiederherstellung – beide Kopien sind Pflicht |
-| Zugriffsprotokoll Traefik | `/opt/vibez/stack/logs/traefik` | 14 Tage, nur Metadaten (IP, Land, Pfad, Status) |
+| Zugriffsprotokoll Traefik | `/srv/vibez/logs/traefik` | 14 Tage, nur Metadaten (IP, Land, Pfad, Status) |
 | Änderungsprotokoll der App | in der Datenbank (`audit`) | Teil beider Backups |
 
 Ablauf Backup 2: `vibez-backup.timer` jede Nacht um 02:30 Uhr → `mongodump` aus Atlas mit dem Backup-Benutzer →
@@ -159,8 +160,8 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 - Der netcup-Vertrag läuft auf Murat, die Storage Box auf VIBEZ. 2FA ist Pflicht, kein geteiltes Login. Der Notzugang zur netcup-Konsole muss VIBEZ auch ohne Murat möglich sein (Zugangsdaten versiegelt bzw. im Passwortmanager von VIBEZ).
 - **Aufbauphase:** Nur solange keine echten Daten vorhanden sind, richtet eine KI-Sitzung den Server über Remote Control ein.
   Danach wird dieser Zugang vollständig entfernt ([aufbau.md](aufbau.md)).
-- **Verwaltungsoberflächen wie bei DRK (Entscheidung Murat, 18.11.2026): LLDAP (Benutzer und Gruppen), Authelia (Anmeldung mit 2FA), Portainer, Dozzle und Uptime Kuma auf dem Server, nur über den Tunnel unter `auth.`, `ldap.`, `portainer.`, `logs.` und `status.vibez-odenwald.de`; Zugang nur für die LDAP-Gruppe `vibez-infra_admin` mit zweitem Faktor** (Stack [`stack-admin/`](../stack-admin/compose.yml), Regeln in
-  [`stack-admin/authelia/configuration.yml`](../stack-admin/authelia/configuration.yml)). Die App-Konten folgen mit der
+- **Verwaltungsoberflächen wie bei DRK (Entscheidung Murat, 18.11.2026): LLDAP (Benutzer und Gruppen), Authelia (Anmeldung mit 2FA), Portainer, Dozzle und Uptime Kuma auf dem Server, nur über den Tunnel unter `auth.`, `ldap.`, `portainer.`, `logs.` und `status.vibez-odenwald.de`; Zugang nur für die LDAP-Gruppe `vibez-infra_admin` mit zweitem Faktor** (Stacks `traefik`, `ldap`, `portainer`, `dozzle`, `uptime`, Regeln in
+  [`config/authelia/configuration.yml`](../config/authelia/configuration.yml)). Die App-Konten folgen mit der
   LDAP-Anbindung der App (Gruppen `vibez-app_admin`/`vibez-app_user`, Testing `vibez-testing_*`).
 - **Keine KI-/Automations-Zugänge zum Echtbetrieb:** Portainer und die anderen Oberflächen werden **nicht** an MCP-Server
   oder andere Werkzeuge angebunden, über die KI-Assistenten Befehle ausführen oder Daten lesen könnten. Entwicklung und Tests laufen

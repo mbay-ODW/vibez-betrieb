@@ -68,7 +68,7 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    Ab Flex/M10 Cloud Backup einschalten.
 4. **Database Access**:
    Anmeldung per **X.509** (von Atlas verwaltet, keine Passwörter). Die Zertifikate erzeugt der Server über die
-   Atlas-API direkt nach `/opt/vibez/stack/secrets/` (24 Monate; Atlas warnt 30 Tage vor Ablauf):
+   Atlas-API direkt nach `/srv/vibez/secrets/vibez-nachweise-prod/` (24 Monate; Atlas warnt 30 Tage vor Ablauf):
    - `prod` (App): Rollen *readWrite* und *dbAdmin* nur auf Datenbank `vibez` (die App legt beim Start Indizes an; auf Flex reicht *readWrite* dafür nicht); `atlas-app.pem`, Besitzer UID 10001, Rechte 400
    - `vibez_backup`: nur *read* auf Datenbank `vibez` (reicht für `mongodump` einer Datenbank); `atlas-backup.pem`, root, 400
 5. **Network Access**: einen Programmatic API Key für das Projekt mit der Rolle *Project IP Access List Admin*
@@ -94,18 +94,19 @@ Komplett in [cloudflare.md](cloudflare.md):
 
 ## 5. Stack ausrollen
 
-```bash
-ssh murat@vibez-prod
-sudo git clone https://github.com/mbay-ODW/vibez-betrieb /opt/vibez
-cd /opt/vibez/stack
-sudo cp .env.example .env && sudo chmod 600 .env && sudo nano .env      # alle Werte setzen
-sudo nano cloudflared/config.yml                                          # TUNNEL_ID eintragen
-sudo install -m 600 /tmp/credentials.json cloudflared/credentials.json    # aus Schritt 4
-sudo install -d -m 755 logs/traefik
-# Zugriff auf das private Container-Image (GitHub-Token nur mit read:packages):
-echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u mbay-ODW --password-stdin
-sudo ./deploy.sh
-```
+Aufbau als Portainer-Stacks, Reihenfolge und Netze im [Betriebshandbuch](betriebshandbuch.md#stacks-und-portainer):
+
+1. Repo nach `/opt/vibez/repo` klonen, `ln -s /opt/vibez/repo/host /opt/vibez/host`
+2. Netze anlegen: `docker network create --subnet 172.31.0.0/24 tunnel`; `--internal` für `fe-admin`, `fe-vibez`,
+   `fe-vibez-testing`, `link-ldap`
+3. Geheimnisse unter `/srv/vibez/secrets/<stack>/` auf dem Server erzeugen (`openssl rand`), Vorlagen in
+   `config/vorlagen/`; Datenverzeichnisse unter `/srv/vibez/admin/`, Protokolle unter `/srv/vibez/logs/traefik`
+4. GHCR-Lesezugang: `sudo docker login ghcr.io -u mbay-ODW` (Token nur `read:packages`)
+5. Portainer per `docker compose` starten (`stacks/portainer`), API-Schlüssel nach `/srv/vibez/secrets/portainer/api_token`,
+   Registry `ghcr.io` und Git-Lesezugang hinterlegen
+6. Git-Stacks in Portainer anlegen: `ldap`, `traefik`, `cloudflared`, `dozzle`, `uptime`, `vibez-nachweise-prod`
+   (Stack-Variable `VN_VERSION=<nummer>@<digest>`), `vibez-nachweise-testing`
+7. `vibez-autodeploy.timer` aktivieren
 
 - `VN_ADMIN_PASSWORD` ist das Startpasswort für `tobias`. Es wirkt nur beim allerersten Start.
 - `VN_DEMO=0` ist im Compose fest gesetzt. Es werden **keine Demodaten** erzeugt.
@@ -127,12 +128,12 @@ sudo ./deploy.sh
    sudo ssh u000000@u000000.your-storagebox.de exit   # Host-Schlüssel bestätigen (known_hosts)
    ```
 
-3. In `.env` setzen: `RESTIC_REPOSITORY`, ein starkes `RESTIC_PASSWORD` (**sofort zusätzlich in den Passwortmanager
+3. In `/srv/vibez/secrets/vibez-nachweise-prod/backup.env` setzen: `RESTIC_REPOSITORY`, ein starkes `RESTIC_PASSWORD` (**sofort zusätzlich in den Passwortmanager
    von VIBEZ**), `BACKUP_PING_URL`.
 4. Repository anlegen und ersten Lauf starten:
 
    ```bash
-   sudo bash -c 'set -a; . /opt/vibez/stack/.env; docker run --rm -e RESTIC_REPOSITORY -e RESTIC_PASSWORD -v /root/.ssh:/root/.ssh:ro restic/restic:$RESTIC_VERSION init'
+   sudo bash -c 'set -a; . /srv/vibez/secrets/vibez-nachweise-prod/backup.env; docker run --rm -e RESTIC_REPOSITORY -e RESTIC_PASSWORD -v /root/.ssh:/root/.ssh:ro restic/restic:$RESTIC_VERSION init'
    sudo /opt/vibez/host/backup.sh && sudo /opt/vibez/host/restore.sh latest --test
    ```
 

@@ -16,25 +16,46 @@ Abläufe für den laufenden Betrieb. Befehle laufen auf `vibez-prod` (`ssh -p 50
 
 ## Stacks und Portainer
 
-Die drei Stacks `vibez` (`stack/`), `vibez-admin` (`stack-admin/`) und `vibez-testing` (`stack-testing/`) laufen mit
-`docker compose` direkt aus dem Repo unter `/opt/vibez/repo` (Entscheidung Murat, 18.11.2026). Portainer zeigt sie als
-**externe Stacks**: Logs, Konsole, Statistiken und Neustart gehen dort, Bearbeiten und Neu-Ausrollen nicht. Grund:
-Compose-Dateien versioniert im Repo, Geheimnisse nur als Dateien auf dem Server (nicht in der Portainer-Datenbank),
-Versionen mit Digest über `deploy.sh`/`autodeploy.sh`. **Stacks nicht in Portainer neu anlegen** – Änderungen im Repo,
-dann `sudo docker compose up -d` im jeweiligen Verzeichnis.
+Aufbau wie auf Murats Server (Entscheidung Murat, 18.11.2026): **ein Portainer-Stack je Dienst**, alle als Git-Stacks aus
+`mbay-ODW/vibez-betrieb` (`stacks/<name>/compose.yml`, Portainer prüft alle 5 Minuten auf Änderungen und rollt dann neu aus).
+
+| Stack | Container | Netze |
+|---|---|---|
+| `cloudflared` | vibez-cloudflared | `tunnel` |
+| `traefik` | vibez-traefik, vibez-authelia, vibez-redis | `tunnel`, `fe-admin`, `fe-vibez`, `fe-vibez-testing`, `link-ldap` (Authelia), intern |
+| `ldap` | vibez-lldap | `fe-admin` (Oberfläche), `link-ldap` (LDAP 3890) |
+| `portainer` | vibez-portainer – **nicht** in Portainer selbst, sondern `sudo docker compose -p portainer -f /opt/vibez/repo/stacks/portainer/compose.yml up -d` | `fe-admin`, ausgehend (GitHub, Registry) |
+| `dozzle` | vibez-dozzle + Socket-Proxy (nur lesend) | `fe-admin`, intern |
+| `uptime` | vibez-uptime | `fe-admin`, ausgehend |
+| `vibez-nachweise-prod` | vibez-app, vibez-usersync | `fe-vibez`, `link-ldap`, ausgehend (Atlas) |
+| `vibez-nachweise-testing` | vibez-testing-app, vibez-testing-usersync | `fe-vibez-testing`, `link-ldap`, ausgehend (Atlas Test) |
+
+- Die Netze `tunnel` (172.31.0.0/24), `fe-admin`, `fe-vibez`, `fe-vibez-testing`, `link-ldap` sind einmalig von Hand
+  angelegt (`docker network create [--internal] …`); alle außer `tunnel` sind intern.
+- **Geheimnisse** liegen nur unter `/srv/vibez/secrets/<stack>/` (Dateien 400/600, root bzw. Container-Benutzer) und
+  werden per `env_file:` bzw. Bind-Mount mit absolutem Pfad eingebunden; Portainer sieht `/srv/vibez/secrets` nur lesend.
+  **Keine Werte als Stack-Variablen in Portainer eintragen.** Einzige Stack-Variable: `VN_VERSION` (Version mit Digest)
+  in den beiden App-Stacks.
+- Konfigurationsdateien (Traefik, Authelia, cloudflared, LLDAP-Bootstrap) liegen unter `config/` und werden aus
+  `/opt/vibez/repo` eingebunden; `host/autodeploy.sh` hält das Repo per `git pull` aktuell.
+- In Portainer gespeichert: der Git-Lesezugang (Fine-grained Token, nur `vibez-betrieb`, Contents read) und der
+  Registry-Zugang `ghcr.io` (nur `read:packages`). Für Skripte gibt es einen Portainer-API-Schlüssel
+  (`/srv/vibez/secrets/portainer/api_token`).
+- Änderungen an Compose oder Konfiguration: im Repo ändern, committen, pushen – Portainer und der Timer übernehmen sie.
 
 ## Update der App
 
 1. Im App-Repo: Änderung fertig, `VERSION` und `CHANGELOG.md` erhöht, CI grün → Image `ghcr.io/mbay-odw/vibez-nachweise:<version>`.
 2. Vorher in der **Demo** prüfen (vibez.bay-ram.de, erfundene Daten).
 3. **Automatisch (Standard seit 18.11.2026):** Nach dem Merge auf `main` holt der Server die neue Nummer spätestens nach
-   5 Minuten selbst (`vibez-autodeploy.timer` → `host/autodeploy.sh` → `stack/deploy.sh --auto`): Digest festschreiben,
+   5 Minuten selbst (`vibez-autodeploy.timer` → `host/autodeploy.sh` → `host/deploy.sh --auto prod <version>` → Portainer-API): Digest festschreiben,
    Backup, Neustart, Health-Check, bei Fehler Rücksprung auf die vorige Version. Protokoll:
    `journalctl -t vibez-autodeploy -t vibez-deploy`. Vorher auf `testing` prüfen (`nachweise-testing.vibez-odenwald.de`).
    **Von Hand** (z. B. wenn der Timer aus ist):
 
    ```bash
-   sudo /opt/vibez/stack/deploy.sh 0.3.1    # zeigt den Digest, fragt nach, Backup davor, Health-Check danach
+   sudo /opt/vibez/host/deploy.sh prod 0.3.1      # zeigt den Digest, fragt nach, Backup davor, Health-Check danach
+   sudo /opt/vibez/host/deploy.sh testing testing # Testumgebung auf den aktuellen Stand von :testing
    ```
 
    Automatik anhalten: `sudo systemctl stop vibez-autodeploy.timer` (wieder an: `start`).
@@ -47,7 +68,7 @@ Ausrollen am besten außerhalb der Arbeitszeiten der Pädagog:innen (abends). Ei
 
 ## Zurück auf die vorige Version
 
-- **Ohne Migration** (laut CHANGELOG): `sudo stack/deploy.sh <vorige-version>`.
+- **Ohne Migration** (laut CHANGELOG): `sudo /opt/vibez/host/deploy.sh prod <vorige-version>` (vorher `vibez-autodeploy.timer` stoppen, sonst rollt er die neueste Nummer wieder aus).
 - **Mit Migration**: Ein Zurückgehen ist nicht ohne Weiteres möglich, weil die Daten schon umgebaut sind. Dann entweder den
   Fehler mit einer neuen Version beheben (bevorzugt) oder App stoppen, Datenbank auf den Stand vor dem Update
   zurücksetzen (Atlas Point-in-Time / Snapshot) und die vorige Version starten. Alles, was zwischendurch erfasst wurde,
@@ -59,8 +80,9 @@ Am ersten Arbeitstag des Monats (ca. 30 Minuten):
 
 - [ ] Restore-Test des Vormonats gelaufen: `journalctl -t vibez-backup --since "-35 days" | grep restore-test`
 - [ ] Atlas: Speicherbelegung (Flex: Grenze laut Preisblatt), keine offenen Alerts, Zugriffsliste unverändert (`host/atlas-zugriffsliste.sh`)
-- [ ] Neue Versionen von Traefik, cloudflared, restic, mongo-Tools prüfen (Release Notes, v. a. Sicherheit) → in
-      `stack/.env` anheben, `sudo stack/deploy.sh`
+- [ ] Neue Versionen von Traefik, Authelia, LLDAP, cloudflared, Portainer, Dozzle, Uptime Kuma, restic, mongo-Tools prüfen
+      (Release Notes, v. a. Sicherheit) → Version in `stacks/<name>/compose.yml` anheben, committen, pushen (Portainer
+      rollt nach spätestens 5 Minuten neu aus; Portainer selbst per `docker compose`)
 - [ ] Betriebssystem: `sudo apt list --upgradable` (Sicherheitsupdates laufen automatisch); Neustart nötig? `needrestart -b`
 - [ ] Cloudflare: Security-Events auf Auffälligkeiten ansehen (z. B. gehäufte Blocks auf `/login`); **Audit-Log** der Zone
       `vibez-odenwald.de` prüfen: jede Änderung muss zu einem Eintrag im Wartungsprotokoll passen (DSFA T12)

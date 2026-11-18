@@ -113,7 +113,7 @@ Beginne mit Schritt 1 des Ablaufs (host/bootstrap.sh) und sag mir vorher, was du
 3. Cloudflare (sobald die Zone `vibez-odenwald.de` aktiv ist): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag,
    Mail-Schutz und CAA, 5 WAF-Regeln, Ratenlimit, Cache-Regel, Einstellungen, Benachrichtigungen. DNSSEC schaltet Murat
    ein (DS-Eintrag beim Registrar).
-4. Stack ausrollen (`stack/deploy.sh <version>` mit Digest), Verwaltungszugang `tobias` mit Startpasswort (auf dem
+4. Stack ausrollen (`host/deploy.sh prod <version>` mit Digest), Verwaltungszugang `tobias` mit Startpasswort (auf dem
    Server erzeugt), Pflicht-2FA
 5. Backup einrichten (Storage Box, restic init, erster Lauf, Restore-Test, Timer)
 6. Abnahme-Checkliste aus [deployment.md](deployment.md#8-abnahme-und-freigabe)
@@ -167,15 +167,19 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Testumgebung `stack-testing/` (App mit Demodaten, `VN_AUTH=authelia`, Gruppen `vibez-testing_*`, eigener UserSync, eigenes Proxy-Geheimnis); Authelia-Regel, Traefik-Route `testing.yml`, Tunnel-Eintrag, DNS `nachweise-testing` (Freigabe Murat), WAF-Regel 5 von Murat erweitert | ✅ | Probe: ohne Anmeldung → `auth.`, gefälschte Header → `auth.`, `/health` 200 |
 | 18.11.2026 | Automatisches Ausrollen: `host/autodeploy.sh` + `vibez-autodeploy.timer` (5 Min.), `deploy.sh --auto` mit Rücksprung; Probe: Testing auf `:testing@sha256:5df0def5…` umgestellt, zweiter Lauf ohne Änderung, Produktion unverändert 0.3.1 | ✅ | Ohne restic: Update ohne Backup mit Warnung – nur bis zum ersten echten Datensatz zulässig |
 | 18.11.2026 | LLDAP: `murat` zusätzlich in `lldap_admin` und `vibez-testing_admin` (per LLDAP-API, Passwort unberührt); Bootstrap-Datei `murat.json` gelöscht, damit ein erneuter Bootstrap das Passwort nicht zurücksetzt | ✅ | Wunsch Murat |
+| 18.11.2026 | **Umbau auf Portainer-Stacks nach Murats Muster** (Entscheidung Murat): 8 Stacks `cloudflared`, `traefik` (+ Authelia, Redis), `ldap`, `portainer` (compose), `dozzle` (+ Socket-Proxy, nur lesend), `uptime`, `vibez-nachweise-prod`, `vibez-nachweise-testing`; Netze `tunnel`, `fe-admin`, `fe-vibez`, `fe-vibez-testing`, `link-ldap`; Geheimnisse nach `/srv/vibez/secrets/<stack>/`, alte Ablageorte gelöscht; Deploy über Portainer-API (`host/deploy.sh`, `host/portainer.sh`) | ✅ | Unterbrechung ca. 25 Min. (keine echten Daten) |
+| 18.11.2026 | In Portainer hinterlegt: Git-Lesezugang (Fine-grained Token von Murat, nur `vibez-betrieb`), Registry `ghcr.io` (read:packages), API-Schlüssel für die Host-Skripte | ✅ | Ohne Registry-Eintrag scheiterte das Ziehen des App-Images („unauthorized“) |
+| 18.11.2026 | **Vorfälle beim Umbau:** (1) geänderte `.gitignore` → `git add` hatte Geheimnisse der alten Ablageorte vorgemerkt; vor dem Commit bemerkt und zurückgenommen, **nichts committet oder gepusht** (geprüft). (2) Portainer-API-Schlüssel durch Debug-Ausgabe im Sitzungsprotokoll sichtbar → sofort widerrufen, neuer Schlüssel erzeugt | ✅ | Lehre: keine Ablaufverfolgung (`set -x`) bei Skripten mit Geheimnissen; vor jedem Commit vorgemerkte Dateien prüfen |
+| 18.11.2026 | Probe nach Umbau: alle Adressen → Authelia, `/health` 200 (Prod, Testing), gefälschte Header → Anmeldung, App direkt ohne Geheimnis 403, Socket-Proxy: Container lesen 200, Neustart/Images 403; UserSync Prod/Testing abgeglichen; `autodeploy.sh` ohne Fehler | ✅ | – |
 
 ## Übergabe-Checkliste
 
 Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
-- [ ] restic eingerichtet (`RESTIC_REPOSITORY` in `stack/.env`) – sonst rollt `autodeploy` ohne Backup aus
+- [ ] restic eingerichtet (`RESTIC_REPOSITORY` in `/srv/vibez/secrets/vibez-nachweise-prod/backup.env`) – sonst rollt `autodeploy` ohne Backup aus
 - [ ] Konto `tobias` in LLDAP (Benutzername `tobias`, Gruppe `vibez-app_admin`) – übernimmt das bestehende App-Konto; Startpasswort von `murat` geändert
-- [ ] LLDAP-`admin` und Portainer-Admin: Passwörter in Bitwarden, persönliche Konten in `vibez-infra_admin` mit 2FA eingerichtet; `stack-admin/secrets/portainer_admin_pass` und `lldap-users/` vom Server gelöscht
+- [ ] LLDAP-`admin` und Portainer-Admin: Passwörter in Bitwarden, persönliche Konten in `vibez-infra_admin` mit 2FA eingerichtet; `/srv/vibez/secrets/portainer/admin_pass`, `/srv/vibez/secrets/ldap/start_murat_pass` und `/srv/vibez/secrets/ldap/bootstrap-users/` vom Server gelöscht; Portainer-API-Schlüssel und Git-Token in Portainer neu bzw. ersetzt
 - [ ] `/etc/sudoers.d/90-aufbau` gelöscht (sudo für `murat` wieder mit Passwort; vorher Passwort setzen)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht

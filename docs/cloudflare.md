@@ -55,7 +55,7 @@ Tunnel zum Server, der keine offenen Ports hat. Die App hat dafür eine **eigene
 
 ## Tunnel und App-Adresse
 
-Lokal verwalteter Tunnel. Die Konfiguration liegt im Repo ([`stack/cloudflared/config.yml`](../stack/cloudflared/config.yml)),
+Lokal verwalteter Tunnel. Die Konfiguration liegt im Repo ([`config/cloudflared/config.yml`](../config/cloudflared/config.yml)),
 die Zugangsdaten (`credentials.json`) nur auf dem Server.
 
 ```bash
@@ -67,7 +67,7 @@ cloudflared tunnel route dns vibez-prod nachweise.vibez-odenwald.de
 - `route dns` legt `nachweise` als **proxied CNAME** auf `<TUNNEL-ID>.cfargotunnel.com` an. Das ist der einzige
   proxied Eintrag der Zone (außer einer optionalen Weiterleitung von `@`/`www`).
 - Das Zertifikat für `nachweise.vibez-odenwald.de` stellt Cloudflare automatisch aus (Universal SSL).
-- `<TUNNEL-ID>.json` wird zu `/opt/vibez/stack/cloudflared/credentials.json` (chmod 600). `cert.pem` aus `tunnel login`
+- `<TUNNEL-ID>.json` wird zu `/srv/vibez/secrets/cloudflared/credentials.json` (400, UID 65532). `cert.pem` aus `tunnel login`
   wird nach dem Anlegen gelöscht.
 
 ## Einstellungen der Zone
