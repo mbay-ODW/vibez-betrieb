@@ -1,6 +1,6 @@
 # cloudflared – lokal verwalteter Tunnel (Konfiguration liegt hier im Repo, Zugangsdaten nur auf dem Server)
 # TUNNEL_ID und credentials.json entstehen bei `cloudflared tunnel create vibez-prod` (siehe docs/deployment.md).
-tunnel: TUNNEL_ID
+tunnel: 7299c757-f13e-42d4-8257-549a5dfe0163
 credentials-file: /etc/cloudflared/credentials.json
 no-autoupdate: true
 

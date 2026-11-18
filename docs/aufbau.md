@@ -145,6 +145,8 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | `stack/.env` angelegt (600 root): `VN_SECRET_KEY`, Startpasswort `tobias` auf dem Server erzeugt; Atlas-Adressen mit X.509; `MONGO_TOOLS_VERSION` 8.0 | ✅ | `VN_VERSION` (Schritt 4), restic (Schritt 5) noch leer |
 | 18.11.2026 | Test mit Wegwerf-Containern: `prod` ping ok, Rolle `readWrite@vibez` (als UID 10001); `vibez_backup` ping ok, `read@vibez`; `mongodump` ok (leere DB) | ✅ | – |
 | 18.11.2026 | Atlas-Alerts ergänzt: Flex-Speicher > 3,5 GB (70 %), IP-Zugriffsliste Eintrag hinzugefügt/entfernt | ✅ | Änderungen an DB-Benutzern bietet Atlas nicht als Alert an. IP `91.18.162.56` (Murat) bleibt bewusst in der Zugriffsliste |
+| 18.11.2026 | Cloudflare-Tunnel `vibez-prod` (ID `7299c757-f13e-42d4-8257-549a5dfe0163`) auf dem Server angelegt (`cloudflared tunnel login` mit Bestätigung durch Murat); `credentials.json` nur auf dem Server (400, UID 65532), ID in `config.yml` | ✅ | `cert.pem` aus dem Login danach gelöscht |
+| 18.11.2026 | DNS: `nachweise.vibez-odenwald.de` als proxied CNAME auf den Tunnel (`tunnel route dns`, Freigabe Murat) | ✅ | Bis Schritt 4 antwortet die Adresse mit 530 (kein Connector) |
 
 ## Übergabe-Checkliste
 
