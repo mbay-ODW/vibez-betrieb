@@ -59,6 +59,7 @@ access_control:
       subject:
         - group:vibez-app_admin
         - group:vibez-app_user
+        - group:vibez-app_technik
       policy: two_factor
     # Testumgebung (erfundene Daten): eigene Gruppen
     - domain: nachweise-testing.vibez-odenwald.de
@@ -68,6 +69,7 @@ access_control:
       subject:
         - group:vibez-testing_admin
         - group:vibez-testing_user
+        - group:vibez-testing_technik
       policy: two_factor
 
 session:
