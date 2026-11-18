@@ -80,7 +80,7 @@ Am ersten Arbeitstag des Monats (ca. 30 Minuten):
 
 1. Lage sichern: betroffenen Zugang in der App deaktivieren; bei Verdacht auf Server-Kompromittierung Tunnel stoppen
    (`sudo docker stop vibez-cloudflared`). Die App ist dann offline, die Daten in Atlas bleiben unverändert.
-2. Passwörter/Schlüssel rotieren: betroffene App-Konten, ggf. Atlas-Benutzer (`vibez_app`), `VN_SECRET_KEY` (meldet alle
+2. Passwörter/Schlüssel rotieren: betroffene App-Konten, ggf. Atlas-Zertifikate (neu erzeugen; bei Verdacht X.509-Benutzer neu anlegen), `VN_SECRET_KEY` (meldet alle
    ab), Tunnel-Zugangsdaten.
 3. Beweise sichern: Traefik-Zugriffsprotokoll, App-Änderungsprotokoll, Cloudflare-Security-Events, Atlas-Access-History.
 4. **VIBEZ sofort informieren.** VIBEZ ist Verantwortliche und entscheidet über die Meldung.

@@ -14,7 +14,8 @@ restic() {
 }
 
 stempel="$(date +%F_%H%M)"
-docker run --rm -e MONGODB_BACKUP_URI "mongo:${MONGO_TOOLS_VERSION}" \
+docker run --rm -e MONGODB_BACKUP_URI -v /opt/vibez/stack/secrets/atlas-backup.pem:/certs/atlas-backup.pem:ro \
+  "mongo:${MONGO_TOOLS_VERSION}" \
   sh -c 'mongodump --quiet --uri "$MONGODB_BACKUP_URI" --db vibez --archive --gzip' \
   | restic backup --quiet --stdin --stdin-filename "vibez-${stempel}.archive.gz" --tag mongodump
 

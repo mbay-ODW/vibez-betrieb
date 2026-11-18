@@ -60,7 +60,7 @@ services:
     container_name: vibez-app
     restart: unless-stopped
     environment:
-      # mongodb+srv://<app-benutzer>:<passwort>@<cluster>.mongodb.net/vibez?retryWrites=true&w=majority&appName=vibez-nachweise
+      # mongodb+srv://<cluster>.mongodb.net/vibez?authMechanism=MONGODB-X509&tlsCertificateKeyFile=/run/secrets/atlas-app.pem&…
       MONGODB_URI: ${MONGODB_URI}
       VN_SECRET_KEY: ${VN_SECRET_KEY}
       VN_ADMIN_PASSWORD: ${VN_ADMIN_PASSWORD}
@@ -69,6 +69,9 @@ services:
       VN_HOSTS: ${VN_HOST}          # nur dieser Hostname wird angenommen
       VN_IDLE_MINUTES: "120"        # Abmeldung nach 2 Stunden Inaktivität
       TZ: Europe/Berlin
+    volumes:
+      # X.509-Zertifikat für Atlas (Benutzer „prod“), Besitzer UID 10001, Rechte 400
+      - ./secrets/atlas-app.pem:/run/secrets/atlas-app.pem:ro
     networks: [web, atlas]
     read_only: true
     tmpfs: ["/tmp"]

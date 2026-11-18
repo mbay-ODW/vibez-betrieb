@@ -108,7 +108,7 @@ Beginne mit Schritt 1 des Ablaufs (host/bootstrap.sh) und sag mir vorher, was du
 ## Ablauf
 
 1. Server härten (`host/bootstrap.sh`: Schlüssel-Login, SSH-Port 5022, Firewall), Repo nach `/opt/vibez` klonen
-2. Atlas: Cluster Frankfurt, Benutzer `vibez_app`/`vibez_backup` (Passwörter auf dem Server erzeugt), IP-Zugriffsliste
+2. Atlas: Cluster Frankfurt, X.509-Benutzer `prod`/`vibez_backup` (Zertifikate auf dem Server erzeugt), IP-Zugriffsliste
    = Server-IP, Backups und Alerts
 3. Cloudflare (sobald die Zone `vibez-odenwald.de` aktiv ist): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag,
    Mail-Schutz und CAA, 5 WAF-Regeln, Ratenlimit, Cache-Regel, Einstellungen, Benachrichtigungen. DNSSEC schaltet Murat
@@ -141,6 +141,10 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | `/etc/sudoers.d/90-aufbau`: `murat` sudo ohne Passwort (nur Aufbauphase) | ✅ | Vor Übergabe löschen (Checkliste) |
 | 18.11.2026 | `host/bootstrap.sh` (ADMIN=`murat`, ohne `TS_AUTHKEY`): Updates, unattended-upgrades, Admin `murat` nur mit Schlüssel, root- und Passwort-Login aus, Docker 29.10.0, Tailscale-Paket installiert | ✅ | Kernel 6.12.117 |
 | 18.11.2026 | **Abweichung (Entscheidung Murat):** kein Tailscale. SSH auf Port **5022** (`/etc/ssh/sshd_config.d/20-vibez-port.conf`), Port 22 zu; `ufw` aktiv: eingehend nur `5022/tcp` (limit), Rest deny | ✅ | Unterlagen angepasst (DSFA 0.17); Tailscale-Paket ungenutzt, kann deinstalliert werden |
+| 18.11.2026 | Atlas (per API vom Server): X.509-Benutzer `vibez_backup` (read auf `vibez`) angelegt; Zertifikate für `prod` und `vibez_backup` auf dem Server erzeugt (`stack/secrets/`, 400, gültig bis 18.11.2028) | ✅ | X.509 statt Passwort (Entscheidung Murat); `/opt/vibez/stack` und `/opt/vibez/host` als Links auf das Repo |
+| 18.11.2026 | `stack/.env` angelegt (600 root): `VN_SECRET_KEY`, Startpasswort `tobias` auf dem Server erzeugt; Atlas-Adressen mit X.509; `MONGO_TOOLS_VERSION` 8.0 | ✅ | `VN_VERSION` (Schritt 4), restic (Schritt 5) noch leer |
+| 18.11.2026 | Test mit Wegwerf-Containern: `prod` ping ok, Rolle `readWrite@vibez` (als UID 10001); `vibez_backup` ping ok, `read@vibez`; `mongodump` ok (leere DB) | ✅ | – |
+| 18.11.2026 | Atlas-Alerts ergänzt: Flex-Speicher > 3,5 GB (70 %), IP-Zugriffsliste Eintrag hinzugefügt/entfernt | ✅ | Änderungen an DB-Benutzern bietet Atlas nicht als Alert an. IP `91.18.162.56` (Murat) bleibt bewusst in der Zugriffsliste |
 
 ## Übergabe-Checkliste
 
@@ -152,9 +156,9 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Cloudflare-Token der Aufbauphase gelöscht
 - [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (dauerhaft auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Vorgehen bei Ende der Betreuung schriftlich geregelt
 - [ ] Cloudflare-Anbindung (MCP) bleibt als begrenzte Ausnahme nach DSFA T12 (Entscheidung 18.11.2026): Benachrichtigung bei DNS-Änderungen eingerichtet, Prüfung des Audit-Logs in die monatliche Wartung aufgenommen
-- [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
+- [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `prod`, `vibez_backup` und der IP-Listen-Key bleiben; von Murat heruntergeladenes `prod`-Zertifikat auf dem Mac gelöscht
 - [ ] GitHub auf dem Server: `gh auth logout` (Anmeldung mit Murats ganzem Konto aus der Aufbauphase entfernt); für das Image nur noch der Fine-grained Token mit *Packages: read* in `docker login ghcr.io`; Repo-Updates mit Token nur *Contents: read*
-- [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)
+- [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Konsolenpasswort, Startpasswort `tobias`)
 - [ ] Startpasswort von `tobias` wurde beim ersten Login geändert, 2FA eingerichtet
 - [ ] Datenbank enthält keine Testdaten (nur Einstellungen, Jugendämter, Konten)
 - [ ] Abnahme-Checkliste in [deployment.md](deployment.md#8-abnahme-und-freigabe) vollständig

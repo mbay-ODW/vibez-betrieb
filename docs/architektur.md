@@ -65,7 +65,7 @@ flowchart LR
     D -. "delegiert" .-> Z
     W --> Z --> TU
     TU <== "ausgehend aufgebaut" ==> CD
-    CD --> TR --> APP -- "TLS, Benutzer vibez_app" --> DB
+    CD --> TR --> APP -- "TLS, X.509-Benutzer prod" --> DB
     DB --- AB
     DB -. "nachts mongodump (vibez_backup)" .-> SB
 ```
@@ -82,7 +82,7 @@ flowchart LR
    echter IP (`Cf-Connecting-Ip`), setzt HSTS und protokolliert Metadaten.
 5. Traefik leitet an die **App** weiter. Sie prüft Anmeldung, Rolle und CSRF und setzt eigene Sicherheits-Header (CSP u. a.).
 6. Die App liest und schreibt in **MongoDB Atlas** (Frankfurt), verschlüsselt per TLS. Atlas nimmt Verbindungen nur von
-   der festen IPv4 des VPS an (IP-Zugriffsliste) und nur mit dem Benutzer `vibez_app`, der ausschließlich die Datenbank
+   der festen IPv4 des VPS an (IP-Zugriffsliste) und nur mit dem X.509-Benutzer `prod`, der ausschließlich die Datenbank
    `vibez` lesen und schreiben darf.
 
 ## Komponenten
@@ -106,7 +106,7 @@ Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](.
 | Cloudflare → App | nur über den Tunnel | `cloudflared` baut ausgehend auf |
 | cloudflared → Traefik | HTTP im Netz `edge` | Traefik vertraut `X-Forwarded-*` nur aus `172.30.0.0/24` |
 | Traefik → App | HTTP im Netz `web` (intern) | Docker-Netz `internal: true` |
-| App → MongoDB Atlas | TLS über das Netz `atlas` | Atlas-IP-Zugriffsliste = nur VPS-IPv4; Benutzer mit Passwort (SCRAM) |
+| App → MongoDB Atlas | TLS über das Netz `atlas` | Atlas-IP-Zugriffsliste (VPS-IPv4); Anmeldung per X.509-Zertifikat |
 | Traefik → Internet | **nichts** | Traefik hängt nur an `edge` (für cloudflared) und `web` (intern) |
 | Admin → Server | SSH auf Port 5022, nur Schlüssel | `ufw limit 5022/tcp`, `PasswordAuthentication no`, `PermitRootLogin no` |
 | Server → Internet | ausgehend (Updates, Tunnel, Backup, Image-Download) | – |
@@ -184,7 +184,7 @@ Uptime Kuma sieht nur die öffentliche Health-Adresse (Antwort `{"ok": true}`), 
 | Region | AWS **eu-central-1 (Frankfurt)** |
 | Tarif | **Flex** (Entscheidung Murat, 18.11.2026; M10 für den Anfang zu teuer). Gemeinsam genutzte Hardware, begrenzter Speicher und Durchsatz (Grenzen laut aktuellem Atlas-Preisblatt), Backup: tägliche Snapshots, 7 Tage (laut Atlas-Oberfläche, Murat 18.11.2026), kein Point-in-Time. Wechsel auf M10, wenn Speicher (Alarm bei 70 %) oder Last es verlangen |
 | Netzwerkzugang | IP-Zugriffsliste **nur** die öffentliche IPv4 des VPS, gepflegt mit [`host/atlas-zugriffsliste.sh`](../host/atlas-zugriffsliste.sh) (Atlas Admin API); kein `0.0.0.0/0` |
-| Datenbank-Benutzer | `vibez_app` (readWrite auf `vibez`), `vibez_backup` (nur *read* auf `vibez`, reicht für `mongodump` einer Datenbank); Admin-Rechte nur befristet für Wartung. Anmeldung per Passwort (SCRAM) oder per X.509-Zertifikat von Atlas |
+| Datenbank-Benutzer | `prod` (App, readWrite auf `vibez`), `vibez_backup` (nur *read* auf `vibez`, reicht für `mongodump` einer Datenbank); Admin-Rechte nur befristet für Wartung. Anmeldung per **X.509-Zertifikat** von Atlas (Entscheidung Murat, 18.11.2026), 24 Monate gültig, auf dem Server erzeugt |
 | Backup | Flex: tägliche Snapshots, 7 Tage. Für längere Aufbewahrung und Unabhängigkeit vom Anbieter ist die restic-Sicherung (Backup 2) Pflicht und muss vor dem Echtbetrieb samt Restore-Test laufen. Ab Flex/M10: Cloud Backup erweitern, 7 Tage täglich + 4 Wochen + 12 Monate |
 | Benachrichtigungen | Atlas-Alerts (Verbindungen, Speicher ab 70 %) an Murat; Backup-Fehler meldet `host/backup.sh` |
 | AV-Vertrag | MongoDB-DPA (Bestandteil der Atlas-Bedingungen) für VIBEZ dokumentieren, Region und Unterauftragnehmer (AWS) festhalten |

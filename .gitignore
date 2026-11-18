@@ -6,3 +6,5 @@ stack/cloudflared/cert.pem
 stack/logs/
 *.archive.gz
 *.key
+stack/secrets/
+*.pem

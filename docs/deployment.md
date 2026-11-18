@@ -30,7 +30,7 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 im Passwortmanager von VIBEZ. Bei GitHub zusätzlich: Branch-Schutz auf `main` (Änderungen nur über Pull Request mit grüner
 CI). Begründung: [Sicherheitsanalyse, Abschnitt D](sicherheitsanalyse.md#d-konten-und-identitäten).
 | GitHub `mbay-ODW` | Murat | – (Code und Image, keine Klientendaten) | – |
-| Passwortmanager | VIBEZ | – | Einträge: restic-Passwort, Server-Konsolenpasswort, Atlas-Benutzer |
+| Passwortmanager | VIBEZ | – | Einträge: restic-Passwort, Server-Konsolenpasswort |
 
 Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nach § 203 Abs. 4 StGB. Siehe
 [Dienstleister](../datenschutz/dienstleister.md).
@@ -67,8 +67,10 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
 3. **Backup:** Bei Flex sind tägliche Snapshots (7 Tage) dabei; prüfen, dass es aktiv ist. Die restic-Sicherung (Abschnitt 6) bleibt Pflicht vor dem Echtbetrieb (12 Monate, anderer Anbieter).
    Ab Flex/M10 Cloud Backup einschalten.
 4. **Database Access**:
-   - `vibez_app`: Passwort generieren, Rolle *readWrite* nur auf Datenbank `vibez`
-   - `vibez_backup`: Passwort generieren, nur *read* auf Datenbank `vibez` (reicht für `mongodump` einer Datenbank)
+   Anmeldung per **X.509** (von Atlas verwaltet, keine Passwörter). Die Zertifikate erzeugt der Server über die
+   Atlas-API direkt nach `/opt/vibez/stack/secrets/` (24 Monate; Atlas warnt 30 Tage vor Ablauf):
+   - `prod` (App): Rolle *readWrite* nur auf Datenbank `vibez`; `atlas-app.pem`, Besitzer UID 10001, Rechte 400
+   - `vibez_backup`: nur *read* auf Datenbank `vibez` (reicht für `mongodump` einer Datenbank); `atlas-backup.pem`, root, 400
 5. **Network Access**: einen Programmatic API Key für das Projekt mit der Rolle *Project IP Access List Admin*
    anlegen, dann auf dem Server ausführen:
 
