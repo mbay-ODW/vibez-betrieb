@@ -166,6 +166,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | App-CI: Branch `testing` baut `:testing` (PR mbay-ODW/vibez-nachweise#9); Branch `testing` angelegt. Branch-Schutz auf `main` **nicht möglich** (GitHub Free, privates Repo) | ⚠️ | DSFA 0.19, Sicherheitsanalyse B2 |
 | 18.11.2026 | Testumgebung `stack-testing/` (App mit Demodaten, `VN_AUTH=authelia`, Gruppen `vibez-testing_*`, eigener UserSync, eigenes Proxy-Geheimnis); Authelia-Regel, Traefik-Route `testing.yml`, Tunnel-Eintrag, DNS `nachweise-testing` (Freigabe Murat), WAF-Regel 5 von Murat erweitert | ✅ | Probe: ohne Anmeldung → `auth.`, gefälschte Header → `auth.`, `/health` 200 |
 | 18.11.2026 | Automatisches Ausrollen: `host/autodeploy.sh` + `vibez-autodeploy.timer` (5 Min.), `deploy.sh --auto` mit Rücksprung; Probe: Testing auf `:testing@sha256:5df0def5…` umgestellt, zweiter Lauf ohne Änderung, Produktion unverändert 0.3.1 | ✅ | Ohne restic: Update ohne Backup mit Warnung – nur bis zum ersten echten Datensatz zulässig |
+| 18.11.2026 | LLDAP: `murat` zusätzlich in `lldap_admin` und `vibez-testing_admin` (per LLDAP-API, Passwort unberührt); Bootstrap-Datei `murat.json` gelöscht, damit ein erneuter Bootstrap das Passwort nicht zurücksetzt | ✅ | Wunsch Murat |
 
 ## Übergabe-Checkliste
 
