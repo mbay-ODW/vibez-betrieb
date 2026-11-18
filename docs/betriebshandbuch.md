@@ -48,7 +48,8 @@ Am ersten Arbeitstag des Monats (ca. 30 Minuten):
 - [ ] Neue Versionen von Traefik, cloudflared, restic, mongo-Tools prüfen (Release Notes, v. a. Sicherheit) → in
       `stack/.env` anheben, `sudo stack/deploy.sh`
 - [ ] Betriebssystem: `sudo apt list --upgradable` (Sicherheitsupdates laufen automatisch); Neustart nötig? `needrestart -b`
-- [ ] Cloudflare: Security-Events auf Auffälligkeiten ansehen (z. B. gehäufte Blocks auf `/login`)
+- [ ] Cloudflare: Security-Events auf Auffälligkeiten ansehen (z. B. gehäufte Blocks auf `/login`); **Audit-Log** der Zone
+      `vibez-odenwald.de` prüfen: jede Änderung muss zu einem Eintrag im Wartungsprotokoll passen (DSFA T12)
 - [ ] App: Änderungsprotokoll (Einstellungen → Änderungsprotokoll) auf ungewöhnliche Anmeldungen ansehen
 - [ ] Mitarbeitende: Wer hat VIBEZ verlassen? Zugänge in der App deaktivieren
 - [ ] Wartungsprotokoll-Eintrag

@@ -8,7 +8,12 @@ Betrieb und Datenschutzunterlagen für den **Echtbetrieb** von VIBEZ Nachweise (
 - **Kein Zugriff auf den Echtbetrieb aus KI-Sitzungen**: nicht per Portainer, MCP, SSH, Remote Control oder
   Datenbankverbindung. Änderungen hier sind Dokumentation und Konfiguration; ausgerollt wird von Murat manuell mit
   `stack/deploy.sh`.
-- **Einzige Ausnahme – Aufbauphase** (von Murat freigegeben am 16.11.2026): Solange die Datenbank leer ist und keine
+- **Begrenzte Ausnahme – Cloudflare-Konfiguration** (Entscheidung Murat, 18.11.2026): Die Cloudflare-Anbindung (MCP)
+  zu Murats Konto, in dem die Zone `vibez-odenwald.de` liegt, bleibt bestehen. Erlaubt ist nur die **Konfiguration** der
+  Zone (DNS, WAF, Zoneneinstellungen), lesend jederzeit, ändernd **nur mit ausdrücklicher Freigabe von Murat im
+  Einzelfall** und mit Eintrag im Wartungsprotokoll. Nie: Tunnel-Zugangsdaten, Server, Datenbank, Inhalte, Protokolle mit
+  Personendaten. Regeln in DSFA T12.
+- **Ausnahme – Aufbauphase** (von Murat freigegeben am 16.11.2026): Solange die Datenbank leer ist und keine
   echten Daten erfasst wurden, darf eine KI-Sitzung den Echtbetrieb über Remote Control und API-Tokens aufbauen.
   Regeln dafür in [`docs/aufbau.md`](docs/aufbau.md): Geheimnisse werden auf dem Server erzeugt und nie ausgegeben;
   jede Aktion steht im Aufbauprotokoll; **vor dem ersten echten Datensatz** endet der Zugang (Remote Control beendet,

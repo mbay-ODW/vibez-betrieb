@@ -114,13 +114,13 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht
 - [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (dauerhaft auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Vorgehen bei Ende der Betreuung schriftlich geregelt
-- [ ] Cloudflare-Anbindung von Murats KI-Werkzeugen (Cloudflare-MCP, Zugriff auf das ganze Konto inkl. `vibez-odenwald.de`) geregelt: **offen, Entscheidung Murat** – Anbindung trennen oder als begrenzte Ausnahme in DSFA T12 dokumentieren
+- [ ] Cloudflare-Anbindung (MCP) bleibt als begrenzte Ausnahme nach DSFA T12 (Entscheidung 18.11.2026): Benachrichtigung bei DNS-Änderungen eingerichtet, Prüfung des Audit-Logs in die monatliche Wartung aufgenommen
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
 - [ ] Tailscale-Auth-Key verbraucht/gelöscht
 - [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)
 - [ ] Startpasswort von `tobias` wurde beim ersten Login geändert, 2FA eingerichtet
 - [ ] Datenbank enthält keine Testdaten (nur Einstellungen, Jugendämter, Konten)
 - [ ] Abnahme-Checkliste in [deployment.md](deployment.md#8-abnahme-und-freigabe) vollständig
-- [ ] Ab jetzt gilt wieder: kein KI-Zugriff auf den Echtbetrieb (CLAUDE.md, DSFA T12)
+- [ ] Ab jetzt gilt wieder: kein KI-Zugriff auf den Echtbetrieb, außer der Cloudflare-Konfiguration nach DSFA T12 (CLAUDE.md)
 
 Datum, Murat: ______________  Datum, Tobias: ______________

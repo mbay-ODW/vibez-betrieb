@@ -110,6 +110,7 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 | C8 | Atlas über das Internet | Atlas lässt nur die Server-IP zu; Passwort-Authentifizierung + TLS | 🟡 | 📄; ⏳ in der Atlas-Organisation „IP-Zugriffsliste für die Admin-API verlangen“ aktivieren, API-Keys mit eigener Zugriffsliste |
 | C9 | Geheimnisse auf dem Server | `.env` enthält Atlas-Passwort, Schlüssel und das restic-Passwort | 🟡 | 📄 Datei 600 root; Rechte der Atlas-Benutzer minimal; nach Kompromittierung alle rotieren (Betriebshandbuch) |
 | C10 | Protokolle mit IP-Adressen | Traefik 14 Tage, Cloudflare je Tarif | 🟡 | 📄 |
+| C12 | KI-Werkzeug mit Cloudflare-Zugang | Murats KI-Werkzeuge sind über die Cloudflare-Anbindung (MCP) mit dem Konto verbunden, in dem die Zone liegt. Keine Inhalte sichtbar, aber eine fehlerhafte oder manipulierte Änderung (DNS, WAF, Tunnel-Routing) könnte die App umleiten oder Schutzregeln abschalten | 🟡 | 📄 bewusste Ausnahme (DSFA T12): Änderungen nur mit Freigabe im Einzelfall, Wartungsprotokoll; ⏳ Benachrichtigung bei DNS-Änderungen, monatliche Prüfung des Audit-Logs |
 | C11 | Container-Ausbruch | Container laufen read-only, ohne Zusatzrechte und ohne Docker-Socket. Die App läuft als unprivilegierter Benutzer. | – | 📄 |
 
 ### D. Konten und Identitäten

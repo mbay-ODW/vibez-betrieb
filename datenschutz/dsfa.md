@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.13 – **Entwurf** vom 18.11.2026 (eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.14 – **Entwurf** vom 18.11.2026 (Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -67,7 +67,8 @@ Gegenstand ist der **Echtbetrieb** nach [Betriebsarchitektur](../docs/architektu
 - die **Demo** unter `vibez.bay-ram.de`. Sie enthält ausschließlich **erfundene** Daten. Organisatorische Regel: In die Demo
   werden keine echten Daten eingegeben.
 - die **Entwicklung** der Software. Sie erfolgt ausschließlich mit erfundenen Daten. KI-Werkzeuge, die bei der Entwicklung
-  helfen, haben **keinen Zugriff** auf den Echtbetrieb (Maßnahme T12).
+  helfen, haben **keinen Zugriff** auf den Echtbetrieb (Maßnahme T12). Einzige dauerhafte Ausnahme ist die
+  Konfiguration der Cloudflare-Zone (siehe T12).
 - die übrigen IT-Systeme von VIBEZ (Website und E-Mail bei All-Inkl, Buchhaltung/DATEV). Die App übergibt Rechnungs-PDFs
   per Download an die Buchhaltung; die weitere Verarbeitung dort ist Teil der bestehenden Verfahren.
 
@@ -343,7 +344,8 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
 - ⏳ Atlas und Storage Box gehören VIBEZ (Dienstleister nur als Mitglied mit 2FA). Server (netcup), Cloudflare-Zone und Domain laufen dauerhaft auf dem Dienstleister: Unterauftrag im AV-Vertrag genehmigt, Übertragung bzw. Neuaufbau bei Ende der Betreuung geregelt, Notzugang für VIBEZ zur netcup-Konsole. Die Klientendaten liegen in Atlas unter dem Vertrag von VIBEZ; der Server ist ersetzbar
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
-- ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, keine MCP-Anbindung); Entwicklung nur mit erfundenen Daten (T12)
+- ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, kein SSH, keine Datenbank); Entwicklung nur mit erfundenen Daten (T12)
+- ⏳ **Begrenzte Ausnahme Cloudflare (T12):** Die KI-Werkzeuge des Dienstleisters sind über die Cloudflare-Anbindung (MCP) mit seinem Konto verbunden, in dem die Zone `vibez-odenwald.de` liegt. Sie sehen keine Inhalte, könnten aber DNS, WAF oder Tunnel-Routing ändern und den Datenverkehr umleiten. Begrenzung: Änderungen nur mit ausdrücklicher Freigabe des Dienstleisters im Einzelfall und Eintrag im Wartungsprotokoll; Cloudflare-Benachrichtigung bei DNS-Änderungen; Prüfung des Cloudflare-Audit-Logs bei der monatlichen Wartung; Konto mit 2FA (Passkey)
 - ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))
 
 *Restrisiko: gering*
@@ -426,7 +428,7 @@ liegen als Bild vor.
 | O4 | Datenschutzbeauftragte:n benennen und der Aufsichtsbehörde melden (§ 38 BDSG, Art. 37 Abs. 7 DSGVO) | VIBEZ | vor Echtbetrieb |
 | O5 | Verzeichnis der Verarbeitungstätigkeiten ergänzen ([vvt.md](vvt.md)) | VIBEZ | vor Echtbetrieb |
 | O6 | Leistungsvereinbarungen auf Datenschutzvorgaben prüfen; Jugendämter informieren | VIBEZ | vor Echtbetrieb |
-| T12 | Kein KI-/Automationszugriff auf den Echtbetrieb; Prüfpunkt in der Abnahme | IT | dauerhaft |
+| T12 | Kein KI-/Automationszugriff auf den Echtbetrieb; Prüfpunkt in der Abnahme. **Ausnahme:** Konfiguration der Cloudflare-Zone über Murats Cloudflare-Anbindung (MCP) – nur Einstellungen, keine Inhalte; Änderungen nur mit Freigabe im Einzelfall, Wartungsprotokoll, DNS-Änderungs-Benachrichtigung, monatliche Prüfung des Audit-Logs (Entscheidung 18.11.2026) | IT | dauerhaft |
 
 ## 8. Restrisiko und Ergebnis
 
