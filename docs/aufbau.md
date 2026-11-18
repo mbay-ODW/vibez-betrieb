@@ -171,6 +171,9 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | In Portainer hinterlegt: Git-Lesezugang (Fine-grained Token von Murat, nur `vibez-betrieb`), Registry `ghcr.io` (read:packages), API-Schlüssel für die Host-Skripte | ✅ | Ohne Registry-Eintrag scheiterte das Ziehen des App-Images („unauthorized“) |
 | 18.11.2026 | **Vorfälle beim Umbau:** (1) geänderte `.gitignore` → `git add` hatte Geheimnisse der alten Ablageorte vorgemerkt; vor dem Commit bemerkt und zurückgenommen, **nichts committet oder gepusht** (geprüft). (2) Portainer-API-Schlüssel durch Debug-Ausgabe im Sitzungsprotokoll sichtbar → sofort widerrufen, neuer Schlüssel erzeugt | ✅ | Lehre: keine Ablaufverfolgung (`set -x`) bei Skripten mit Geheimnissen; vor jedem Commit vorgemerkte Dateien prüfen |
 | 18.11.2026 | Probe nach Umbau: alle Adressen → Authelia, `/health` 200 (Prod, Testing), gefälschte Header → Anmeldung, App direkt ohne Geheimnis 403, Socket-Proxy: Container lesen 200, Neustart/Images 403; UserSync Prod/Testing abgeglichen; `autodeploy.sh` ohne Fehler | ✅ | – |
+| 18.11.2026 | App 0.3.2 (Rolle „Technik“, PR mbay-ODW/vibez-nachweise#10) automatisch ausgerollt: Prod `0.3.2@sha256:ecfd5c0a…`, Testing `testing@sha256:ec601981…`; LLDAP-Gruppen `vibez-app_technik`, `vibez-testing_technik`, Authelia-Regeln, `VN_GRUPPE_TECHNIK` in den App-Stacks | ✅ | Ohne Backup (restic fehlt), Warnung im Protokoll |
+| 18.11.2026 | `deploy.sh`: Health-Check wartet jetzt auf den Container mit dem neuen Digest (vorher konnte er nach dem Redeploy noch den alten Container prüfen) | ✅ | Beim Ausrollen von 0.3.2 bemerkt |
+| 18.11.2026 | `murat`: aus `vibez-app_admin`/`vibez-testing_admin` heraus, in `vibez-app_technik`/`vibez-testing_technik` (Wunsch Murat); geprüft: Verwaltungsrechte, nicht in den Pädagogen-Listen | ✅ | DSFA 0.21 (R8) |
 
 ## Übergabe-Checkliste
 
