@@ -5,7 +5,7 @@ credentials-file: /etc/cloudflared/credentials.json
 no-autoupdate: true
 
 ingress:
-  # Adresse der App (proxied CNAME in der Zone vibez-jugendhilfe.de, angelegt mit `tunnel route dns`)
-  - hostname: nachweise.vibez-jugendhilfe.de
+  # Adresse der App (proxied CNAME in der Zone vibez-odenwald.de, angelegt mit `tunnel route dns`)
+  - hostname: nachweise.vibez-odenwald.de
     service: http://traefik:80
   - service: http_status:404

@@ -23,7 +23,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 |---|---|---|
 | Server | Eigener VPS bei **netcup** (VPS Lite 1 G12.5s), Rechenzentrum **Nürnberg**, **Vertragspartner VIBEZ** | Klare Trennung von anderen Systemen, deutscher Anbieter mit AV-Vertrag und ISO 27001, VIBEZ bleibt Herr der Daten |
 | Betrieb | Murat Bayram als IT-Dienstleister (Auftragsverarbeiter, Verschwiegenheit nach § 203 StGB) | Betreuung wie bisher, aber auf VIBEZ-eigener Infrastruktur |
-| Adresse | `nachweise.vibez-jugendhilfe.de` (Name noch bestätigen) | Eigene Domain von VIBEZ; Registrierung, Website und E-Mail bleiben bei **All-Inkl**, die **DNS-Verwaltung zieht zu Cloudflare** |
+| Adresse | `nachweise.vibez-odenwald.de` | **Eigene Domain nur für die App**, DNS komplett bei Cloudflare (Entscheidung 18.11.2026). Website und E-Mail von VIBEZ (`vibez-jugendhilfe.de`, All-Inkl) bleiben unberührt |
 | Schutz vor dem Server | **Cloudflare** (Free) als Proxy mit WAF, nur für `nachweise` | Geo-Block, Schutz vor Angriffen und Scannern, Server ohne offene Ports |
 | Anbindung Server | **Cloudflare Tunnel** (`cloudflared`) | Keine eingehenden Ports, Server-IP bleibt verborgen |
 | Reverse Proxy | **Traefik** v3 | Routing, Ratenbremse je echter IP, HSTS, Zugriffsprotokoll |
@@ -40,11 +40,11 @@ flowchart LR
       H["Handy Pädagog:in"]
       P["PC Verwaltung"]
     end
-    subgraph AI["All-Inkl (Registrar, Website, E-Mail)"]
+    subgraph AI["Registrar vibez-odenwald.de"]
       D["Nameserver → Cloudflare"]
     end
-    subgraph CF["Cloudflare-Konto VIBEZ (Free)"]
-      Z["Zone vibez-jugendhilfe.de<br/>nachweise: proxied, Rest: DNS only"]
+    subgraph CF["Cloudflare-Konto Echtbetrieb (Free)"]
+      Z["Zone vibez-odenwald.de<br/>nachweise: proxied"]
       W["WAF: Geo-Block, Scanner, Ratenlimit<br/>TLS-Zertifikat für nachweise.…"]
       TU["Tunnel vibez-prod"]
     end
@@ -72,9 +72,9 @@ flowchart LR
 
 ## Weg einer Anfrage
 
-1. Das Handy fragt `nachweise.vibez-jugendhilfe.de` an. Die Nameserver von Cloudflare antworten mit einer
+1. Das Handy fragt `nachweise.vibez-odenwald.de` an. Die Nameserver von Cloudflare antworten mit einer
    Cloudflare-Adresse (proxied Eintrag).
-2. Cloudflare beendet TLS mit einem eigenen Zertifikat für `nachweise.vibez-jugendhilfe.de` und prüft die Anfrage (WAF,
+2. Cloudflare beendet TLS mit einem eigenen Zertifikat für `nachweise.vibez-odenwald.de` und prüft die Anfrage (WAF,
    Geo-Block EU/CH, Ratenlimit, Managed Rules).
 3. Cloudflare schickt die Anfrage durch den **Tunnel** zu `cloudflared` auf dem Server. Diese Verbindung hat `cloudflared`
    von innen aufgebaut; am Server ist kein Port offen.
@@ -113,30 +113,25 @@ Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](.
 
 ## Domain und DNS
 
-Cloudflare verwaltet die **DNS der ganzen Domain** `vibez-jugendhilfe.de` (Entscheidung 16.11.2026). Domain-Registrierung,
-Website und E-Mail bleiben bei All-Inkl. Bei All-Inkl zeigen nur die Nameserver auf Cloudflare, und alle bisherigen
-Einträge werden in Cloudflare 1:1 als **„DNS only“** übernommen. Damit laufen Website und E-Mail weiterhin direkt zu
-All-Inkl, ohne Cloudflare-Proxy.
+Die App hat eine **eigene Domain `vibez-odenwald.de`** (Entscheidung 18.11.2026). Ihre DNS liegt komplett bei Cloudflare.
+Die Domain von VIBEZ (`vibez-jugendhilfe.de`) mit Website (Webflow) und E-Mail (Microsoft 365) bleibt bei All-Inkl und
+wird nicht verändert. Ein Fehler in der App-Zone kann damit weder Website noch E-Mail von VIBEZ treffen.
 
 | Wo | Eintrag | Zweck |
 |---|---|---|
-| All-Inkl (Registrar) | Nameserver von `vibez-jugendhilfe.de` → die zwei Cloudflare-Nameserver | Cloudflare beantwortet die DNS |
-| Cloudflare, Zone `vibez-jugendhilfe.de` | alle bisherigen Einträge (Website, MX, SPF, DKIM, DMARC, Autodiscover …), **DNS only** | Website und E-Mail unverändert |
-| Cloudflare | `nachweise` CNAME → `<TUNNEL-ID>.cfargotunnel.com`, **proxied** (legt `cloudflared tunnel route dns` an) | App über Tunnel, WAF und TLS |
+| Registrar | Nameserver von `vibez-odenwald.de` → die zwei Cloudflare-Nameserver, DS-Eintrag (DNSSEC) | Cloudflare beantwortet die DNS |
+| Cloudflare, Zone `vibez-odenwald.de` | `nachweise` CNAME → `<TUNNEL-ID>.cfargotunnel.com`, **proxied** (legt `cloudflared tunnel route dns` an) | App über Tunnel, WAF und TLS |
+| Cloudflare | Null-MX, SPF `-all`, DMARC `p=reject`, CAA | Kein Mailversand unter der Domain möglich, nur erlaubte Zertifizierungsstellen |
 
 Fakten (geprüft 15./16.11.2026):
 
-- Universal SSL stellt das Zertifikat für `nachweise.vibez-jugendhilfe.de` automatisch aus (Free).
+- Universal SSL stellt das Zertifikat für `nachweise.vibez-odenwald.de` automatisch aus (Free).
 - WAF-Regeln, Ratenlimit und Zoneneinstellungen wirken nur auf proxied Einträge, also nur auf die App.
 - **Regional Services** (TLS-Terminierung nur in EU-Rechenzentren) sind ein Enterprise-Zusatz. Im Free-Tarif kann die
   Entschlüsselung in jedem Cloudflare-Rechenzentrum stattfinden (in der Praxis das nächstgelegene, für Hessen meist
   Frankfurt). Bewertet in der [Datenschutz-Folgenabschätzung](../datenschutz/dsfa.md).
-- Wichtig beim Umzug: DNSSEC vorher ausschalten, alle Mail-Einträge übernehmen, danach Mailversand und -empfang testen.
-
-Das Cloudflare-Konto gehört VIBEZ. Kündigt VIBEZ die Betreuung, nimmt es Konten (Cloudflare, netcup, Hetzner, Atlas),
-Server und Domain einfach mit.
-
-Details und Regeln: [cloudflare.md](cloudflare.md).
+- Den Mitarbeitenden die neue Adresse bekannt machen (z. B. Link auf der Website oder im Intranet von VIBEZ), damit sie
+  echte Anmeldeseiten von nachgemachten unterscheiden können.
 
 ## Daten, Backup und Wiederherstellung
 
@@ -173,7 +168,7 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 
 | Prüfung | Werkzeug | Meldung |
 |---|---|---|
-| `https://nachweise.vibez-jugendhilfe.de/health` alle 60 s (HTTP-Monitor) | Uptime Kuma (bestehend, bei Murat) | ntfy an Murat |
+| `https://nachweise.vibez-odenwald.de/health` alle 60 s (HTTP-Monitor) | Uptime Kuma (bestehend, bei Murat) | ntfy an Murat |
 | Backup-Heartbeat (Push-Monitor, 26 h) | Uptime Kuma | ntfy an Murat |
 | Zertifikat `nachweise` | Cloudflare (automatische Verlängerung) + Uptime-Kuma-Zertifikatsprüfung | ntfy |
 | Sicherheitsupdates Betriebssystem | `unattended-upgrades` mit Neustart 04:15 Uhr bei Bedarf | – |

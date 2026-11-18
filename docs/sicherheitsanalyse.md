@@ -30,7 +30,7 @@ umgesetzt und getestet.
 | Angreifer | Fähigkeit / Motiv |
 |---|---|
 | Opportunistische Angreifer aus dem Internet | Scanner, Passwort-Durchprobieren, bekannte Lücken; wollen Daten oder Ressourcen |
-| Gezielter Angreifer | Phishing gegen Verwaltung oder IT, Übernahme von Konten (Cloudflare, Atlas, GitHub, All-Inkl) |
+| Gezielter Angreifer | Phishing gegen Verwaltung oder IT, Übernahme von Konten (Cloudflare, Atlas, GitHub, Registrar) |
 | Innentäter mit App-Zugang | neugierige oder böswillige Beschäftigte; Fälschen von Nachweisen/Unterschriften |
 | Privilegierte Dienstleister | IT-Betreuung, Hosting-/Cloud-Personal |
 | Staatliche Stellen in Drittländern | rechtlicher Zugriff auf US-Anbieter (Cloudflare, MongoDB) – siehe DSFA R5/R6 |
@@ -40,12 +40,12 @@ umgesetzt und getestet.
 
 ```mermaid
 flowchart LR
-    I["Internet"] -->|"HTTPS nur nachweise.vibez-jugendhilfe.de"| CF["Cloudflare<br/>WAF · Geo · Ratenlimit"]
+    I["Internet"] -->|"HTTPS nur nachweise.vibez-odenwald.de"| CF["Cloudflare<br/>WAF · Geo · Ratenlimit"]
     CF -->|Tunnel| T["Traefik"] --> A["App"]
     A -->|TLS| DB[("Atlas")]
     subgraph Verwaltungswege
       ADM["Admin (Tailscale-SSH)"]
-      KON["Konten: Cloudflare, Atlas, netcup, Hetzner,<br/>GitHub, All-Inkl, Tailscale"]
+      KON["Konten: Cloudflare, Atlas, netcup, Hetzner,<br/>GitHub, Registrar, Tailscale"]
       CI["GitHub Actions → GHCR-Image"]
     end
     ADM -.-> T
@@ -105,8 +105,8 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 | C3 | Diebstahl der Tunnel-Zugangsdaten | Mit `credentials.json` kann jemand einen **zweiten Connector** betreiben und einen Teil des Datenverkehrs empfangen (Mitlesen) | 🟠 | 📄 Datei nur root (600); ⏳ Cloudflare-Benachrichtigung bei Tunnel-Änderungen/zusätzlichen Connectoren; bei Verdacht Tunnel neu erzeugen (Betriebshandbuch) |
 | C4 | Backups löschen oder verschlüsseln (Ransomware) | Wer root auf dem Server hat, kann über SFTP auch die restic-Daten auf der Storage Box löschen | 🟠 | 📄 Atlas-Backups lassen sich mit den Datenbankbenutzern des Servers nicht löschen; ⏳ **automatische Snapshots der Storage Box** einschalten (nur in der Hetzner-Konsole verwaltbar) |
 | C5 | Tailscale als Seiteneingang | Jedes Gerät in Murats Tailnet erreicht standardmäßig den Server (Schlüssel nötig, aber größere Angriffsfläche) | 🟠 | ⏳ Tailscale-ACL: nur Murats Admin-Geräte → `tag:vibez-prod:22`; Tailnet Lock erwägen |
-| C6 | Fehler beim DNS-Umzug | Fehlen beim Umzug der DNS zu Cloudflare Mail-Einträge (MX, SPF, DKIM), kommen E-Mails nicht an oder landen im Spam; aktives DNSSEC würde die Domain unerreichbar machen | 🟠 | ⏳ Bestand vorher sichern, Abgleich Eintrag für Eintrag, DNSSEC vorher aus, nach dem Umzug Senden und Empfangen testen; Rückweg: Nameserver zurück auf All-Inkl ([cloudflare.md](cloudflare.md#domain-zu-cloudflare-umziehen)) |
-| C7 | Übernahme von Cloudflare- oder All-Inkl-Konto | Wer das Cloudflare-Konto (DNS der ganzen Domain) oder das All-Inkl-Konto (Nameserver) übernimmt, kann App, Website **und E-Mail** umleiten (Phishing, Zertifikat per DNS) | 🔴 | ⏳ 2FA mit Passkey in beiden Konten; Cloudflare-Benachrichtigung bei DNS-Änderungen; DNSSEC; **CAA-Eintrag**; Überwachung der Zertifikatstransparenz-Logs für `vibez-jugendhilfe.de` (z. B. Cert Spotter, kostenlos) |
+| C6 | Phishing mit ähnlicher Adresse | Die App hat eine neue, eigene Domain (`vibez-odenwald.de`), die Mitarbeitende erst kennenlernen. Eine nachgemachte Anmeldeseite unter ähnlichem Namen fällt dadurch weniger auf | 🟡 | ⏳ Adresse offiziell bekannt machen (Website/Intranet von VIBEZ, Lesezeichen auf den Diensthandys); 2FA begrenzt den Schaden gestohlener Passwörter (✅ 0.2.6); Null-MX, SPF `-all` und DMARC `p=reject` verhindern Mails mit gefälschtem Absender **dieser** Domain ([cloudflare.md](cloudflare.md#domain-und-zone-einrichten)) |
+| C7 | Übernahme von Cloudflare- oder Registrar-Konto | Wer das Cloudflare-Konto oder das Konto beim Registrar (Nameserver) übernimmt, kann die App umleiten (Phishing, Zertifikat per DNS). Website und E-Mail von VIBEZ liegen auf einer anderen Domain und sind nicht betroffen | 🟠 | ⏳ 2FA mit Passkey in beiden Konten; Transfer Lock und automatische Verlängerung der Domain; Cloudflare-Benachrichtigung bei DNS-Änderungen; DNSSEC; **CAA-Eintrag**; Überwachung der Zertifikatstransparenz-Logs für `vibez-odenwald.de` (z. B. Cert Spotter, kostenlos) |
 | C8 | Atlas über das Internet | Atlas lässt nur die Server-IP zu; Passwort-Authentifizierung + TLS | 🟡 | 📄; ⏳ in der Atlas-Organisation „IP-Zugriffsliste für die Admin-API verlangen“ aktivieren, API-Keys mit eigener Zugriffsliste |
 | C9 | Geheimnisse auf dem Server | `.env` enthält Atlas-Passwort, Schlüssel und das restic-Passwort | 🟡 | 📄 Datei 600 root; Rechte der Atlas-Benutzer minimal; nach Kompromittierung alle rotieren (Betriebshandbuch) |
 | C10 | Protokolle mit IP-Adressen | Traefik 14 Tage, Cloudflare je Tarif | 🟡 | 📄 |
@@ -118,11 +118,12 @@ Das sind die wirksamsten Angriffswege. Wer eines dieser Konten übernimmt, umgeh
 
 | Konto | Folge einer Übernahme | Pflicht |
 |---|---|---|
-| Cloudflare (VIBEZ) | Datenverkehr umleiten oder mitlesen, WAF abschalten | 2FA mit **Passkey/Hardwareschlüssel**, kein Global API Key |
+| Cloudflare | Datenverkehr umleiten oder mitlesen, WAF abschalten | 2FA mit **Passkey/Hardwareschlüssel**, kein Global API Key |
 | MongoDB Atlas | Daten lesen, Zugriffsliste öffnen, Backups löschen | 2FA, Benachrichtigung bei Änderungen der Zugriffsliste |
-| Hetzner | Server-Konsole, Snapshots, Storage Box | 2FA, Murat als eigenes Mitglied |
+| netcup | Server-Konsole (SCP), Neuinstallation, Snapshots | 2FA, eigene Zugänge |
+| Hetzner | Storage Box (zweite Sicherung) | 2FA, Murat als eigenes Mitglied |
 | GitHub `mbay-ODW` | präpariertes Image (B2) | 2FA mit Passkey, Branch-Schutz |
-| All-Inkl | DNS umleiten (C7) | 2FA |
+| Registrar `vibez-odenwald.de` | Nameserver umleiten (C7), Domain verfallen lassen | 2FA, Transfer Lock, automatische Verlängerung |
 | Tailscale (Murat) | Weg zum SSH-Port (Schlüssel weiterhin nötig) | 2FA, ACL (C5) |
 | Verwaltungskonten der App | alle Klientendaten, Abrechnung | 2FA (A7), starke Passwörter (✅) |
 
@@ -157,8 +158,8 @@ Die Demo enthält nur erfundene Daten. Trotzdem:
 ## Nächste Schritte nach Priorität
 
 1. ✅ **Zwei-Faktor-Anmeldung** in der App (A7) – erledigt in 0.2.6
-2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, netcup, Hetzner, GitHub und All-Inkl (D) und Branch-Schutz auf `main` (B2)
-3. ⏳ **Domain absichern**: sauberer DNS-Umzug mit Mail-Test, DNSSEC, CAA, Zertifikats-Monitoring, DNS-Änderungs-Alarm (C6, C7)
+2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, netcup, Hetzner, GitHub und Registrar (D) und Branch-Schutz auf `main` (B2)
+3. ⏳ **Domain absichern**: DNSSEC, CAA, Mail-Schutz-Einträge, Transfer Lock, Zertifikats-Monitoring, DNS-Änderungs-Alarm; neue Adresse offiziell bekannt machen (C6, C7)
 4. ⏳ **Storage-Box-Snapshots** (C4) und **Tailscale-ACL** (C5)
 5. ⏳ Demo-Geheimnisse neu setzen (E1)
 6. ⏳ GitHub Actions per SHA pinnen (B3); ✅ `/logout` als POST (A16), Erstpasswort-Wechsel erzwungen (F4)

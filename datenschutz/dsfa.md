@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.11 – **Entwurf** vom 16.11.2026 (Server bei netcup, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.12 – **Entwurf** vom 18.11.2026 (eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -161,9 +161,9 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 | netcup GmbH, Karlsruhe | Server (VPS) | Deutschland (Rechenzentrum Nürnberg) | technisch möglich (Betreiber der Hardware) |
 | Hetzner Online GmbH | Speicher für die zweite Sicherung (Storage Box) | Deutschland | nein – Daten sind vor der Übertragung verschlüsselt |
 | MongoDB, Inc. (mit AWS als Unterauftragnehmer) | Datenbank (Atlas) | USA / Speicherort AWS Frankfurt | gespeichert verschlüsselt; Betreiberzugriff technisch möglich, vertraglich ausgeschlossen |
-| Cloudflare, Inc. | DNS der Domain; Schutzschicht für die App (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
+| Cloudflare, Inc. | DNS der App-Domain `vibez-odenwald.de`; Schutzschicht für die App (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
 | Murat Bayram | IT-Betreuung (Einrichtung, Updates, Backup, Störungen) | Deutschland | Administrativer Zugang; Datenbankzugriff nur bei Wartung, protokolliert |
-| All-Inkl (Neue Medien Münnich) | DNS der Domain | Deutschland | keine Klientendaten (nur DNS-Einträge) |
+| Registrar von `vibez-odenwald.de` **[bei Buchung eintragen]** | Registrierung der App-Domain | Deutschland/EU | keine Klientendaten (nur Domaindaten) |
 | GitHub, Inc. | Quellcode und Container-Image | USA | keine Klientendaten |
 | Tailscale Inc. | Verwaltungszugang (SSH-Verbindung) | USA | keine Inhalte (Ende-zu-Ende verschlüsselt), Metadaten der Verbindung |
 
@@ -341,7 +341,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Vertraulichkeit · Schwere: groß · Wahrscheinlichkeit: geringfügig → Risiko mittel*
 
 - ⏳ **M6 AV-Vertrag VIBEZ ↔ IT-Dienstleister** inkl. Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 StGB
-- ✅ Alle Konten (netcup, Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ; Dienstleister nur als Mitglied mit 2FA
+- ⏳ Alle Konten (netcup, Hetzner, Atlas, Cloudflare, Domain) gehören VIBEZ; Dienstleister nur als Mitglied mit 2FA. Legt der Dienstleister ein Konto an (z. B. Domain `vibez-odenwald.de`, Cloudflare), ist die Übertragung an VIBEZ schriftlich geregelt
 - ✅ Wartungsprotokoll für jede Wartung mit Datenbankzugriff; Atlas-Aktivitätsprotokoll
 - ✅ **Keine KI- oder Automationswerkzeuge mit Zugriff auf den Echtbetrieb** (kein Portainer, keine MCP-Anbindung); Entwicklung nur mit erfundenen Daten (T12)
 - ✅ **Aufbauphase:** Eine KI-Sitzung darf den Echtbetrieb nur aufbauen, solange **keine echten Daten** vorhanden sind; Geheimnisse werden dabei auf dem Server erzeugt und nicht ausgegeben; vor dem ersten echten Datensatz werden Remote Control und Claude Code entfernt und alle dabei genutzten Tokens gelöscht ([Aufbau](../docs/aufbau.md))

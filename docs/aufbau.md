@@ -1,6 +1,6 @@
 # Aufbau des Echtbetriebs (Aufbauphase)
 
-Stand 16.11.2026. Der Echtbetrieb wird von einer Claude-Code-Sitzung aufgebaut. Diese Ausnahme vom Grundsatz
+Stand 18.11.2026. Der Echtbetrieb wird von einer Claude-Code-Sitzung aufgebaut. Diese Ausnahme vom Grundsatz
 „kein KI-Zugriff auf den Echtbetrieb“ hat Murat am 16.11.2026 freigegeben. Sie gilt **nur, solange keine echten Daten
 vorhanden sind**.
 
@@ -40,11 +40,11 @@ netcup **VPS Lite 1 G12.5s**: 2 vCore, 4 GB RAM, 80 GB SSD, 5,86 €/Monat (Ange
 
 | Wer | Was |
 |---|---|
-| Tobias | Cloudflare-Konto für VIBEZ (Free, 2FA mit Passkey); `vibez-jugendhilfe.de` dort hinzufügen; DNS-Bestand bei All-Inkl sichern, DNSSEC aus; Einträge in Cloudflare abgleichen (alle **DNS only**); dann bei All-Inkl die **Nameserver** der Domain auf die zwei Cloudflare-Nameserver umstellen; Website und E-Mail testen. Schritt für Schritt: [cloudflare.md](cloudflare.md#domain-zu-cloudflare-umziehen) |
-| Tobias | netcup-VPS bestellen (VIBEZ als Kunde), AV-Vertrag im netcup-Kundencenter abschließen |
+| Murat | Domain `vibez-odenwald.de` registrieren (Domaininhaber möglichst VIBEZ), Cloudflare-Konto (Free, 2FA mit Passkey), Zone anlegen und Nameserver beim Registrar auf Cloudflare stellen. Schritt für Schritt: [cloudflare.md](cloudflare.md#domain-und-zone-einrichten) |
+| Murat | netcup-VPS bestellen – **Kunde VIBEZ** (Kundendaten und Rechnungsadresse VIBEZ), AV-Vertrag im netcup-Kundencenter abschließen. Läuft der Vertrag doch auf Murat: netcup als Unterauftragsverarbeiter im AV-Vertrag mit VIBEZ genehmigen lassen und bei Ende der Betreuung übertragen |
 | Tobias | MongoDB Atlas: Organisation und Projekt „VIBEZ Nachweise“ (Zahlungsmittel, 2FA); Murat als Projektmitglied |
 | Tobias | Hetzner Storage Box bestellen, SSH-Zugang aktivieren, automatische Snapshots an |
-| Tobias / Murat | Festlegen: App-Adresse (`nachweise.vibez-jugendhilfe.de`?) |
+| ✅ | App-Adresse festgelegt: `nachweise.vibez-odenwald.de` (18.11.2026) |
 | Murat | Debian 13 auf dem VPS installieren (netcup SCP), Remote Control einrichten (nächster Abschnitt) |
 | Murat | Tokens erzeugen (Abschnitt [Tokens](#tokens)) und im Formular der Sitzung eintragen |
 
@@ -73,7 +73,7 @@ Claude-Sitzung Bescheid geben. Die Sitzung fragt den Ordner an, und du bestätig
 
 | Für | Erzeugen | Rechte | Laufzeit / danach |
 |---|---|---|---|
-| Cloudflare (VIBEZ-Konto) | *My Profile → API Tokens → Create Token → Custom* | Zone (nur `vibez-jugendhilfe.de`): DNS Edit, SSL and Certificates Edit, Zone Settings Edit, Zone WAF Edit, Cache Rules Edit; Account: Cloudflare Tunnel Edit, Notifications Edit | 7 Tage, nach Übergabe löschen |
+| Cloudflare | *My Profile → API Tokens → Create Token → Custom* | Zone (nur `vibez-odenwald.de`): DNS Edit, SSL and Certificates Edit, Zone Settings Edit, Zone WAF Edit, Cache Rules Edit; Account: Cloudflare Tunnel Edit, Notifications Edit | 7 Tage, nach Übergabe löschen |
 | MongoDB Atlas | Projekt → *Access Manager → Service Accounts* | *Project Owner* nur für dieses Projekt | nach Übergabe löschen |
 | GitHub (Image ziehen) | Fine-grained Token, Zugriff nur auf `vibez-nachweise`, Berechtigung *Packages: read* | Image ziehen | bleibt auf dem Server (in `docker login`), Ablauf 1 Jahr, im Kalender vermerken |
 | Tailscale | *Settings → Keys → Generate auth key*, einmalig, Tag `tag:vibez-prod` | nur Anmeldung des Servers | verfällt nach Benutzung |
@@ -83,9 +83,9 @@ Claude-Sitzung Bescheid geben. Die Sitzung fragt den Ordner an, und du bestätig
 1. Server härten (`host/bootstrap.sh`; Tailscale; Firewall), Repo nach `/opt/vibez` klonen
 2. Atlas: Cluster Frankfurt, Benutzer `vibez_app`/`vibez_backup` (Passwörter auf dem Server erzeugt), IP-Zugriffsliste
    = Server-IP, Backups und Alerts
-3. Cloudflare (nach dem DNS-Umzug durch Tobias): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag, 5 WAF-Regeln,
-   Ratenlimit, Cache-Regel, Einstellungen, Benachrichtigungen. An bestehenden DNS-Einträgen (Website, E-Mail) ändert
-   die Sitzung **nichts**.
+3. Cloudflare (sobald die Zone `vibez-odenwald.de` aktiv ist): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag,
+   Mail-Schutz und CAA, 5 WAF-Regeln, Ratenlimit, Cache-Regel, Einstellungen, Benachrichtigungen. DNSSEC schaltet Murat
+   ein (DS-Eintrag beim Registrar).
 4. Stack ausrollen (`stack/deploy.sh <version>` mit Digest), Verwaltungszugang `tobias` mit Startpasswort (auf dem
    Server erzeugt), Pflicht-2FA
 5. Backup einrichten (Storage Box, restic init, erster Lauf, Restore-Test, Timer)
@@ -99,6 +99,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | Datum/Zeit | Schritt | Ergebnis | Bemerkung |
 |---|---|---|---|
 | 16.11.2026 | Repo vorbereitet, netcup gewählt, App 0.2.6 mit 2FA | ✅ | – |
+| 18.11.2026 | Eigene Domain `vibez-odenwald.de` für die App festgelegt (statt DNS-Umzug von `vibez-jugendhilfe.de`) | ✅ | – |
 
 ## Übergabe-Checkliste
 
@@ -107,6 +108,7 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht
+- [ ] Domain `vibez-odenwald.de`, Cloudflare-Konto und netcup-Vertrag: Inhaber VIBEZ oder Übertragung schriftlich geregelt
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
 - [ ] Tailscale-Auth-Key verbraucht/gelöscht
 - [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)

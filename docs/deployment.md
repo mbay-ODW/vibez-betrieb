@@ -10,7 +10,7 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 1. [Verträge und Konten (VIBEZ)](#1-verträge-und-konten-vibez)
 2. [Server bestellen und härten](#2-server-bestellen-und-härten)
 3. [MongoDB Atlas](#3-mongodb-atlas)
-4. [Cloudflare: DNS-Umzug, Tunnel, Regeln](#4-cloudflare-dns-umzug-tunnel-regeln)
+4. [Cloudflare: Domain, Tunnel, Regeln](#4-cloudflare-domain-tunnel-regeln)
 5. [Stack ausrollen](#5-stack-ausrollen)
 6. [Backup einrichten](#6-backup-einrichten)
 7. [Überwachung](#7-überwachung)
@@ -24,7 +24,7 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 | Hetzner (nur Storage Box) | VIBEZ | AV-Vertrag im Hetzner-Konto abschließen | Projektmitglied, 2FA |
 | MongoDB Atlas | VIBEZ (Organisation „VIBEZ“) | DPA aus den Atlas-Bedingungen dokumentieren | Projektmitglied „Project Owner“, 2FA |
 | Cloudflare | VIBEZ | DPA aus den Self-Serve-Bedingungen dokumentieren | Mitglied „Administrator“, 2FA |
-| All-Inkl (Domain, DNS) | VIBEZ (bestehend) | – (keine Klientendaten) | nur DNS-Einträge, auf Zuruf |
+| Registrar `vibez-odenwald.de` | VIBEZ als Domaininhaber (sonst Übertragung bei Ende der Betreuung) | – (keine Klientendaten) | Verwaltung, 2FA |
 | Tailscale | Murat | – (nur Verwaltungszugang, keine Inhalte) | – |
 
 **Für alle Konten gilt: 2FA mit Passkey oder Hardwareschlüssel** (keine SMS), eigene Logins je Person, Wiederherstellungscodes
@@ -88,14 +88,14 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    Server speichern.
 6. Atlas-Alerts an Murat: Verbindung, Speicher, fehlgeschlagenes Backup.
 
-## 4. Cloudflare: DNS-Umzug, Tunnel, Regeln
+## 4. Cloudflare: Domain, Tunnel, Regeln
 
 Komplett in [cloudflare.md](cloudflare.md):
 
-1. Bestand der DNS-Einträge bei All-Inkl sichern, DNSSEC ausschalten
-2. Zone `vibez-jugendhilfe.de` in Cloudflare anlegen, alle Einträge abgleichen (**DNS only**)
-3. Nameserver bei All-Inkl auf Cloudflare umstellen, Website und E-Mail testen
-4. Tunnel `vibez-prod` anlegen, `nachweise.vibez-jugendhilfe.de` routen (proxied)
+1. Domain `vibez-odenwald.de` registrieren, Zone in Cloudflare anlegen (leer)
+2. Nameserver beim Registrar auf Cloudflare stellen, DNSSEC an (DS-Eintrag beim Registrar)
+3. Mail-Schutz (Null-MX, SPF `-all`, DMARC `p=reject`) und CAA
+4. Tunnel `vibez-prod` anlegen, `nachweise.vibez-odenwald.de` routen (proxied)
 5. Zoneneinstellungen, 5 WAF-Regeln, Ratenlimit, Cache-Regel, Benachrichtigungen
 
 ## 5. Stack ausrollen
@@ -154,7 +154,7 @@ sudo ./deploy.sh
 
 In Uptime Kuma (bestehend):
 
-- HTTP-Monitor `https://nachweise.vibez-jugendhilfe.de/health`, Intervall 60 s, Schlüsselwort `"ok": true`,
+- HTTP-Monitor `https://nachweise.vibez-odenwald.de/health`, Intervall 60 s, Schlüsselwort `"ok": true`,
   Zertifikatsablauf-Warnung an
 - Push-Monitor „VIBEZ Backup“, Heartbeat-Intervall 26 Stunden → URL als `BACKUP_PING_URL` in `.env`
 - Benachrichtigung per ntfy an Murat
@@ -163,7 +163,7 @@ In Uptime Kuma (bestehend):
 
 Technik (Murat):
 
-- [ ] `https://nachweise.vibez-jugendhilfe.de` zeigt die Anmeldung, Zertifikat gültig
+- [ ] `https://nachweise.vibez-odenwald.de` zeigt die Anmeldung, Zertifikat gültig
 - [ ] Aufruf aus einem Nicht-EU-Land (VPN) wird blockiert, `/.env` wird blockiert
 - [ ] `nmap` auf die öffentliche IP: keine offenen Ports
 - [ ] Atlas-Zugriffsliste enthält nur die Server-IP; Verbindung von einem anderen Rechner scheitert
@@ -174,9 +174,9 @@ Technik (Murat):
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen
 - [ ] Storage-Box-Snapshots aktiv; Tailscale-ACL aktiv (anderes Tailnet-Gerät erreicht Port 22 nicht)
-- [ ] Domain-Umzug: Website und E-Mail (Senden + Empfangen) getestet; DNSSEC neu aktiv; CAA-Eintrag gesetzt; Zertifikats-Monitoring eingerichtet
+- [ ] Domain `vibez-odenwald.de`: DNSSEC aktiv, CAA und Mail-Schutz gesetzt, Transfer Lock und automatische Verlängerung an, Zertifikats-Monitoring eingerichtet
 - [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, DNS-Änderungen
-- [ ] 2FA mit Passkey in Cloudflare, Atlas, netcup, Hetzner, GitHub, All-Inkl; App-Verwaltung mit 2FA (sobald umgesetzt)
+- [ ] 2FA mit Passkey in Cloudflare, Atlas, netcup, Hetzner, GitHub, Registrar; App-Verwaltung mit 2FA (sobald umgesetzt)
 
 Organisation (VIBEZ):
 

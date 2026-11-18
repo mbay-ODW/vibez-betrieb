@@ -1,6 +1,6 @@
 # Dienstleister und Auftragsverarbeitung
 
-Übersicht für VIBEZ als Verantwortliche. Stand 16.11.2026. Zu jedem Auftragsverarbeiter gehört ein **AV-Vertrag nach
+Übersicht für VIBEZ als Verantwortliche. Stand 18.11.2026. Zu jedem Auftragsverarbeiter gehört ein **AV-Vertrag nach
 Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 
 | Dienstleister | Leistung | Ort der Daten | Klientendaten? | Vertrag | Status |
@@ -8,12 +8,18 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 | **netcup GmbH**, Karlsruhe | Server (VPS Lite 1 G12.5s) | Deutschland (Rechenzentrum Nürnberg) | ja (Server mit laufender App; Daten selbst in Atlas) | AV-Vertrag im netcup-Kundencenter (CCP) online abschließen; Zertifikate des Rechenzentrums anfordern und ablegen | ⏳ |
 | **Hetzner Online GmbH**, Gunzenhausen | Storage Box (zweite Sicherung) | Deutschland | nur verschlüsselt (restic, Schlüssel nur bei VIBEZ) | AV-Vertrag im Hetzner-Konto online abschließen | ⏳ |
 | **MongoDB, Inc.**, New York (EU: MongoDB Ltd.) mit Unterauftragnehmer **Amazon Web Services** | Datenbank MongoDB Atlas | AWS eu-central-1 (Frankfurt) | ja | Data Processing Agreement (Bestandteil der Atlas-Bedingungen), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
-| **Cloudflare, Inc.**, San Francisco | Proxy, WAF, TLS, Tunnel | weltweites Netz, i. d. R. nächstes Rechenzentrum | Durchleitung (kurzzeitig entschlüsselt), keine Speicherung von Inhalten | Data Processing Addendum (Self-Serve), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
+| **Cloudflare, Inc.**, San Francisco | DNS der App-Domain `vibez-odenwald.de`, Proxy, WAF, TLS, Tunnel | weltweites Netz, i. d. R. nächstes Rechenzentrum | Durchleitung (kurzzeitig entschlüsselt), keine Speicherung von Inhalten | Data Processing Addendum (Self-Serve), Standardvertragsklauseln; DPF-Status prüfen | ⏳ |
 | **Murat Bayram** (IT-Dienstleister) | Einrichtung, Betrieb, Updates, Backup, Störungsbehebung | Deutschland | Zugriff bei Wartung | **AV-Vertrag + Verpflichtung zur Verschwiegenheit nach § 203 Abs. 4 Satz 2 Nr. 1 StGB** | ⏳ |
-| Neue Medien Münnich (**All-Inkl**) | Registrar von `vibez-jugendhilfe.de`, Website und E-Mail (DNS-Verwaltung bei Cloudflare) | Deutschland | nein | bestehender Hostingvertrag; kein AV für diese App nötig | – |
+| Registrar von `vibez-odenwald.de` **[bei Buchung eintragen]** | Registrierung der App-Domain (Inhaber möglichst VIBEZ) | Deutschland/EU | nein | Domainvertrag; kein AV nötig | ⏳ |
+| Neue Medien Münnich (**All-Inkl**) | Domain `vibez-jugendhilfe.de`, Website und E-Mail von VIBEZ | Deutschland | nein | bestehender Hostingvertrag; für die App nicht genutzt | – |
 | GitHub, Inc. | Quellcode, CI, Container-Image | USA | nein (nur erfundene Demodaten) | – | – |
 | Tailscale Inc. | Verwaltungszugang (VPN für SSH) | USA (Koordination), Verbindung direkt und Ende-zu-Ende verschlüsselt | nein | – | – |
 | Anthropic (Claude Code) | **nur Aufbauphase**: Einrichtung des Servers über Remote Control, bevor echte Daten existieren | – | nein (Regeln in [Aufbau](../docs/aufbau.md)) | – | – |
+
+**Vertragspartner:** Ziel ist, dass VIBEZ selbst Kunde bei netcup, Cloudflare und dem Registrar ist (Murat richtet ein,
+VIBEZ ist Inhaber). Bucht Murat einen Dienst auf eigenen Namen, ist der Anbieter **Unterauftragsverarbeiter** von Murat:
+Er muss dann im AV-Vertrag VIBEZ ↔ Murat genehmigt sein, Murat schließt selbst den AV-Vertrag mit dem Anbieter ab, und
+die Übertragung an VIBEZ bei Ende der Betreuung ist vereinbart.
 
 ## Prüfpunkte je Vertrag
 

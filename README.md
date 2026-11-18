@@ -5,14 +5,14 @@ Betrieb, Infrastruktur und Datenschutzunterlagen für den **Echtbetrieb** von
 
 | | |
 |---|---|
-| **Adresse (geplant)** | `https://nachweise.vibez-jugendhilfe.de` |
+| **Adresse (geplant)** | `https://nachweise.vibez-odenwald.de` |
 | **Stand** | Entwurf 15.11.2026 – Echtbetrieb noch nicht aufgebaut |
 | **Demo** | `https://vibez.bay-ram.de` (erfundene Daten, anderer Server, nicht Teil dieses Repos) |
 
 ```mermaid
 flowchart LR
     U["Handy / PC"] -- HTTPS --> CF["Cloudflare<br/>WAF · TLS · Tunnel"]
-    DNS["Cloudflare-DNS vibez-jugendhilfe.de<br/>(Registrar All-Inkl)"] -.-> CF
+    DNS["Cloudflare-DNS vibez-odenwald.de<br/>(eigene Domain der App)"] -.-> CF
     CF == Tunnel ==> VPS["netcup VPS, Nürnberg<br/>cloudflared → Traefik → App"]
     VPS -- TLS --> DB[("MongoDB Atlas<br/>Frankfurt")]
     VPS -. "verschlüsselt" .-> SB[("Hetzner Storage Box<br/>(DE)")]
@@ -25,7 +25,7 @@ flowchart LR
 | [Betriebsarchitektur](docs/architektur.md) | Entscheidungen, Komponenten, Netze, Domain und DNS, Atlas, Backup, Kosten |
 | [Aufbau](docs/aufbau.md) | Aufbauphase mit Claude Code: Regeln, Serverwahl, Remote Control, Tokens, Protokoll, Übergabe |
 | [Deployment](docs/deployment.md) | Schritt für Schritt vom leeren Konto bis zur Abnahme |
-| [Cloudflare](docs/cloudflare.md) | Konto, Umzug der DNS zu Cloudflare, Tunnel, WAF-Regeln, Einstellungen |
+| [Cloudflare](docs/cloudflare.md) | Konto, Domain `vibez-odenwald.de` und Zone, Tunnel, WAF-Regeln, Einstellungen |
 | [Betriebshandbuch](docs/betriebshandbuch.md) | Update, Rollback, Wartung, Wiederherstellung, Störungen, Datenpannen, Übergabe |
 | [Sicherheitsanalyse](docs/sicherheitsanalyse.md) | Angriffsvektoren, Befunde, Maßnahmen nach Priorität |
 | [Datenschutz-Folgenabschätzung](datenschutz/dsfa.md) | Art. 35 DSGVO – Entwurf zur Prüfung und Freigabe |
