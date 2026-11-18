@@ -10,3 +10,5 @@ stack/secrets/
 stack-admin/.env
 stack-admin/secrets/
 *.pem
+stack-testing/.env
+stack-testing/secrets/

@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.18 – **Entwurf** vom 18.11.2026 (Verwaltungsoberflächen wie bei DRK: LLDAP, Authelia mit 2FA, Portainer, Dozzle, Uptime Kuma – nur Gruppe `vibez-infra_admin`; SSH ohne Tailscale auf Port 5022; Atlas Flex mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.19 – **Entwurf** vom 18.11.2026 (Testumgebung auf demselben Server mit eigener Datenbank und erfundenen Daten; automatisches Ausrollen neuer Versionen; Anmeldung der App über Authelia/LDAP ab 0.3.x; Verwaltungsoberflächen wie bei DRK: LLDAP, Authelia mit 2FA, Portainer, Dozzle, Uptime Kuma – nur Gruppe `vibez-infra_admin`; SSH ohne Tailscale auf Port 5022; Atlas Flex mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -333,6 +333,8 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 - ✅ Verwaltungsoberflächen nur über den Tunnel und Authelia (2FA, Gruppe `vibez-infra_admin`); Cloudflare-WAF: nur EU/CH, keine bekannten Bots, nur bekannte Hostnamen
 - ✅ SSH nur per Schlüssel auf Port 5022, kein root- und Passwort-Login, `ufw limit` (Ratenbegrenzung) (Entscheidung 18.11.2026: kein VPN; SSH ist öffentlich erreichbar)
 - ✅ Automatische Sicherheitsupdates; Container read-only, ohne Zusatzrechte, feste Versionen; interne Netze ohne Internet für Traefik/App-Frontnetz
+- ⏳ **Automatisches Ausrollen** (Entscheidung Murat, 18.11.2026): neue Versionsnummern auf `main` gehen ohne weiteren Schritt live. Ohne Branch-Schutz (im kostenlosen GitHub-Tarif nicht verfügbar) reicht ein übernommenes GitHub-Konto, um Code in den Echtbetrieb zu bringen. Begrenzung: 2FA mit Passkey am GitHub-Konto, Image nur bei grüner CI, Digest-Protokoll, Rücksprung bei Fehler, Prüfung auf der Testumgebung; ➕ GitHub Pro mit Branch-Schutz
+- ✅ **Testumgebung** `nachweise-testing` auf demselben Server: eigene Atlas-Datenbank (Testprojekt), nur erfundene Daten, eigene Netze, eigenes Proxy-Geheimnis, eigene LDAP-Gruppen; Zugriff nur über Authelia (2FA)
 - ✅ Geheimnisse nur auf dem Server (`.env`, Rechte 600), nicht im Repository
 - ✅ Datenbankbenutzer der App darf nur die eigene Datenbank; die Datenbank akzeptiert nur diesen Server
 

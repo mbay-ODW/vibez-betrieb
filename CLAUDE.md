@@ -6,8 +6,9 @@ Betrieb und Datenschutzunterlagen für den **Echtbetrieb** von VIBEZ Nachweise (
   Nur Vorlagen (`.env.example`) mit leeren Werten oder Platzhaltern.
 - **Keine Personendaten** in Repo, Wartungsprotokoll, Commits oder Issues – auch keine Klientennamen aus Störungsfällen.
 - **Kein Zugriff auf den Echtbetrieb mit echten Daten aus KI-Sitzungen**: nicht per Portainer, MCP, SSH, Remote
-  Control oder Datenbankverbindung. Änderungen hier sind Dokumentation und Konfiguration; im laufenden Betrieb rollt Murat
-  manuell mit `stack/deploy.sh` aus.
+  Control oder Datenbankverbindung. Änderungen hier sind Dokumentation und Konfiguration; ausgerollt wird automatisch:
+  der Server holt neue Versionen selbst (`host/autodeploy.sh`, Entscheidung Murat 18.11.2026; Produktion nur bei neuer
+  Nummer in `VERSION`, mit Digest, Backup und Rücksprung; Testing bei neuem Digest von `:testing`).
 - **Begrenzte Ausnahme – Cloudflare-Konfiguration** (Entscheidung Murat, 18.11.2026): Die Cloudflare-Anbindung (MCP)
   zu Murats Konto, in dem die Zone `vibez-odenwald.de` liegt, bleibt bestehen. Erlaubt ist nur die **Konfiguration** der
   Zone (DNS, WAF, Zoneneinstellungen), lesend jederzeit, ändernd **nur mit ausdrücklicher Freigabe von Murat im

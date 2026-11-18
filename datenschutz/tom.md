@@ -36,7 +36,7 @@ Stand 15.11.2026 · Status: ✅ umgesetzt · ⏳ vor Echtbetrieb · ➕ empfohle
 | Rechnungen als unveränderlicher Schnappschuss; Storno statt Löschen; fortlaufende Nummern | ✅ |
 | Plausibilitätsprüfungen vor dem Abschicken (Unterschrift, Bewilligung, Stundengrenzen); Vier-Augen-Prüfung durch die Verwaltung | ✅ |
 | Unterschriften werden beim Speichern dekodiert, geprüft und neu kodiert | ✅ |
-| Software: automatisierte Tests in der CI vor jedem Image; feste Versionen; Ausrollen nur über `deploy.sh` | ✅ |
+| Software: automatisierte Tests in der CI vor jedem Image; feste Versionen mit Digest; automatisches Ausrollen nur bei neuer Versionsnummer (Backup davor, Rücksprung bei Fehler), vorher Testumgebung mit erfundenen Daten | ✅ (18.11.2026) |
 | Container read-only, ohne Zusatzrechte; automatische Sicherheitsupdates des Betriebssystems | ✅ |
 | WAF (Managed Rules, Scanner-Pfade, Methoden, Bots) | ✅ |
 

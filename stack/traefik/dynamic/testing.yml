@@ -1,0 +1,22 @@
+# Traefik – Testumgebung nachweise-testing.vibez-odenwald.de (Stack stack-testing, nur erfundene Daten)
+http:
+  middlewares:
+    proxy-geheimnis-testing:
+      headers:
+        customRequestHeaders:
+          X-Proxy-Secret: '{{ env "VN_PROXY_SECRET_TESTING" }}'
+  routers:
+    testing:
+      entryPoints: [web]
+      rule: Host(`nachweise-testing.vibez-odenwald.de`)
+      service: vibez-testing-app
+      middlewares: [remote-weg, bremse, authelia, proxy-geheimnis-testing, sicherheit, groesse]
+  services:
+    vibez-testing-app:
+      loadBalancer:
+        servers: [{url: "http://vibez-testing-app:8000"}]
+        healthCheck:
+          path: /health
+          hostname: nachweise-testing.vibez-odenwald.de
+          interval: 30s
+          timeout: 5s

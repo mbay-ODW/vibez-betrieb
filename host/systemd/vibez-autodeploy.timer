@@ -1,0 +1,10 @@
+[Unit]
+Description=VIBEZ Nachweise – alle 5 Minuten auf neue Versionen prüfen
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

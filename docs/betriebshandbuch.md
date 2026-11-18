@@ -18,12 +18,17 @@ Abläufe für den laufenden Betrieb. Befehle laufen auf `vibez-prod` (`ssh -p 50
 
 1. Im App-Repo: Änderung fertig, `VERSION` und `CHANGELOG.md` erhöht, CI grün → Image `ghcr.io/mbay-odw/vibez-nachweise:<version>`.
 2. Vorher in der **Demo** prüfen (vibez.bay-ram.de, erfundene Daten).
-3. Auf dem Server:
+3. **Automatisch (Standard seit 18.11.2026):** Nach dem Merge auf `main` holt der Server die neue Nummer spätestens nach
+   5 Minuten selbst (`vibez-autodeploy.timer` → `host/autodeploy.sh` → `stack/deploy.sh --auto`): Digest festschreiben,
+   Backup, Neustart, Health-Check, bei Fehler Rücksprung auf die vorige Version. Protokoll:
+   `journalctl -t vibez-autodeploy -t vibez-deploy`. Vorher auf `testing` prüfen (`nachweise-testing.vibez-odenwald.de`).
+   **Von Hand** (z. B. wenn der Timer aus ist):
 
    ```bash
-   cd /opt/vibez && sudo git pull          # Betriebs-Repo aktuell halten
-   sudo stack/deploy.sh 0.2.5              # macht vorher ein Backup, danach Health-Check
+   sudo /opt/vibez/stack/deploy.sh 0.3.1    # zeigt den Digest, fragt nach, Backup davor, Health-Check danach
    ```
+
+   Automatik anhalten: `sudo systemctl stop vibez-autodeploy.timer` (wieder an: `start`).
 
 4. Datenbank-Migrationen laufen beim Start der App automatisch (`settings.schema`). Im CHANGELOG steht, ob eine Version
    eine Migration enthält.

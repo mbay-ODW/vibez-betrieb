@@ -1,0 +1,8 @@
+[Unit]
+Description=VIBEZ Nachweise – automatisches Ausrollen (Produktion bei neuer Version, Testing bei neuem Digest)
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vibez/host/autodeploy.sh

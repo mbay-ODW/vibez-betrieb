@@ -30,7 +30,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 | Datenbank | **MongoDB Atlas**, Region **AWS Frankfurt (eu-central-1)**, Projekt nur für VIBEZ | Wie bei der DRK-Klientendokumentation: verschlüsselt gespeichert, repliziert, verwaltete Backups; Zugriff nur von der IP des VPS (per Atlas-API gepflegt) |
 | Backup | Nächtliche Sicherung mit **restic** (verschlüsselt) auf einer **Hetzner Storage Box**; dazu Atlas-Snapshots (Flex: täglich, 7 Tage) | Anderer Anbieter, anderer Standort; monatlicher Wiederherstellungstest |
 | Verwaltung | SSH nur per Schlüssel auf Port **5022**, Ratenbegrenzung; kein VPN (Entscheidung 18.11.2026) | einfach; Schutz durch Schlüssel-Login, kein Passwort, kein root |
-| Versionen | App-Image mit fester Versionsnummer (`VERSION` im App-Repo), Ausrollen mit `deploy.sh` | Nachvollziehbar, Rückweg möglich |
+| Versionen | App-Image mit fester Versionsnummer (`VERSION` im App-Repo) und Digest; **automatisches Ausrollen** durch den Server (`host/autodeploy.sh`, Timer alle 5 Min.): Produktion nur bei neuer Versionsnummer, Testing (`nachweise-testing`, eigener Stack und eigene Datenbank) bei neuem Digest von `:testing` (Entscheidung Murat, 18.11.2026) | Nachvollziehbar, Rückweg automatisch bei fehlgeschlagenem Health-Check; GitHub hat keinen Zugang zum Server |
 
 ## Gesamtbild
 

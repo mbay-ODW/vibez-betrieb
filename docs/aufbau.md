@@ -162,12 +162,17 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Traefik: Middleware `remote-weg` entfernt eingehende `Remote-*`/`X-Proxy-Secret` vor Authelia (auch Verwaltungsadressen), `proxy-geheimnis` setzt das Geheimnis danach; Authelia-Regel `nachweise` (2FA, Gruppen `vibez-app_*`, `/health` frei); Netz `vibez-ldap` für UserSync | ✅ | Probe: ohne Anmeldung → `auth.`; gefälschte Header + falsches Geheimnis → `auth.`; direkt an die App ohne Geheimnis → 403; `/health` 200 |
 | 18.11.2026 | UserSync 0.3.0 brach mit `LDAPAttributeError` ab (LLDAP liefert Attributnamen klein) → Korrektur 0.3.1 (PR mbay-ODW/vibez-nachweise#8), einmal gegen das echte LLDAP geprüft: `murat` abgeglichen | ✅ | – |
 | 18.11.2026 | App 0.3.1 ausgerollt (Merge `1fb1cf9`, CI grün), Digest `sha256:857aa459…f539b734` (Registry = GitHub-API, Freigabe Murat); UserSync: `Abgleich: aktiv 1, deaktiviert 0`; UserSync ohne HTTP-Health-Check | ✅ | `/health` 200, ohne Anmeldung → `auth.` |
+| 18.11.2026 | Atlas Testprojekt: Server-IP in der Zugriffsliste, `mongodb_db_user` gelöscht, Zertifikat `testing` auf dem Server (bis 18.11.2028); Rolle `testing` bleibt `readWriteAnyDatabase` (Entscheidung Murat) | ✅ | – |
+| 18.11.2026 | App-CI: Branch `testing` baut `:testing` (PR mbay-ODW/vibez-nachweise#9); Branch `testing` angelegt. Branch-Schutz auf `main` **nicht möglich** (GitHub Free, privates Repo) | ⚠️ | DSFA 0.19, Sicherheitsanalyse B2 |
+| 18.11.2026 | Testumgebung `stack-testing/` (App mit Demodaten, `VN_AUTH=authelia`, Gruppen `vibez-testing_*`, eigener UserSync, eigenes Proxy-Geheimnis); Authelia-Regel, Traefik-Route `testing.yml`, Tunnel-Eintrag, DNS `nachweise-testing` (Freigabe Murat), WAF-Regel 5 von Murat erweitert | ✅ | Probe: ohne Anmeldung → `auth.`, gefälschte Header → `auth.`, `/health` 200 |
+| 18.11.2026 | Automatisches Ausrollen: `host/autodeploy.sh` + `vibez-autodeploy.timer` (5 Min.), `deploy.sh --auto` mit Rücksprung; Probe: Testing auf `:testing@sha256:5df0def5…` umgestellt, zweiter Lauf ohne Änderung, Produktion unverändert 0.3.1 | ✅ | Ohne restic: Update ohne Backup mit Warnung – nur bis zum ersten echten Datensatz zulässig |
 
 ## Übergabe-Checkliste
 
 Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
+- [ ] restic eingerichtet (`RESTIC_REPOSITORY` in `stack/.env`) – sonst rollt `autodeploy` ohne Backup aus
 - [ ] Konto `tobias` in LLDAP (Benutzername `tobias`, Gruppe `vibez-app_admin`) – übernimmt das bestehende App-Konto; Startpasswort von `murat` geändert
 - [ ] LLDAP-`admin` und Portainer-Admin: Passwörter in Bitwarden, persönliche Konten in `vibez-infra_admin` mit 2FA eingerichtet; `stack-admin/secrets/portainer_admin_pass` und `lldap-users/` vom Server gelöscht
 - [ ] `/etc/sudoers.d/90-aufbau` gelöscht (sudo für `murat` wieder mit Passwort; vorher Passwort setzen)

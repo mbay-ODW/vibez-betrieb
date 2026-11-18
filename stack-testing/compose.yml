@@ -1,0 +1,67 @@
+# VIBEZ Nachweise – Testumgebung nachweise-testing.vibez-odenwald.de (nur erfundene Daten, VN_DEMO=1)
+#
+# Gleicher Server wie der Echtbetrieb (Entscheidung Murat, 18.11.2026), aber strikt getrennt:
+#   eigene Datenbank (Atlas-Projekt „Klientendokumentation-Dev-Testing“, M0, X.509-Benutzer „testing“),
+#   eigene Netze, eigenes Proxy-Geheimnis, eigene LDAP-Gruppen (vibez-testing_admin / vibez-testing_user).
+# Image: Branch „testing“ (Tag :testing mit Digest, wird von host/autodeploy.sh nachgezogen).
+
+name: vibez-testing
+
+services:
+  app:
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_TESTING_VERSION}
+    container_name: vibez-testing-app
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: ${MONGODB_URI_TESTING}
+      VN_SECRET_KEY: ${VN_SECRET_KEY_TESTING}
+      VN_DEMO: "1"
+      VN_SECURE_COOKIE: "1"
+      VN_HOSTS: nachweise-testing.vibez-odenwald.de
+      VN_AUTH: authelia
+      VN_PROXY_SECRET: ${VN_PROXY_SECRET_TESTING}
+      VN_GRUPPE_VERWALTUNG: vibez-testing_admin
+      VN_GRUPPE_PAEDAGOGIK: vibez-testing_user
+      VN_LOGOUT_URL: https://auth.vibez-odenwald.de/logout
+      TZ: Europe/Berlin
+    volumes:
+      - ./secrets/atlas-testing.pem:/run/secrets/atlas-testing.pem:ro
+    networks: [vibez-testing, atlas-testing]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 384m
+
+  usersync:
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_TESTING_VERSION}
+    container_name: vibez-testing-usersync
+    restart: unless-stopped
+    command: ["python", "-m", "app.usersync"]
+    healthcheck:
+      disable: true
+    environment:
+      MONGODB_URI: ${MONGODB_URI_TESTING}
+      VN_GRUPPE_VERWALTUNG: vibez-testing_admin
+      VN_GRUPPE_PAEDAGOGIK: vibez-testing_user
+      VN_LDAP_URL: ldap://lldap:3890
+      VN_LDAP_BASE_DN: dc=vibez-odenwald,dc=de
+      VN_LDAP_BIND_DN: uid=vibez-usersync,ou=people,dc=vibez-odenwald,dc=de
+      VN_LDAP_PASSWORD_FILE: /run/secrets/ldap_usersync_pass
+      VN_SYNC_MINUTEN: "10"
+      TZ: Europe/Berlin
+    volumes:
+      - ./secrets/atlas-testing.pem:/run/secrets/atlas-testing.pem:ro
+      - ../stack-admin/secrets/ldap_usersync_pass:/run/secrets/ldap_usersync_pass:ro
+    networks: [atlas-testing, vibez-ldap]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+networks:
+  vibez-testing:
+    name: vibez-testing
+    internal: true     # traefik <-> Test-App
+  atlas-testing: {}    # ausgehend zu Atlas (Testprojekt)
+  vibez-ldap:
+    external: true

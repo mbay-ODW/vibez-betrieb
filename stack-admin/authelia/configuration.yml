@@ -60,7 +60,15 @@ access_control:
         - group:vibez-app_admin
         - group:vibez-app_user
       policy: two_factor
-    # Testing folgt mit dem Testing-Stack (Gruppen vibez-testing_admin / vibez-testing_user)
+    # Testumgebung (erfundene Daten): eigene Gruppen
+    - domain: nachweise-testing.vibez-odenwald.de
+      resources: ['^/health$']
+      policy: bypass
+    - domain: nachweise-testing.vibez-odenwald.de
+      subject:
+        - group:vibez-testing_admin
+        - group:vibez-testing_user
+      policy: two_factor
 
 session:
   name: vibez_auth

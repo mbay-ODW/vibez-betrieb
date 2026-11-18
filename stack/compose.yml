@@ -39,6 +39,7 @@ services:
     environment:
       VN_HOST: ${VN_HOST}
       VN_PROXY_SECRET: ${VN_PROXY_SECRET}   # setzt Traefik als X-Proxy-Secret (dynamic/vibez.yml)
+      VN_PROXY_SECRET_TESTING: ${VN_PROXY_SECRET_TESTING}   # für nachweise-testing (dynamic/testing.yml)
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
@@ -53,6 +54,7 @@ services:
         ipv4_address: 172.30.0.10
       web: {}
       vibez-admin: {}   # Verwaltungsoberflächen und Authelia (Stack stack-admin)
+      vibez-testing: {} # Testumgebung (Stack stack-testing)
     read_only: true
     security_opt: ["no-new-privileges:true"]
     mem_limit: 128m
@@ -119,5 +121,7 @@ networks:
   atlas: {}
   vibez-ldap:
     external: true    # wird von stack-admin angelegt (intern)
+  vibez-testing:
+    external: true    # wird von stack-testing angelegt (intern)
   vibez-admin:
     external: true    # wird von stack-admin angelegt (intern, kein Internet)

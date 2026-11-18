@@ -8,6 +8,9 @@ ingress:
   # Adresse der App (proxied CNAME in der Zone vibez-odenwald.de, angelegt mit `tunnel route dns`)
   - hostname: nachweise.vibez-odenwald.de
     service: http://traefik:80
+  # Testumgebung (Stack stack-testing), hinter Authelia
+  - hostname: nachweise-testing.vibez-odenwald.de
+    service: http://traefik:80
   # Verwaltung (Stack stack-admin), alle hinter Authelia
   - hostname: auth.vibez-odenwald.de
     service: http://traefik:80
