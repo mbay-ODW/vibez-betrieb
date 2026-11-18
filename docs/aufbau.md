@@ -147,6 +147,12 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Atlas-Alerts ergänzt: Flex-Speicher > 3,5 GB (70 %), IP-Zugriffsliste Eintrag hinzugefügt/entfernt | ✅ | Änderungen an DB-Benutzern bietet Atlas nicht als Alert an. IP `91.18.162.56` (Murat) bleibt bewusst in der Zugriffsliste |
 | 18.11.2026 | Cloudflare-Tunnel `vibez-prod` (ID `7299c757-f13e-42d4-8257-549a5dfe0163`) auf dem Server angelegt (`cloudflared tunnel login` mit Bestätigung durch Murat); `credentials.json` nur auf dem Server (400, UID 65532), ID in `config.yml` | ✅ | `cert.pem` aus dem Login danach gelöscht |
 | 18.11.2026 | DNS: `nachweise.vibez-odenwald.de` als proxied CNAME auf den Tunnel (`tunnel route dns`, Freigabe Murat) | ✅ | Bis Schritt 4 antwortet die Adresse mit 530 (kein Connector) |
+| 18.11.2026 | GHCR-Lesezugang auf dem Server (`docker login ghcr.io`, Classic Token nur `read:packages`, von Murat eingegeben) | ✅ | Ablauf 18.11.2027; ersetzen durch Fine-grained Token, sobald GitHub das für Pakete anbietet |
+| 18.11.2026 | Digest von 0.2.6 geprüft: Registry = GitHub-Paket-API = `sha256:8c8fbf3d…af12f284` (Tag `sha-e74dfee`, CI grün 16.11.) | ✅ | Freigabe Murat |
+| 18.11.2026 | Atlas: `prod` zusätzlich `dbAdmin@vibez` – die App legt beim Start Indizes an, `readWrite` erlaubt das auf Flex nicht (`createIndex` verweigert) | ✅ | – |
+| 18.11.2026 | Stack gestartet: `VN_VERSION=0.2.6@sha256:8c8fbf3d…` in `.env`, `deploy.sh` ohne Versionsangabe (erster Start, leere Datenbank – Backup vor dem Update entfällt, restic folgt in Schritt 5); Verwaltungskonto `tobias` mit Startpasswort vom Server | ✅ | – |
+| 18.11.2026 | Traefik-Health-Check sendet jetzt den App-Hostnamen (`hostname` in `vibez.yml`), sonst 400 wegen `VN_HOSTS` | ✅ | `/health`, `/login`, `/hilfe` über Cloudflare 200; HSTS, CSP, `X-Frame-Options`, `no-store` gesetzt; Tunnel mit 4 Verbindungen; eingehend nur 5022 |
+| 18.11.2026 | `/root/aufbau/zugaenge-fuer-bitwarden.sh`: zeigt Murat die auf dem Server erzeugten Zugänge im eigenen Terminal zum Übertragen in Bitwarden | ✅ | Nur von Murat auszuführen |
 
 ## Übergabe-Checkliste
 
@@ -160,7 +166,7 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Cloudflare-Anbindung (MCP) bleibt als begrenzte Ausnahme nach DSFA T12 (Entscheidung 18.11.2026): Benachrichtigung bei DNS-Änderungen eingerichtet, Prüfung des Audit-Logs in die monatliche Wartung aufgenommen
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `prod`, `vibez_backup` und der IP-Listen-Key bleiben; von Murat heruntergeladenes `prod`-Zertifikat auf dem Mac gelöscht
 - [ ] GitHub auf dem Server: `gh auth logout` (Anmeldung mit Murats ganzem Konto aus der Aufbauphase entfernt); für das Image nur noch der Fine-grained Token mit *Packages: read* in `docker login ghcr.io`; Repo-Updates mit Token nur *Contents: read*
-- [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Konsolenpasswort, Startpasswort `tobias`)
+- [ ] Alle auf dem Server erzeugten Geheimnisse liegen in Bitwarden bzw. im Passwortmanager von VIBEZ (Hilfe: `sudo /root/aufbau/zugaenge-fuer-bitwarden.sh`) (restic-Passwort, Konsolenpasswort, Startpasswort `tobias`)
 - [ ] Startpasswort von `tobias` wurde beim ersten Login geändert, 2FA eingerichtet
 - [ ] Datenbank enthält keine Testdaten (nur Einstellungen, Jugendämter, Konten)
 - [ ] Abnahme-Checkliste in [deployment.md](deployment.md#8-abnahme-und-freigabe) vollständig

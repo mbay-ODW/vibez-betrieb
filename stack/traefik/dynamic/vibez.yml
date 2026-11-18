@@ -16,6 +16,7 @@ http:
           - url: "http://vibez-app:8000"
         healthCheck:
           path: /health
+          hostname: '{{ env "VN_HOST" }}'   # die App nimmt nur ihren Hostnamen an (VN_HOSTS)
           interval: 30s
           timeout: 5s
 

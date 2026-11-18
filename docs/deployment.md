@@ -69,7 +69,7 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
 4. **Database Access**:
    Anmeldung per **X.509** (von Atlas verwaltet, keine Passwörter). Die Zertifikate erzeugt der Server über die
    Atlas-API direkt nach `/opt/vibez/stack/secrets/` (24 Monate; Atlas warnt 30 Tage vor Ablauf):
-   - `prod` (App): Rolle *readWrite* nur auf Datenbank `vibez`; `atlas-app.pem`, Besitzer UID 10001, Rechte 400
+   - `prod` (App): Rollen *readWrite* und *dbAdmin* nur auf Datenbank `vibez` (die App legt beim Start Indizes an; auf Flex reicht *readWrite* dafür nicht); `atlas-app.pem`, Besitzer UID 10001, Rechte 400
    - `vibez_backup`: nur *read* auf Datenbank `vibez` (reicht für `mongodump` einer Datenbank); `atlas-backup.pem`, root, 400
 5. **Network Access**: einen Programmatic API Key für das Projekt mit der Rolle *Project IP Access List Admin*
    anlegen, dann auf dem Server ausführen:
