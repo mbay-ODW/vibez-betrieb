@@ -25,7 +25,9 @@ stack_redeploy() {
   jq -n --argjson env "$env" --rawfile pw $SECRETS/portainer/github_token \
     '{env:$env, prune:true, pullImage:true, repositoryReferenceName:"refs/heads/main",
       repositoryAuthentication:true, repositoryUsername:"x-access-token", repositoryPassword:($pw|rtrimstr("\n"))}' \
-    | pt -X PUT "$PORTAINER/stacks/$id/git/redeploy?endpointId=$ENDPOINT" --data-binary @- >/dev/null
+    | pt -X PUT "$PORTAINER/stacks/$id/git/redeploy?endpointId=$ENDPOINT" --data-binary @- \
+    | jq -er '"redeploy " + .Name + " auf Commit " + .GitConfig.ConfigHash[0:7]' \
+    || { echo "FEHLER: Redeploy von ${name} fehlgeschlagen" >&2; return 1; }
 }
 
 # GHCR (Lesezugang aus „docker login ghcr.io“)
