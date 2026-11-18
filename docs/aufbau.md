@@ -100,6 +100,8 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 |---|---|---|---|
 | 16.11.2026 | Repo vorbereitet, netcup gewählt, App 0.2.6 mit 2FA | ✅ | – |
 | 18.11.2026 | Eigene Domain `vibez-odenwald.de` für die App festgelegt (statt DNS-Umzug von `vibez-jugendhilfe.de`) | ✅ | – |
+| 18.11.2026 | Domain bei febas registriert (Murat); Zone in Cloudflare angelegt (vorerst Murats Konto, Nameserver `cory`/`kenia`) | ✅ | Übertragung an VIBEZ offen (Übergabe-Checkliste) |
+| 18.11.2026 | Cloudflare-API: 10 vom Registrar übernommene Einträge gelöscht (Parkseite, febas-Mail); Null-MX, SPF `-all`, DMARC `p=reject`, leerer DKIM angelegt | ✅ | Zone noch „pending“, bis die Nameserver bei febas umgestellt sind |
 
 ## Übergabe-Checkliste
 

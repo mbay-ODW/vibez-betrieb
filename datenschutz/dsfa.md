@@ -163,7 +163,7 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 | MongoDB, Inc. (mit AWS als Unterauftragnehmer) | Datenbank (Atlas) | USA / Speicherort AWS Frankfurt | gespeichert verschlüsselt; Betreiberzugriff technisch möglich, vertraglich ausgeschlossen |
 | Cloudflare, Inc. | DNS der App-Domain `vibez-odenwald.de`; Schutzschicht für die App (TLS-Terminierung, WAF, Tunnel) | USA / Verarbeitung im nächstgelegenen Rechenzentrum | Inhalte kurzzeitig im Arbeitsspeicher beim Weiterleiten; keine Speicherung von Seiteninhalten |
 | Murat Bayram | IT-Betreuung (Einrichtung, Updates, Backup, Störungen) | Deutschland | Administrativer Zugang; Datenbankzugriff nur bei Wartung, protokolliert |
-| Registrar von `vibez-odenwald.de` **[bei Buchung eintragen]** | Registrierung der App-Domain | Deutschland/EU | keine Klientendaten (nur Domaindaten) |
+| febas (Registrar von `vibez-odenwald.de`) | Registrierung der App-Domain | Deutschland/EU | keine Klientendaten (nur Domaindaten) |
 | GitHub, Inc. | Quellcode und Container-Image | USA | keine Klientendaten |
 | Tailscale Inc. | Verwaltungszugang (SSH-Verbindung) | USA | keine Inhalte (Ende-zu-Ende verschlüsselt), Metadaten der Verbindung |
 
