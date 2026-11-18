@@ -120,7 +120,9 @@ auf Murat (Stand 18.11.2026). Bei einem Wechsel des IT-Dienstleisters:
 1. Übertragen, was auf Murat läuft:
    - **Domain** `vibez-odenwald.de`: Inhaberwechsel bei febas auf VIBEZ (oder Transfer zum Registrar von VIBEZ).
    - **Cloudflare**: Konto für VIBEZ anlegen, Zone dort neu hinzufügen, Einstellungen und Regeln nach
-     [cloudflare.md](cloudflare.md) übernehmen, neuen Tunnel erzeugen, Nameserver beim Registrar umstellen, alte Zone löschen.
+     [cloudflare.md](cloudflare.md) übernehmen, neuen Tunnel erzeugen. **Vorher den DS-Eintrag beim Registrar löschen**
+     und mindestens 2 Tage warten (TTL), dann Nameserver umstellen, in der neuen Zone DNSSEC einschalten, neuen
+     DS-Eintrag setzen, alte Zone löschen. Sonst ist die Domain während des Umzugs nicht erreichbar.
    - **Server**: Übertragung des netcup-Produkts an VIBEZ, falls netcup das anbietet, sonst neuen VPS auf VIBEZ bestellen,
      nach [deployment.md](deployment.md) aufbauen und den alten Server löschen (Daten liegen in Atlas, nicht auf dem Server).
    Neue:n Dienstleister:in in Hetzner und Atlas einladen, Murat entfernen.
