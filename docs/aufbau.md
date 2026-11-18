@@ -69,6 +69,34 @@ claude remote-control   # stellt /opt/vibez dieser Claude-Sitzung zur Verfügung
 tmux mit `Strg+b`, dann `d` verlassen. Remote Control läuft weiter, auch wenn die SSH-Verbindung endet. Danach in der
 Claude-Sitzung Bescheid geben. Die Sitzung fragt den Ordner an, und du bestätigst in der App.
 
+### Weiterarbeiten in der Sitzung auf dem Server
+
+Eine Cloud-Sitzung kann den Ordner auf dem Server nicht in jedem Konto anfordern (Stand 18.11.2026: nicht verfügbar).
+Dann läuft der Aufbau **in der Remote-Control-Sitzung selbst**: Sie erscheint in der Claude-App (Code) unter dem Namen
+des Servers. Dort weiterarbeiten.
+
+Zuerst braucht der Server Lesezugriff auf GitHub. Murat erzeugt einen Fine-grained Token (Repos `vibez-betrieb` und
+`vibez-nachweise`; *Contents: read*, *Packages: read*; Ablauf 1 Jahr) und meldet ihn **selbst im Terminal** an, nicht im Chat:
+
+```bash
+apt-get install -y gh
+gh auth login --with-token     # Token einfügen, Enter, Strg+D
+gh auth setup-git
+git clone https://github.com/mbay-ODW/vibez-betrieb /opt/vibez/repo
+```
+
+Erste Nachricht an die Sitzung auf dem Server:
+
+```text
+Du baust den Echtbetrieb von VIBEZ Nachweise auf diesem Server auf. Lies zuerst
+/opt/vibez/repo/CLAUDE.md und /opt/vibez/repo/docs/aufbau.md und halte dich streng an die
+Regeln der Aufbauphase: keine echten Daten, Geheimnisse nur auf dem Server erzeugen und nie
+ausgeben (auch nicht im Chat oder in Logs), jede Aktion ins Aufbauprotokoll (docs/aufbau.md),
+Änderungen am Repo als Commit. Stand: Domain vibez-odenwald.de und Cloudflare-Zone sind fertig
+(WAF, DNSSEC, Mail-Schutz); es fehlen Server-Härtung, Tunnel, Atlas, Stack, Backup.
+Beginne mit Schritt 1 des Ablaufs (host/bootstrap.sh) und sag mir vorher, was du ausführst.
+```
+
 ## Tokens
 
 | Für | Erzeugen | Rechte | Laufzeit / danach |
