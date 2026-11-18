@@ -136,12 +136,17 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | DS-Eintrag (Key Tag 2371) über den febas-Support beantragt; febas meldet: bei DENIC hinterlegt | ✅ | Cloudflare-Status noch „pending“ (prüft selbst in Abständen) |
 | 18.11.2026 | netcup-VPS bestellt, Vertrag auf Murat | ✅ | AV-Vertrag Murat ↔ netcup offen; Unterauftrag im AV-Vertrag mit VIBEZ aufnehmen |
 | 18.11.2026 | Cloudflare-Token (nur Zone `vibez-odenwald.de`) über das sichere Formular hinterlegt; Zoneneinstellungen gesetzt (Full strict, TLS ≥ 1.2, Always HTTPS, 0-RTT aus, Email Obfuscation/Rocket Loader/SSE aus, AI-Bots blockiert); 5 WAF-Regeln, Ratenlimit `/login`, Cache-Regel, Managed Free Ruleset; CAA `letsencrypt.org` und `pki.goog` | ✅ | Universal SSL aktiv (Let's Encrypt, Reserve Google). Benachrichtigungen (Konto-Ebene) noch von Hand |
+| 18.11.2026 | Zugang der Aufbausitzung per SSH vom Mac (Schlüssel für root, dann `murat`); `git pull`, CLAUDE.md und aufbau.md gelesen | ✅ | SSH als Zugang am 18.11. freigegeben (Commit 7739ef6) |
+| 18.11.2026 | `/etc/sudoers.d/90-aufbau`: `murat` sudo ohne Passwort (nur Aufbauphase) | ✅ | Vor Übergabe löschen (Checkliste) |
+| 18.11.2026 | `host/bootstrap.sh` (ADMIN=`murat`, ohne `TS_AUTHKEY`): Updates, unattended-upgrades, Admin `murat` nur mit Schlüssel, root- und Passwort-Login aus, Docker 29.10.0, Tailscale-Paket installiert | ✅ | Kernel 6.12.117 |
+| 18.11.2026 | **Abweichung (Entscheidung Murat):** kein Tailscale. SSH auf Port **5022** (`/etc/ssh/sshd_config.d/20-vibez-port.conf`), Port 22 zu; `ufw` aktiv: eingehend nur `5022/tcp` (limit), Rest deny | ✅ | Architektur, DSFA/TOM und deployment.md nennen noch „SSH nur über Tailscale“ – anpassen; Tailscale-Paket ungenutzt |
 
 ## Übergabe-Checkliste
 
 Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 
 - [ ] Remote Control auf dem Server beendet (`tmux kill-session -t aufbau`)
+- [ ] `/etc/sudoers.d/90-aufbau` gelöscht (sudo für `murat` wieder mit Passwort; vorher Passwort setzen)
 - [ ] Claude Code vom Server entfernt (`rm -rf ~/.local/bin/claude ~/.local/share/claude ~/.claude ~/.claude.json`), Anmeldung im Claude-Konto unter *Geräte/Sitzungen* geprüft
 - [ ] Cloudflare-Token der Aufbauphase gelöscht
 - [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (dauerhaft auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Vorgehen bei Ende der Betreuung schriftlich geregelt
