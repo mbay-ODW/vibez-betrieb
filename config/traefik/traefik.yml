@@ -1,5 +1,5 @@
 # Traefik – statische Konfiguration (Echtbetrieb VIBEZ Nachweise)
-# Traefik nimmt nur Verbindungen von cloudflared an (Netz „edge“, kein veröffentlichter Port am Host).
+# Traefik nimmt nur Verbindungen von cloudflared an (Netz „tunnel“, kein veröffentlichter Port am Host).
 # TLS endet bei Cloudflare; zwischen Cloudflare-Edge und cloudflared verschlüsselt der Tunnel.
 
 global:
@@ -10,8 +10,8 @@ entryPoints:
   web:
     address: ":80"
     forwardedHeaders:
-      # nur cloudflared (feste IP im Netz „edge“) darf X-Forwarded-* setzen
-      trustedIPs: ["172.30.0.0/24"]
+      # nur cloudflared (Netz „tunnel“) darf X-Forwarded-* setzen
+      trustedIPs: ["172.31.0.0/24"]   # Netz „tunnel“ (nur cloudflared und Traefik)
     transport:
       respondingTimeouts:
         readTimeout: 60s

@@ -1,4 +1,4 @@
-# Traefik – Testumgebung nachweise-testing.vibez-odenwald.de (Stack stack-testing, nur erfundene Daten)
+# Traefik – Testumgebung nachweise-testing.vibez-odenwald.de (Stack vibez-nachweise-testing, nur erfundene Daten)
 http:
   middlewares:
     proxy-geheimnis-testing:

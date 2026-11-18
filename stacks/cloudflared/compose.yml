@@ -1,0 +1,18 @@
+# Cloudflare-Tunnel vibez-prod – einziger Weg von außen zu den Web-Adressen (Netz „tunnel“ zu Traefik)
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    container_name: vibez-cloudflared
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+    volumes:
+      - /opt/vibez/repo/config/cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - /srv/vibez/secrets/cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
+    networks: [tunnel]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+networks:
+  tunnel:
+    external: true

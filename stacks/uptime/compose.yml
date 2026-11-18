@@ -1,0 +1,18 @@
+# Uptime Kuma – Überwachung (hinter Authelia, nur vibez-infra_admin); ausgehend für HTTP-Prüfungen
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.5.12
+    container_name: vibez-uptime
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+    volumes:
+      - /srv/vibez/admin/uptime-kuma:/app/data
+    networks: [fe-admin, raus]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+
+networks:
+  fe-admin:
+    external: true
+  raus: {}

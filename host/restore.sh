@@ -5,7 +5,7 @@
 #   ./restore.sh latest --test         neuesten Stand in eine Wegwerf-MongoDB auf dem Server einspielen und zählen (Monatsprobe)
 #   ./restore.sh <snapshot-id> --datei Stand als Archiv nach /srv/vibez/restore/ schreiben (für Atlas-Import mit mongorestore)
 set -euo pipefail
-ENV=/opt/vibez/stack/.env
+ENV=/srv/vibez/secrets/vibez-nachweise-prod/backup.env
 set -a; source "$ENV"; set +a
 restic() {
   docker run --rm -i -e RESTIC_REPOSITORY -e RESTIC_PASSWORD \

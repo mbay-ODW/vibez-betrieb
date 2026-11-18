@@ -1,0 +1,59 @@
+# VIBEZ Nachweise – Testumgebung nachweise-testing.vibez-odenwald.de (nur erfundene Daten)
+# Version: Stack-Variable VN_VERSION (Nummer bzw. „testing“ mit Digest), gesetzt von host/deploy.sh bzw. host/autodeploy.sh.
+# Geheimnisse: /srv/vibez/secrets/vibez-nachweise-testing/ (app.env, usersync.env, Zertifikate) – nur auf dem Server.
+services:
+  app:
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_VERSION}
+    container_name: vibez-testing-app
+    restart: unless-stopped
+    env_file: [/srv/vibez/secrets/vibez-nachweise-testing/app.env]   # VN_SECRET_KEY, VN_ADMIN_PASSWORD, MONGODB_URI, VN_PROXY_SECRET
+    environment:
+      VN_DEMO: "1"
+      VN_SECURE_COOKIE: "1"
+      VN_HOSTS: nachweise-testing.vibez-odenwald.de
+      VN_IDLE_MINUTES: "120"
+      VN_AUTH: authelia
+      VN_GRUPPE_VERWALTUNG: vibez-testing_admin
+      VN_GRUPPE_PAEDAGOGIK: vibez-testing_user
+      VN_LOGOUT_URL: https://auth.vibez-odenwald.de/logout
+      TZ: Europe/Berlin
+    volumes:
+      - /srv/vibez/secrets/vibez-nachweise-testing/atlas-testing.pem:/run/secrets/atlas-testingo
+    networks: [fe-vibez-testing, atlas]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 384m
+
+  usersync:
+    image: ghcr.io/mbay-odw/vibez-nachweise:${VN_VERSION}
+    container_name: vibez-testing-usersync
+    restart: unless-stopped
+    command: ["python", "-m", "app.usersync"]
+    healthcheck:
+      disable: true                 # kein Webserver
+    env_file: [/srv/vibez/secrets/vibez-nachweise-testing/usersync.env]     # MONGODB_URI
+    environment:
+      VN_GRUPPE_VERWALTUNG: vibez-testing_admin
+      VN_GRUPPE_PAEDAGOGIK: vibez-testing_user
+      VN_LDAP_URL: ldap://lldap:3890
+      VN_LDAP_BASE_DN: dc=vibez-odenwald,dc=de
+      VN_LDAP_BIND_DN: uid=vibez-usersync,ou=people,dc=vibez-odenwald,dc=de
+      VN_LDAP_PASSWORD_FILE: /run/secrets/ldap_usersync_pass
+      VN_SYNC_MINUTEN: "10"
+      TZ: Europe/Berlin
+    volumes:
+      - /srv/vibez/secrets/vibez-nachweise-testing/atlas-testing.pem:/run/secrets/atlas-testingo
+      - /srv/vibez/secrets/vibez-nachweise-testing/ldap_usersync_pass:/run/secrets/ldap_usersync_pass:ro
+    networks: [atlas, link-ldap]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+networks:
+  fe-vibez-testing:
+    external: true
+  link-ldap:
+    external: true
+  atlas: {}                         # ausgehend zu MongoDB Atlas

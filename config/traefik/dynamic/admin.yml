@@ -1,5 +1,5 @@
-# Traefik – Verwaltungsoberflächen (Stack „vibez-admin“), jede Adresse hinter Authelia.
-# Wer was darf, steht in stack-admin/authelia/configuration.yml (LDAP-Gruppen).
+# Traefik – Verwaltungsoberflächen (Stacks ldap, portainer, dozzle, uptime), jede Adresse hinter Authelia.
+# Wer was darf, steht in config/authelia/configuration.yml (LDAP-Gruppen).
 http:
   middlewares:
     # Vor Authelia: alle vom Client mitgeschickten Identitäts-Header entfernen (sonst könnte ein Header, den
@@ -63,13 +63,13 @@ http:
         servers: [{url: "http://authelia:9091"}]
     lldap:
       loadBalancer:
-        servers: [{url: "http://vibez-admin-lldap:17170"}]
+        servers: [{url: "http://lldap:17170"}]
     portainer:
       loadBalancer:
-        servers: [{url: "http://vibez-admin-portainer:9000"}]
+        servers: [{url: "http://portainer:9000"}]
     dozzle:
       loadBalancer:
-        servers: [{url: "http://vibez-admin-dozzle:8080"}]
+        servers: [{url: "http://dozzle:8080"}]
     uptime-kuma:
       loadBalancer:
-        servers: [{url: "http://vibez-admin-uptime-kuma:3001"}]
+        servers: [{url: "http://uptime-kuma:3001"}]

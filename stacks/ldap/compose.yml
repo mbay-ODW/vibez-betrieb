@@ -1,0 +1,29 @@
+# LLDAP – Benutzer und Gruppen (Oberfläche über fe-admin hinter Authelia, LDAP 3890 nur im Netz link-ldap)
+services:
+  lldap:
+    image: lldap/lldap:v0.6.3
+    container_name: vibez-lldap
+    restart: unless-stopped
+    env_file: [/srv/vibez/secrets/ldap/ldap.env]   # LLDAP_KEY_SEED
+    environment:
+      TZ: Europe/Berlin
+      LLDAP_LDAP_BASE_DN: dc=vibez-odenwald,dc=de
+      LLDAP_HTTP_URL: https://ldap.vibez-odenwald.de
+      LLDAP_JWT_SECRET_FILE: /run/secrets/lldap_jwt_secret
+      LLDAP_LDAP_USER_PASS_FILE: /run/secrets/lldap_admin_pass
+      LLDAP_FORCE_LDAP_USER_PASS_RESET: "false"
+    volumes:
+      - /srv/vibez/admin/lldap:/data
+      - /srv/vibez/secrets/ldap/lldap_jwt_secret:/run/secrets/lldap_jwt_secret:ro
+      - /srv/vibez/secrets/ldap/lldap_admin_pass:/run/secrets/lldap_admin_pass:ro
+      - /opt/vibez/repo/config/lldap/bootstrap:/bootstrap:ro
+      - /srv/vibez/secrets/ldap/bootstrap-users:/bootstrap-users:ro
+    networks: [fe-admin, link-ldap]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+
+networks:
+  fe-admin:
+    external: true
+  link-ldap:
+    external: true

@@ -3,7 +3,7 @@
 # mongodump aus Atlas (Backup-Benutzer, nur lesen) -> restic (verschlüsselt auf dem Server) -> Hetzner Storage Box.
 # Aufbewahrung: 7 tägliche, 5 wöchentliche, 12 monatliche Stände. Erfolg wird an Uptime Kuma gemeldet.
 set -euo pipefail
-ENV=/opt/vibez/stack/.env
+ENV=/srv/vibez/secrets/vibez-nachweise-prod/backup.env
 set -a; source "$ENV"; set +a
 
 restic() {
@@ -14,7 +14,7 @@ restic() {
 }
 
 stempel="$(date +%F_%H%M)"
-docker run --rm -e MONGODB_BACKUP_URI -v /opt/vibez/stack/secrets/atlas-backup.pem:/certs/atlas-backup.pem:ro \
+docker run --rm -e MONGODB_BACKUP_URI -v /srv/vibez/secrets/vibez-nachweise-prod/atlas-backup.pem:/certs/atlas-backup.pem:ro \
   "mongo:${MONGO_TOOLS_VERSION}" \
   sh -c 'mongodump --quiet --uri "$MONGODB_BACKUP_URI" --db vibez --archive --gzip' \
   | restic backup --quiet --stdin --stdin-filename "vibez-${stempel}.archive.gz" --tag mongodump

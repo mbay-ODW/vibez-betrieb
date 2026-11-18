@@ -1,0 +1,21 @@
+# Portainer – läuft als einziger Stack per `docker compose` (verwaltet sich nicht selbst):
+#   sudo docker compose -p portainer -f /opt/vibez/repo/stacks/portainer/compose.yml up -d
+# /srv/vibez/secrets ist nur lesend eingebunden, damit die übrigen Stacks ihre env_file-Dateien von dort lesen können –
+# Geheimnisse landen so nicht in der Portainer-Datenbank.
+services:
+  portainer:
+    image: portainer/portainer-ce:2.45.3
+    container_name: vibez-portainer
+    restart: unless-stopped
+    command: ["-H", "unix:///var/run/docker.sock", "--admin-password-file", "/srv/vibez/secrets/portainer/admin_pass"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/vibez/admin/portainer:/data
+      - /srv/vibez/secrets:/srv/vibez/secrets:ro
+    networks: [fe-admin]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+
+networks:
+  fe-admin:
+    external: true
