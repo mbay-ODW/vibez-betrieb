@@ -18,7 +18,7 @@ services:
       VN_LOGOUT_URL: https://auth.vibez-odenwald.de/logout
       TZ: Europe/Berlin
     volumes:
-      - /srv/vibez/secrets/vibez-nachweise-prod/atlas-app.pem:/run/secrets/atlas-appo
+      - /srv/vibez/secrets/vibez-nachweise-prod/atlas-app.pem:/run/secrets/atlas-app.pem:ro
     networks: [fe-vibez, atlas]
     read_only: true
     tmpfs: ["/tmp"]
@@ -43,7 +43,7 @@ services:
       VN_SYNC_MINUTEN: "10"
       TZ: Europe/Berlin
     volumes:
-      - /srv/vibez/secrets/vibez-nachweise-prod/atlas-app.pem:/run/secrets/atlas-appo
+      - /srv/vibez/secrets/vibez-nachweise-prod/atlas-app.pem:/run/secrets/atlas-app.pem:ro
       - /srv/vibez/secrets/vibez-nachweise-prod/ldap_usersync_pass:/run/secrets/ldap_usersync_pass:ro
     networks: [atlas, link-ldap]
     read_only: true
