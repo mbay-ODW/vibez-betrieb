@@ -13,7 +13,7 @@ Art. 28 DSGVO**. Ablage: **[VIBEZ: Ablageort eintragen]**.
 | **febas** (Registrar von `vibez-odenwald.de`, Firmierung und Sitz **[prüfen]**) | Registrierung der App-Domain (Inhaber möglichst VIBEZ) | Deutschland/EU | nein | Domainvertrag; kein AV nötig | ⏳ |
 | Neue Medien Münnich (**All-Inkl**) | Domain `vibez-jugendhilfe.de`, Website und E-Mail von VIBEZ | Deutschland | nein | bestehender Hostingvertrag; für die App nicht genutzt | – |
 | GitHub, Inc. | Quellcode, CI, Container-Image | USA | nein (nur erfundene Demodaten) | – | – |
-| Tailscale Inc. | Verwaltungszugang (VPN für SSH) | USA (Koordination), Verbindung direkt und Ende-zu-Ende verschlüsselt | nein | – | – |
+| ~~Tailscale Inc.~~ (nicht genutzt, Entscheidung 18.11.2026) | – | – | nein | – | – |
 | Anthropic (Claude Code) | **nur Aufbauphase**: Einrichtung des Servers über Remote Control, bevor echte Daten existieren | – | nein (Regeln in [Aufbau](../docs/aufbau.md)) | – | – |
 
 **Vertragspartner (Entscheidung Murat, 18.11.2026):** netcup (Server), Cloudflare (Zone `vibez-odenwald.de` in Murats

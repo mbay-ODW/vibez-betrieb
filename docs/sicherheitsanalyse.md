@@ -44,8 +44,8 @@ flowchart LR
     CF -->|Tunnel| T["Traefik"] --> A["App"]
     A -->|TLS| DB[("Atlas")]
     subgraph Verwaltungswege
-      ADM["Admin (Tailscale-SSH)"]
-      KON["Konten: Cloudflare, Atlas, netcup, Hetzner,<br/>GitHub, Registrar, Tailscale"]
+      ADM["Admin (SSH :5022)"]
+      KON["Konten: Cloudflare, Atlas, netcup, Hetzner,<br/>GitHub, Registrar"]
       CI["GitHub Actions → GHCR-Image"]
     end
     ADM -.-> T
@@ -100,11 +100,11 @@ Schwere: 🔴 hoch · 🟠 mittel · 🟡 niedrig. Status: ✅ behoben (0.2.5) �
 
 | # | Vektor | Befund | Schwere | Status |
 |---|---|---|---|---|
-| C1 | Direkter Angriff auf den Server | Keine offenen Ports (Tunnel), `ufw` ohne Eingang, SSH nur über Tailscale | – | 📄 |
+| C1 | Direkter Angriff auf den Server | App nicht direkt erreichbar (Tunnel, 80/443 zu). Offen ist nur SSH auf Port 5022: nur Schlüssel, kein root, `ufw limit` | 🟡 | 📄; ➕ CrowdSec oder fail2ban für SSH erwägen; Schlüssel mit Passphrase/Hardwareschlüssel |
 | C2 | Umgehen von Cloudflare | Ohne öffentliche Ports gibt es keinen Weg vorbei | – | 📄 |
 | C3 | Diebstahl der Tunnel-Zugangsdaten | Mit `credentials.json` kann jemand einen **zweiten Connector** betreiben und einen Teil des Datenverkehrs empfangen (Mitlesen) | 🟠 | 📄 Datei nur root (600); ⏳ Cloudflare-Benachrichtigung bei Tunnel-Änderungen/zusätzlichen Connectoren; bei Verdacht Tunnel neu erzeugen (Betriebshandbuch) |
 | C4 | Backups löschen oder verschlüsseln (Ransomware) | Wer root auf dem Server hat, kann über SFTP auch die restic-Daten auf der Storage Box löschen | 🟠 | 📄 Atlas-Backups lassen sich mit den Datenbankbenutzern des Servers nicht löschen; ⏳ **automatische Snapshots der Storage Box** einschalten (nur in der Hetzner-Konsole verwaltbar) |
-| C5 | Tailscale als Seiteneingang | Jedes Gerät in Murats Tailnet erreicht standardmäßig den Server (Schlüssel nötig, aber größere Angriffsfläche) | 🟠 | ⏳ Tailscale-ACL: nur Murats Admin-Geräte → `tag:vibez-prod:22`; Tailnet Lock erwägen |
+| C5 | SSH öffentlich erreichbar | Seit 18.11.2026 ohne VPN (Entscheidung Murat). Angriffe auf sshd-Lücken oder gestohlene Schlüssel sind direkt aus dem Internet möglich | 🟡 | 📄 Schlüssel-Login, Port 5022, Ratenbegrenzung, automatische Sicherheitsupdates; ➕ Zugriff auf feste IPs begrenzen, falls Murat eine hat |
 | C6 | Phishing mit ähnlicher Adresse | Die App hat eine neue, eigene Domain (`vibez-odenwald.de`), die Mitarbeitende erst kennenlernen. Eine nachgemachte Anmeldeseite unter ähnlichem Namen fällt dadurch weniger auf | 🟡 | ⏳ Adresse offiziell bekannt machen (Website/Intranet von VIBEZ, Lesezeichen auf den Diensthandys); 2FA begrenzt den Schaden gestohlener Passwörter (✅ 0.2.6); Null-MX, SPF `-all` und DMARC `p=reject` verhindern Mails mit gefälschtem Absender **dieser** Domain ([cloudflare.md](cloudflare.md#domain-und-zone-einrichten)) |
 | C7 | Übernahme von Cloudflare- oder Registrar-Konto | Wer das Cloudflare-Konto oder das Konto beim Registrar (Nameserver) übernimmt, kann die App umleiten (Phishing, Zertifikat per DNS). Website und E-Mail von VIBEZ liegen auf einer anderen Domain und sind nicht betroffen | 🟠 | ⏳ 2FA mit Passkey in beiden Konten; Transfer Lock und automatische Verlängerung der Domain; Cloudflare-Benachrichtigung bei DNS-Änderungen; DNSSEC; **CAA-Eintrag**; Überwachung der Zertifikatstransparenz-Logs für `vibez-odenwald.de` (z. B. Cert Spotter, kostenlos) |
 | C8 | Atlas über das Internet | Atlas lässt nur die Server-IP zu; Passwort-Authentifizierung + TLS | 🟡 | 📄; ⏳ in der Atlas-Organisation „IP-Zugriffsliste für die Admin-API verlangen“ aktivieren, API-Keys mit eigener Zugriffsliste |
@@ -125,7 +125,6 @@ Das sind die wirksamsten Angriffswege. Wer eines dieser Konten übernimmt, umgeh
 | Hetzner | Storage Box (zweite Sicherung) | 2FA, Murat als eigenes Mitglied |
 | GitHub `mbay-ODW` | präpariertes Image (B2) | 2FA mit Passkey, Branch-Schutz |
 | Registrar `vibez-odenwald.de` | Nameserver umleiten (C7), Domain verfallen lassen | 2FA, Transfer Lock, automatische Verlängerung |
-| Tailscale (Murat) | Weg zum SSH-Port (Schlüssel weiterhin nötig) | 2FA, ACL (C5) |
 | Verwaltungskonten der App | alle Klientendaten, Abrechnung | 2FA (A7), starke Passwörter (✅) |
 
 ### E. Demo-Betrieb
@@ -161,7 +160,7 @@ Die Demo enthält nur erfundene Daten. Trotzdem:
 1. ✅ **Zwei-Faktor-Anmeldung** in der App (A7) – erledigt in 0.2.6
 2. ⏳ **2FA mit Passkeys** für Cloudflare, Atlas, netcup, Hetzner, GitHub und Registrar (D) und Branch-Schutz auf `main` (B2)
 3. ⏳ **Domain absichern**: DNSSEC, CAA, Mail-Schutz-Einträge, Transfer Lock, Zertifikats-Monitoring, DNS-Änderungs-Alarm; neue Adresse offiziell bekannt machen (C6, C7)
-4. ⏳ **Storage-Box-Snapshots** (C4) und **Tailscale-ACL** (C5)
+4. ⏳ **Storage-Box-Snapshots** (C4); SSH-Härtung prüfen (C1, C5)
 5. ⏳ Demo-Geheimnisse neu setzen (E1)
 6. ⏳ GitHub Actions per SHA pinnen (B3); ✅ `/logout` als POST (A16), Erstpasswort-Wechsel erzwungen (F4)
 7. ➕ externer Penetrationstest nach dem Aufbau des Echtbetriebs, danach jährlich

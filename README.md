@@ -44,7 +44,7 @@ stack/                 Docker Compose für den Server
   traefik/             statische und dynamische Konfiguration
   cloudflared/         Tunnel-Konfiguration (Zugangsdaten nur auf dem Server)
 host/                  Einrichtung und Pflege des Servers
-  bootstrap.sh         Härtung Debian, Docker, Tailscale, Firewall
+  bootstrap.sh         Härtung Debian, Docker, SSH-Port, Firewall
   backup.sh            mongodump aus Atlas -> restic -> Storage Box
   restore.sh           Stände anzeigen, Restore-Test, Wiederherstellung
   atlas-zugriffsliste.sh  Atlas-IP-Zugriffsliste per API auf die Server-IP setzen

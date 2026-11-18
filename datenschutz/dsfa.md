@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.16 – **Entwurf** vom 18.11.2026 (Atlas M0 zum Start, ohne Cloud Backup; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.17 – **Entwurf** vom 18.11.2026 (SSH ohne Tailscale auf Port 5022; Atlas M0 zum Start, ohne Cloud Backup; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -166,7 +166,6 @@ Details: [Betriebsarchitektur](../docs/architektur.md), [Dienstleister](dienstle
 | Murat Bayram | IT-Betreuung (Einrichtung, Updates, Backup, Störungen) | Deutschland | Administrativer Zugang; Datenbankzugriff nur bei Wartung, protokolliert |
 | febas (Registrar von `vibez-odenwald.de`) | Registrierung der App-Domain | Deutschland/EU | keine Klientendaten (nur Domaindaten) |
 | GitHub, Inc. | Quellcode und Container-Image | USA | keine Klientendaten |
-| Tailscale Inc. | Verwaltungszugang (SSH-Verbindung) | USA | keine Inhalte (Ende-zu-Ende verschlüsselt), Metadaten der Verbindung |
 
 ### 3.7 Speicherdauer
 
@@ -331,7 +330,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Vertraulichkeit, Integrität, Verfügbarkeit · Schwere: groß · Wahrscheinlichkeit: überschaubar → Risiko mittel*
 
 - ✅ Keine offenen Ports (Cloudflare Tunnel, Host-Firewall ohne eingehende Regeln)
-- ✅ SSH nur über Tailscale, nur mit Schlüssel, kein root-Login
+- ✅ SSH nur per Schlüssel auf Port 5022, kein root- und Passwort-Login, `ufw limit` (Ratenbegrenzung) (Entscheidung 18.11.2026: kein VPN; SSH ist öffentlich erreichbar)
 - ✅ Automatische Sicherheitsupdates; Container read-only, ohne Zusatzrechte, feste Versionen; interne Netze ohne Internet für Traefik/App-Frontnetz
 - ✅ Geheimnisse nur auf dem Server (`.env`, Rechte 600), nicht im Repository
 - ✅ Datenbankbenutzer der App darf nur die eigene Datenbank; die Datenbank akzeptiert nur diesen Server

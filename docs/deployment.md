@@ -25,7 +25,6 @@ Vor dem ersten echten Datensatz müssen die Punkte aus der [Freigabe-Checkliste]
 | MongoDB Atlas | VIBEZ (Organisation „VIBEZ“) | DPA aus den Atlas-Bedingungen dokumentieren | Projektmitglied „Project Owner“, 2FA |
 | Cloudflare | VIBEZ | DPA aus den Self-Serve-Bedingungen dokumentieren | Mitglied „Administrator“, 2FA |
 | Registrar `vibez-odenwald.de` | VIBEZ als Domaininhaber (sonst Übertragung bei Ende der Betreuung) | – (keine Klientendaten) | Verwaltung, 2FA |
-| Tailscale | Murat | – (nur Verwaltungszugang, keine Inhalte) | – |
 
 **Für alle Konten gilt: 2FA mit Passkey oder Hardwareschlüssel** (keine SMS), eigene Logins je Person, Wiederherstellungscodes
 im Passwortmanager von VIBEZ. Bei GitHub zusätzlich: Branch-Schutz auf `main` (Änderungen nur über Pull Request mit grüner
@@ -54,18 +53,10 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
    ```
 
    Das Skript aktualisiert das System, aktiviert automatische Sicherheitsupdates, legt das Admin-Konto an (nur
-   Schlüssel), sperrt root- und Passwort-Login, installiert Docker und Tailscale und aktiviert die Host-Firewall, sobald
-   Tailscale verbunden ist.
-4. **Tailscale-ACL** setzen, sodass nur Murats Admin-Geräte den Server erreichen:
-
-   ```json
-   "tagOwners": { "tag:vibez-prod": ["autogroup:admin"] },
-   "grants":    [ { "src": ["murat@…"], "dst": ["tag:vibez-prod"], "ip": ["tcp:22"] } ]
-   ```
-
-   Server mit `sudo tailscale up --advertise-tags=tag:vibez-prod` neu anmelden. Andere Geräte im Tailnet haben dann keinen Weg zum Server.
-5. Prüfen: `ssh murat@vibez-prod` (über Tailscale) funktioniert und `ssh murat@<öffentliche-ip>` scheitert.
-6. Ein **Konsolenpasswort** für `murat` setzen (`sudo passwd murat`) und im Passwortmanager von VIBEZ ablegen. Es wird nur
+   Schlüssel), sperrt root- und Passwort-Login, installiert Docker, legt SSH auf Port 5022 (`SSH_PORT`) und aktiviert die
+   Host-Firewall (eingehend nur dieser Port, mit Ratenbegrenzung). Vorher eine zweite SSH-Sitzung offen halten.
+4. Prüfen: `ssh -p 5022 murat@<öffentliche-ip>` funktioniert, `ssh root@…` und Port 22 scheitern.
+5. Ein **Konsolenpasswort** für `murat` setzen (`sudo passwd murat`) und im Passwortmanager von VIBEZ ablegen. Es wird nur
    für die netcup-Konsole (SCP, „Bildschirm“) im Notfall gebraucht, SSH nimmt weiterhin keine Passwörter an.
 
 ## 3. MongoDB Atlas
@@ -174,7 +165,7 @@ Technik (Murat):
 - [ ] restic-Passwort und Konsolenpasswort liegen im Passwortmanager von VIBEZ (Gegencheck durch Tobias)
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen
-- [ ] Storage-Box-Snapshots aktiv; Tailscale-ACL aktiv (anderes Tailnet-Gerät erreicht Port 22 nicht)
+- [ ] Storage-Box-Snapshots aktiv; SSH nur auf 5022 mit Schlüssel (Passwort-Login abgelehnt geprüft)
 - [ ] Domain `vibez-odenwald.de`: DNSSEC aktiv, CAA und Mail-Schutz gesetzt, Transfer Lock und automatische Verlängerung an, Zertifikats-Monitoring eingerichtet
 - [ ] Cloudflare-Benachrichtigungen: Tunnel-Status, DNS-Änderungen
 - [ ] 2FA mit Passkey in Cloudflare, Atlas, netcup, Hetzner, GitHub, Registrar; App-Verwaltung mit 2FA (sobald umgesetzt)

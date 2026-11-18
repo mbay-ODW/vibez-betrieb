@@ -1,6 +1,6 @@
 # Betriebshandbuch – Echtbetrieb
 
-Abläufe für den laufenden Betrieb. Befehle laufen auf `vibez-prod` (SSH über Tailscale) im Verzeichnis `/opt/vibez`.
+Abläufe für den laufenden Betrieb. Befehle laufen auf `vibez-prod` (`ssh -p 5022 murat@<server>`) im Verzeichnis `/opt/vibez`.
 
 ## Inhalt
 
@@ -127,7 +127,7 @@ dauerhaft auf Murat. Erst bei einem Ende der Betreuung bzw. Wechsel des IT-Diens
    - **Server**: Übertragung des netcup-Produkts an VIBEZ, falls netcup das anbietet, sonst neuen VPS auf VIBEZ bestellen,
      nach [deployment.md](deployment.md) aufbauen und den alten Server löschen (Daten liegen in Atlas, nicht auf dem Server).
    Neue:n Dienstleister:in in Hetzner und Atlas einladen, Murat entfernen.
-2. Tailscale: Server aus Murats Tailnet entfernen, neuen Verwaltungszugang einrichten (z. B. eigenes Tailnet).
+2. SSH: Murats Schlüssel entfernen, Schlüssel der neuen Betreuung eintragen.
 3. Neue SSH-Schlüssel, Murats Schlüssel entfernen; `RESTIC_PASSWORD` behalten (liegt bei VIBEZ).
 4. Dieses Repo an VIBEZ übertragen bzw. forken; Container-Image ggf. in eine VIBEZ-Registry spiegeln.
 5. Murat bestätigt schriftlich die Löschung aller bei ihm verbliebenen Kopien (AV-Vertrag).

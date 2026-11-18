@@ -104,11 +104,10 @@ Beginne mit Schritt 1 des Ablaufs (host/bootstrap.sh) und sag mir vorher, was du
 | Cloudflare | *My Profile → API Tokens → Create Token → Custom* | Zone (nur `vibez-odenwald.de`): DNS Edit, SSL and Certificates Edit, Zone Settings Edit, Zone WAF Edit, Cache Rules Edit; Account: Cloudflare Tunnel Edit, Notifications Edit | 7 Tage, nach Übergabe löschen |
 | MongoDB Atlas | Projekt → *Access Manager → API Keys* (oder Service Account); API-Zugriffsliste = Server-IP. Ablage nur auf dem Server in `/root/aufbau/atlas.env` (600) als `MONGODB_ATLAS_PUBLIC_API_KEY`, `MONGODB_ATLAS_PRIVATE_API_KEY`, `MONGODB_ATLAS_PROJECT_ID` – nie in Chat oder Screenshot | *Project Owner* nur für dieses Projekt | nach Übergabe löschen |
 | GitHub (Image ziehen) | Fine-grained Token, Zugriff nur auf `vibez-nachweise`, Berechtigung *Packages: read* | Image ziehen | bleibt auf dem Server (in `docker login`), Ablauf 1 Jahr, im Kalender vermerken |
-| Tailscale | *Settings → Keys → Generate auth key*, einmalig, Tag `tag:vibez-prod` | nur Anmeldung des Servers | verfällt nach Benutzung |
 
 ## Ablauf
 
-1. Server härten (`host/bootstrap.sh`; Tailscale; Firewall), Repo nach `/opt/vibez` klonen
+1. Server härten (`host/bootstrap.sh`: Schlüssel-Login, SSH-Port 5022, Firewall), Repo nach `/opt/vibez` klonen
 2. Atlas: Cluster Frankfurt, Benutzer `vibez_app`/`vibez_backup` (Passwörter auf dem Server erzeugt), IP-Zugriffsliste
    = Server-IP, Backups und Alerts
 3. Cloudflare (sobald die Zone `vibez-odenwald.de` aktiv ist): Tunnel `vibez-prod`, `nachweise` als proxied Eintrag,
@@ -140,7 +139,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Zugang der Aufbausitzung per SSH vom Mac (Schlüssel für root, dann `murat`); `git pull`, CLAUDE.md und aufbau.md gelesen | ✅ | SSH als Zugang am 18.11. freigegeben (Commit 7739ef6) |
 | 18.11.2026 | `/etc/sudoers.d/90-aufbau`: `murat` sudo ohne Passwort (nur Aufbauphase) | ✅ | Vor Übergabe löschen (Checkliste) |
 | 18.11.2026 | `host/bootstrap.sh` (ADMIN=`murat`, ohne `TS_AUTHKEY`): Updates, unattended-upgrades, Admin `murat` nur mit Schlüssel, root- und Passwort-Login aus, Docker 29.10.0, Tailscale-Paket installiert | ✅ | Kernel 6.12.117 |
-| 18.11.2026 | **Abweichung (Entscheidung Murat):** kein Tailscale. SSH auf Port **5022** (`/etc/ssh/sshd_config.d/20-vibez-port.conf`), Port 22 zu; `ufw` aktiv: eingehend nur `5022/tcp` (limit), Rest deny | ✅ | Architektur, DSFA/TOM und deployment.md nennen noch „SSH nur über Tailscale“ – anpassen; Tailscale-Paket ungenutzt |
+| 18.11.2026 | **Abweichung (Entscheidung Murat):** kein Tailscale. SSH auf Port **5022** (`/etc/ssh/sshd_config.d/20-vibez-port.conf`), Port 22 zu; `ufw` aktiv: eingehend nur `5022/tcp` (limit), Rest deny | ✅ | Unterlagen angepasst (DSFA 0.17); Tailscale-Paket ungenutzt, kann deinstalliert werden |
 
 ## Übergabe-Checkliste
 
@@ -153,7 +152,6 @@ Vor dem ersten echten Datensatz – Murat hakt ab, Tobias bestätigt:
 - [ ] Domain `vibez-odenwald.de`, Cloudflare-Zone und netcup-Vertrag (dauerhaft auf Murat): Unterauftrag im AV-Vertrag mit VIBEZ genehmigt, Vorgehen bei Ende der Betreuung schriftlich geregelt
 - [ ] Cloudflare-Anbindung (MCP) bleibt als begrenzte Ausnahme nach DSFA T12 (Entscheidung 18.11.2026): Benachrichtigung bei DNS-Änderungen eingerichtet, Prüfung des Audit-Logs in die monatliche Wartung aufgenommen
 - [ ] Atlas-Service-Account der Aufbauphase gelöscht; nur `vibez_app`, `vibez_backup` und der IP-Listen-Key bleiben
-- [ ] Tailscale-Auth-Key verbraucht/gelöscht
 - [ ] GitHub auf dem Server: `gh auth logout` (Anmeldung mit Murats ganzem Konto aus der Aufbauphase entfernt); für das Image nur noch der Fine-grained Token mit *Packages: read* in `docker login ghcr.io`; Repo-Updates mit Token nur *Contents: read*
 - [ ] Alle auf dem Server erzeugten Geheimnisse liegen im Passwortmanager von VIBEZ (restic-Passwort, Atlas-Benutzer, Konsolenpasswort)
 - [ ] Startpasswort von `tobias` wurde beim ersten Login geändert, 2FA eingerichtet

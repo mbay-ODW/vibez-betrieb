@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Grundeinrichtung eines frischen netcup-VPS (Debian 13) für VIBEZ Nachweise.
-# Einmal als root ausführen:  ADMIN=murat ADMIN_KEY="ssh-ed25519 AAAA… murat" bash bootstrap.sh
-# Danach ist SSH nur noch per Schlüssel und – nach `tailscale up` – nur noch über Tailscale erreichbar.
+# Einmal als root ausführen:  ADMIN=murat ADMIN_KEY="ssh-ed25519 AAAA… murat" [SSH_PORT=5022] bash bootstrap.sh
+# Danach ist SSH nur noch per Schlüssel auf SSH_PORT erreichbar (Entscheidung 18.11.2026: kein Tailscale).
+# Vorher eine zweite SSH-Sitzung offen halten und den neuen Port testen, sonst bleibt nur die netcup-Konsole.
 set -euo pipefail
 : "${ADMIN:?ADMIN=<benutzername> setzen}"
 : "${ADMIN_KEY:?ADMIN_KEY=<öffentlicher SSH-Schlüssel> setzen}"
+SSH_PORT="${SSH_PORT:-5022}"
 
 export DEBIAN_FRONTEND=noninteractive
 timedatectl set-timezone Europe/Berlin
@@ -48,25 +50,19 @@ cat > /etc/docker/daemon.json <<'CONF'
 CONF
 systemctl restart docker
 
-# Tailscale (Verwaltungszugang). Mit TS_AUTHKEY (einmaliger Schlüssel aus der Tailscale-Verwaltung) automatisch.
-curl -fsSL https://tailscale.com/install.sh | sh
-if [[ -n "${TS_AUTHKEY:-}" ]]; then
-  tailscale up --authkey "$TS_AUTHKEY" --hostname vibez-prod
-fi
+# SSH auf eigenem Port (weniger Rauschen durch Scanner; Schutz kommt von Schlüssel-Login und Ratenbegrenzung)
+echo "Port $SSH_PORT" > /etc/ssh/sshd_config.d/20-vibez-port.conf
+systemctl reload ssh
 
-# Host-Firewall: eingehend nur SSH über Tailscale. Erst scharf schalten, wenn Tailscale verbunden ist –
-# sonst sperrt man sich aus.
+# Host-Firewall: eingehend nur SSH (mit Ratenbegrenzung). Die App ist nur über den Cloudflare-Tunnel erreichbar,
+# 80/443 bleiben zu.
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow in on tailscale0 to any port 22 proto tcp
-if tailscale status >/dev/null 2>&1; then
-  ufw --force enable
-  echo "Firewall aktiv: SSH nur noch über Tailscale ($(tailscale ip -4 | head -1))."
-else
-  echo "ACHTUNG: Tailscale nicht verbunden – Firewall NICHT aktiviert. Erst 'tailscale up', dann 'ufw --force enable'."
-fi
+ufw limit "$SSH_PORT"/tcp
+ufw --force enable
+echo "Firewall aktiv: eingehend nur SSH auf Port $SSH_PORT."
 
 # Verzeichnisse
 install -d -m 700 /srv/vibez /srv/vibez/restic-cache
 install -d -m 755 /opt/vibez
-echo "Fertig. Weiter mit docs/deployment.md, Schritt „Tailscale verbinden“."
+echo "Fertig. Neuen Port testen: ssh -p $SSH_PORT $ADMIN@<server>. Weiter mit docs/deployment.md."

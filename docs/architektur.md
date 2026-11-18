@@ -29,7 +29,7 @@ auf dem Server von Murat und enthält nur erfundene Daten.
 | Reverse Proxy | **Traefik** v3 | Routing, Ratenbremse je echter IP, HSTS, Zugriffsprotokoll |
 | Datenbank | **MongoDB Atlas**, Region **AWS Frankfurt (eu-central-1)**, Projekt nur für VIBEZ | Wie bei der DRK-Klientendokumentation: verschlüsselt gespeichert, repliziert, verwaltete Backups; Zugriff nur von der IP des VPS (per Atlas-API gepflegt) |
 | Backup | Nächtliche Sicherung mit **restic** (verschlüsselt) auf einer **Hetzner Storage Box**; Atlas Cloud Backup erst ab Flex/M10 (Start mit M0 hat keins) | Anderer Anbieter, anderer Standort; monatlicher Wiederherstellungstest |
-| Verwaltung | SSH nur über **Tailscale**, keine öffentlichen Ports | Angriffsfläche minimal |
+| Verwaltung | SSH nur per Schlüssel auf Port **5022**, Ratenbegrenzung; kein VPN (Entscheidung 18.11.2026) | einfach; Schutz durch Schlüssel-Login, kein Passwort, kein root |
 | Versionen | App-Image mit fester Versionsnummer (`VERSION` im App-Repo), Ausrollen mit `deploy.sh` | Nachvollziehbar, Rückweg möglich |
 
 ## Gesamtbild
@@ -60,7 +60,7 @@ flowchart LR
       DB[("Cluster vibez<br/>IP-Liste: nur VPS")]
       AB[("Cloud Backup<br/>(erst ab Flex/M10)")]
     end
-    ADM["Murat (Admin)"] -. "Tailscale SSH" .-> VPS
+    ADM["Murat (Admin)"] -. "SSH :5022, nur Schlüssel" .-> VPS
     H & P -- "HTTPS" --> W
     D -. "delegiert" .-> Z
     W --> Z --> TU
@@ -102,13 +102,13 @@ Konfiguration: [`stack/compose.yml`](../stack/compose.yml), [`stack/traefik/`](.
 
 | Von → nach | Erlaubt | Wie erzwungen |
 |---|---|---|
-| Internet → Server | **nichts** | `ufw deny incoming`, keine veröffentlichten Docker-Ports |
+| Internet → Server | nur SSH auf 5022 (Schlüssel) | `ufw deny incoming`, keine veröffentlichten Docker-Ports |
 | Cloudflare → App | nur über den Tunnel | `cloudflared` baut ausgehend auf |
 | cloudflared → Traefik | HTTP im Netz `edge` | Traefik vertraut `X-Forwarded-*` nur aus `172.30.0.0/24` |
 | Traefik → App | HTTP im Netz `web` (intern) | Docker-Netz `internal: true` |
 | App → MongoDB Atlas | TLS über das Netz `atlas` | Atlas-IP-Zugriffsliste = nur VPS-IPv4; Benutzer mit Passwort (SCRAM) |
 | Traefik → Internet | **nichts** | Traefik hängt nur an `edge` (für cloudflared) und `web` (intern) |
-| Admin → Server | SSH nur über Tailscale, nur Schlüssel | `ufw allow in on tailscale0 port 22`, `PasswordAuthentication no`, `PermitRootLogin no` |
+| Admin → Server | SSH auf Port 5022, nur Schlüssel | `ufw limit 5022/tcp`, `PasswordAuthentication no`, `PermitRootLogin no` |
 | Server → Internet | ausgehend (Updates, Tunnel, Backup, Image-Download) | – |
 
 ## Domain und DNS
@@ -154,7 +154,7 @@ Wiederherstellungsziele: **RPO** ≤ 24 Stunden (bei Atlas mit Point-in-Time deu
 
 ## Verwaltungszugang
 
-- Nur Murat (Admin) hat SSH-Zugang: persönliches Konto, nur Schlüssel, nur über Tailscale (mit 2FA am Tailscale-Konto).
+- Nur Murat (Admin) hat SSH-Zugang: persönliches Konto, nur Schlüssel, Port 5022, `ufw limit`. Der private Schlüssel liegt nur auf Murats Admin-Geräten (mit Passphrase oder Hardwareschlüssel).
 - Notzugang über die netcup-Konsole (SCP) mit dem Passwort des Admin-Kontos. Das Passwort liegt im Passwortmanager von VIBEZ.
 - Der netcup-Vertrag läuft auf Murat, die Storage Box auf VIBEZ. 2FA ist Pflicht, kein geteiltes Login. Der Notzugang zur netcup-Konsole muss VIBEZ auch ohne Murat möglich sein (Zugangsdaten versiegelt bzw. im Passwortmanager von VIBEZ).
 - **Aufbauphase:** Nur solange keine echten Daten vorhanden sind, richtet eine KI-Sitzung den Server über Remote Control ein.
@@ -200,4 +200,3 @@ als Auftragsverarbeiter; dafür liegen Verschlüsselung ruhender Daten und Backu
 | MongoDB Atlas (M0, Frankfurt) | 0 € (Start); Flex bzw. M10 bei Bedarf | aktuelles Preisblatt prüfen |
 | Hetzner Storage Box (kleinste Größe) | wenige € / Monat | zweite Sicherung |
 | Cloudflare Free | 0 € | |
-| Tailscale (Personal/Starter) | 0 € | nur Admin-Zugang |
