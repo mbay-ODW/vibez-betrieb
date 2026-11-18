@@ -48,8 +48,8 @@ Tunnel zum Server, der keine offenen Ports hat. Die App hat dafür eine **eigene
 
    Nimmt Cloudflare den Null-MX nicht an, den MX weglassen; SPF und DMARC genügen.
 
-6. **CAA** setzen: Cloudflare ergänzt bei Universal SSL seine Zertifizierungsstellen selbst, sobald ein CAA-Eintrag
-   existiert. Vor dem Setzen die aktuelle Cloudflare-Doku prüfen.
+6. **CAA** setzen: `0 issue "letsencrypt.org"` und `0 issue "pki.goog"` (die zwei Zertifizierungsstellen von Universal
+   SSL, Stand 18.11.2026). Cloudflare ergänzt bei Bedarf weitere eigene CAs selbst.
 7. Für `nachweise` **keinen** Eintrag von Hand anlegen; den erzeugt der Tunnel (nächster Abschnitt).
 8. Optional: `@` und `www` als Weiterleitung auf `https://nachweise.vibez-odenwald.de` (Redirect Rule) oder leer lassen.
 
