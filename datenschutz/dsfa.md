@@ -4,7 +4,7 @@
 |---|---|
 | **Verantwortliche** | VIBEZ Kinder- & Jugendhilfe GmbH, Lustgartenstraße 2, 64711 Erbach (Geschäftsführung: Tobias Naas, Moritz Flick) |
 | **Verarbeitung** | Digitale Tätigkeitsnachweise, Prüfung und Abrechnung ambulanter Hilfen zur Erziehung („VIBEZ Nachweise“) |
-| **Version / Stand** | 0.17 – **Entwurf** vom 18.11.2026 (SSH ohne Tailscale auf Port 5022; Atlas M0 zum Start mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
+| **Version / Stand** | 0.17 – **Entwurf** vom 18.11.2026 (SSH ohne Tailscale auf Port 5022; Atlas Flex mit 7 Tagen Snapshots; Installation mit KI ausdrücklich erlaubt, solange keine echten Daten; Cloudflare-Konfiguration als begrenzte Ausnahme in T12; eigene Domain `vibez-odenwald.de` für die App, DNS bei Cloudflare; Server bei netcup über Murat als Unterauftragsverarbeiter, App 0.2.6 mit Zwei-Faktor-Anmeldung, Aufbauphase geregelt) |
 | **Erstellt von** | IT-Dienstleister (Murat Bayram) mit technischer Unterstützung; fachliche Angaben von VIBEZ zu bestätigen |
 | **Zu prüfen durch** | Datenschutzbeauftragte:r von VIBEZ (siehe Abschnitt 2.3) |
 | **Freigabe** | Geschäftsführung VIBEZ (Abschnitt 9) |
@@ -352,8 +352,8 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 ### R9 – Datenverlust (Fehlbedienung, Defekt, Ransomware)
 *Verfügbarkeit, Integrität · Schwere: substanziell · Wahrscheinlichkeit: überschaubar → Risiko mittel*
 
-- ✅ Atlas Backup (M0): tägliche Snapshots, 7 Tage (laut Atlas-Oberfläche, Murat 18.11.2026; die Atlas-Doku ist dazu widersprüchlich), kein Point-in-Time
-- ✅ Zweite, unabhängige Sicherung (längere Aufbewahrung als Atlas bei M0): nächtlich, verschlüsselt (restic) auf Hetzner Storage Box, 12 Monate
+- ✅ Atlas Backup (Flex): tägliche Snapshots, 7 Tage (laut Atlas-Oberfläche, Murat 18.11.2026), kein Point-in-Time
+- ✅ Zweite, unabhängige Sicherung (längere Aufbewahrung als Atlas Flex): nächtlich, verschlüsselt (restic) auf Hetzner Storage Box, 12 Monate
 - ✅ Monatlicher automatischer Wiederherstellungstest; Überwachung der Backups
 - ✅ Rechnungen als unveränderlicher Schnappschuss; Storno statt Löschen
 - ✅ Wiederherstellungsschlüssel zusätzlich offline bei VIBEZ
@@ -364,7 +364,7 @@ Verarbeitung nicht auf EU-Rechenzentren beschränkt.
 *Verfügbarkeit · Schwere: überschaubar · Wahrscheinlichkeit: überschaubar → Risiko gering*
 
 - ✅ Überwachung mit Alarm; Wiederanlauf eines neuen Servers innerhalb eines Arbeitstags (Daten liegen in Atlas)
-- ⏳ Atlas M0 (Free): gemeinsam genutzte Hardware, 512 MB, begrenzter Durchsatz, ohne Zusage für Produktion; Speicheralarm bei 70 % und Wechsel auf Flex/M10 bei Bedarf
+- ⏳ Atlas Flex: gemeinsam genutzte Hardware, begrenzter Speicher und Durchsatz (Grenzen laut aktuellem Atlas-Preisblatt); Speicheralarm bei 70 % und Wechsel auf M10 bei Bedarf
 - ✅ Fachlich unkritisch: Termine können nachgetragen werden; Papier-Formular als Rückfallebene **[VIBEZ: bereithalten]**
 
 *Restrisiko: gering*

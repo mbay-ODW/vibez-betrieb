@@ -62,13 +62,13 @@ Außerdem: **AV-Vertrag VIBEZ ↔ Murat** (IT-Betreuung) inkl. Verpflichtung nac
 ## 3. MongoDB Atlas
 
 1. Organisation „VIBEZ“, Projekt **„VIBEZ Nachweise“**, Murat als Projektmitglied einladen, 2FA erzwingen.
-2. Cluster anlegen: **AWS, eu-central-1 (Frankfurt)**, Tarif M0 zum Start (siehe
+2. Cluster anlegen: **AWS, eu-central-1 (Frankfurt)**, Tarif Flex (siehe
    [Architektur](architektur.md#atlas-einrichtung-wie-drk)), Name `vibez`.
-3. **Backup:** Bei M0 Backup einschalten (täglich, 7 Tage). Die restic-Sicherung (Abschnitt 6) bleibt Pflicht vor dem Echtbetrieb (12 Monate, anderer Anbieter).
+3. **Backup:** Bei Flex sind tägliche Snapshots (7 Tage) dabei; prüfen, dass es aktiv ist. Die restic-Sicherung (Abschnitt 6) bleibt Pflicht vor dem Echtbetrieb (12 Monate, anderer Anbieter).
    Ab Flex/M10 Cloud Backup einschalten.
 4. **Database Access**:
    - `vibez_app`: Passwort generieren, Rolle *readWrite* nur auf Datenbank `vibez`
-   - `vibez_backup`: Passwort generieren, nur *read* auf Datenbank `vibez` (M0 kennt die Rolle *backup* nicht sicher)
+   - `vibez_backup`: Passwort generieren, nur *read* auf Datenbank `vibez` (reicht für `mongodump` einer Datenbank)
 5. **Network Access**: einen Programmatic API Key für das Projekt mit der Rolle *Project IP Access List Admin*
    anlegen, dann auf dem Server ausführen:
 
@@ -161,7 +161,7 @@ Technik (Murat):
 - [ ] Atlas-Zugriffsliste enthält nur die Server-IP; Verbindung von einem anderen Rechner scheitert
 - [ ] Antwort-Header enthalten `Content-Security-Policy`, `Strict-Transport-Security`, `Cache-Control: no-store`
 - [ ] Backup gelaufen, Restore-Test erfolgreich, Uptime-Kuma-Monitore grün
-- [ ] Sicherung: erster restic-Lauf und Restore-Test erfolgreich (Atlas hält bei M0 nur 7 Tage); Atlas-Speicheralarm bei 70 % eingerichtet
+- [ ] Sicherung: erster restic-Lauf und Restore-Test erfolgreich (Atlas hält bei Flex nur 7 Tage); Atlas-Speicheralarm bei 70 % eingerichtet
 - [ ] restic-Passwort und Konsolenpasswort liegen im Passwortmanager von VIBEZ (Gegencheck durch Tobias)
 - [ ] Der Server ist **nicht** in Portainer, MCP-Servern oder sonstigen KI-/Automationswerkzeugen eingebunden
 - [ ] `VN_VERSION` enthält Version **und Digest**; Digest mit dem CI-Lauf verglichen

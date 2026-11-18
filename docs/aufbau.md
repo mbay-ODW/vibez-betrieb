@@ -132,7 +132,7 @@ Wird während des Aufbaus fortgeschrieben. Nur technische Angaben, keine Geheimn
 | 18.11.2026 | Nameserver bei febas umgestellt, Zone „active“ (08:58 UTC); DNSSEC in Cloudflare eingeschaltet (Schlüssel 2371, Algorithmus 13) | ✅ | DS-Eintrag bei febas ausstehend |
 | 18.11.2026 | Server: Debian 13, Claude Code, Remote Control (tmux `aufbau`); `gh` mit Murats Konto angemeldet (Browser-Anmeldung, Zusatzrecht `read:packages`); Repo nach `/opt/vibez/repo` | ✅ | GitHub-Anmeldung vor Übergabe ersetzen (Checkliste) |
 | 18.11.2026 | Erster Atlas-API-Key versehentlich per Screenshot im Chat gezeigt → in Atlas gelöscht, neuer Key angelegt | ✅ | Bild in der Sitzungsumgebung gelöscht |
-| 18.11.2026 | Atlas: Cluster **M0** (Frankfurt) von Murat angelegt; X.509-Zertifikat erzeugt und heruntergeladen | ✅ | M0 mit 7 Tagen Snapshots (Atlas-Oberfläche); restic für 12 Monate (DSFA 0.16); Zertifikat nur auf den Server übertragen |
+| 18.11.2026 | Atlas: Cluster **Flex** (Frankfurt) von Murat angelegt; X.509-Zertifikat erzeugt und heruntergeladen | ✅ | Flex mit 7 Tagen Snapshots (Atlas-Oberfläche); restic für 12 Monate (DSFA 0.16); Zertifikat nur auf den Server übertragen |
 | 18.11.2026 | Atlas: Rechte des X.509-Benutzers auf `readWrite@vibez` eingeschränkt (vorher alle Datenbanken) | ✅ | Ablaufdatum des Zertifikats im Kalender vermerken |
 | 18.11.2026 | DS-Eintrag (Key Tag 2371) über den febas-Support beantragt; febas meldet: bei DENIC hinterlegt | ✅ | Cloudflare-Status noch „pending“ (prüft selbst in Abständen) |
 | 18.11.2026 | netcup-VPS bestellt, Vertrag auf Murat | ✅ | AV-Vertrag Murat ↔ netcup offen; Unterauftrag im AV-Vertrag mit VIBEZ aufnehmen |

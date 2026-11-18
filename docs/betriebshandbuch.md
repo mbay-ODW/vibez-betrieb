@@ -44,7 +44,7 @@ Ausrollen am besten außerhalb der Arbeitszeiten der Pädagog:innen (abends). Ei
 Am ersten Arbeitstag des Monats (ca. 30 Minuten):
 
 - [ ] Restore-Test des Vormonats gelaufen: `journalctl -t vibez-backup --since "-35 days" | grep restore-test`
-- [ ] Atlas: Speicherbelegung (M0: 512 MB), keine offenen Alerts, Zugriffsliste unverändert (`host/atlas-zugriffsliste.sh`)
+- [ ] Atlas: Speicherbelegung (Flex: Grenze laut Preisblatt), keine offenen Alerts, Zugriffsliste unverändert (`host/atlas-zugriffsliste.sh`)
 - [ ] Neue Versionen von Traefik, cloudflared, restic, mongo-Tools prüfen (Release Notes, v. a. Sicherheit) → in
       `stack/.env` anheben, `sudo stack/deploy.sh`
 - [ ] Betriebssystem: `sudo apt list --upgradable` (Sicherheitsupdates laufen automatisch); Neustart nötig? `needrestart -b`
