@@ -6,9 +6,10 @@ ENDPOINT=1
 REPO_IMAGE=mbay-odw/vibez-nachweise
 SECRETS=/srv/vibez/secrets
 
-pt() {   # pt <curl-Argumente…>  (Pfad relativ zu /api)
+pt() {   # pt <curl-Argumente…>  (Pfad relativ zu /api); Standardeingabe nur bei „--data-binary @-“ weiterreichen
+  local ein=/dev/null; [[ " $* " == *" @- "* ]] && ein=/dev/stdin
   KEY="$(cat $SECRETS/portainer/api_token)" docker run --rm -i -e KEY --network fe-admin --entrypoint sh \
-    curlimages/curl:8.11.0 -c 'exec curl -sS --fail-with-body -H "X-API-Key: $KEY" -H "Content-Type: application/json" "$@"' -- "$@"
+    curlimages/curl:8.11.0 -c 'exec curl -sS --fail-with-body -H "X-API-Key: $KEY" -H "Content-Type: application/json" "$@"' -- "$@" <"$ein"
 }
 stack_id()  { pt "$PORTAINER/stacks" | jq -r --arg n "$1" '.[] | select(.Name==$n) | .Id'; }
 stack_var() { pt "$PORTAINER/stacks/$(stack_id "$1")" | jq -r --arg k "$2" '.Env[]? | select(.name==$k) | .value'; }
